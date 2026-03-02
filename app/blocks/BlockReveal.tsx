@@ -1,6 +1,6 @@
 'use client'
 
-import { getMotionDurationCSS, getMotionEasing, createTransition } from '@marcelinodzn/ds-tokens'
+import { createTransition } from '@marcelinodzn/ds-tokens'
 import { useBlockReveal } from '../lib/use-block-reveal'
 
 type BlockRevealProps = {
