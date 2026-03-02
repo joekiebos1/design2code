@@ -85,7 +85,7 @@ function Card({
     : (item.aspectRatio === '2:1' ? '8:5' : (item.aspectRatio ?? '4:5'))
   const imageContainerStyle =
     isLarge
-      ? { aspectRatio: (effectiveRatio === '2:1' ? '2/1' : '8/5') as const }
+      ? { aspectRatio: effectiveRatio === '2:1' ? '2/1' : '8/5' }
       : effectiveRatio === '8:5'
         ? { height: imageHeight4_5 }
         : { aspectRatio: '4/5' as const }
