@@ -40,6 +40,8 @@ export type BlockOptions = {
   size?: 'hero' | 'feature' | 'editorial' | null
   template?: 'SideBySide' | 'HeroOverlay' | 'Stacked' | 'TextOnly' | null
   imagePosition?: 'left' | 'right' | null
+  mediaStyle?: 'contained' | 'overflow' | null
+  imageAspectRatio?: string | null
   cardSize?: 'compact' | 'medium' | 'large' | null
   columns?: 2 | 3 | 4 | null
 }
