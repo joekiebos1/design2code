@@ -37,17 +37,18 @@ export default async function LabPage() {
     // Sanity not configured or fetch failed
   }
 
-  const hero = labData?.hero
+  const heroData = labData?.hero
+  const hero = heroData
     ? {
-        productName: hero.productName ?? null,
-        headline: hero.headline ?? null,
-        subheadline: hero.subheadline ?? null,
-        ctaText: hero.ctaText ?? null,
-        ctaLink: hero.ctaLink ?? null,
-        cta2Text: hero.cta2Text ?? null,
-        cta2Link: hero.cta2Link ?? null,
-        image: hero.image ?? null,
-        imagePosition: (hero.imagePosition ?? 'right') as 'left' | 'right',
+        productName: heroData.productName ?? null,
+        headline: heroData.headline ?? null,
+        subheadline: heroData.subheadline ?? null,
+        ctaText: heroData.ctaText ?? null,
+        ctaLink: heroData.ctaLink ?? null,
+        cta2Text: heroData.cta2Text ?? null,
+        cta2Link: heroData.cta2Link ?? null,
+        image: heroData.image ?? null,
+        imagePosition: (heroData.imagePosition ?? 'right') as 'left' | 'right',
       }
     : null
 
