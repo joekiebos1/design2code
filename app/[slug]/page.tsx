@@ -4,6 +4,7 @@ import { draftMode } from 'next/headers'
 import { getClient } from '../../lib/sanity/client'
 import { pageBySlugQuery, allPagesQuery } from '../../lib/sanity/queries'
 import { BlockRenderer } from '../components/BlockRenderer'
+import { StickyNav } from '../components/StickyNav'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -59,6 +60,7 @@ export default async function PageBySlug({ params }: Props) {
           ))}
         </nav>
       </header>
+      <StickyNav pageTitle={pageData.title} />
       <BlockRenderer blocks={pageData.sections} />
     </main>
   )
