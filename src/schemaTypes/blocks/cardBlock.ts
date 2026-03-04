@@ -73,15 +73,14 @@ export const cardItem = defineType({
       },
       initialValue: 'media',
       hidden: ({ document, path }) => {
-        if (!document?.sections || !Array.isArray(path) || path[0] !== 'sections') return false
+        const sections = document?.sections as Array<{ _type?: string; cardSize?: string; _key?: string }> | undefined
+        if (!sections || !Array.isArray(path) || path[0] !== 'sections') return false
         const sectionSegment = path[1]
         let block: { _type?: string; cardSize?: string } | undefined
         if (typeof sectionSegment === 'number') {
-          block = document.sections[sectionSegment]
+          block = sections[sectionSegment]
         } else if (sectionSegment && typeof sectionSegment === 'object' && '_key' in sectionSegment) {
-          block = document.sections?.find(
-            (s: { _key?: string }) => s?._key === (sectionSegment as { _key: string })._key
-          )
+          block = sections.find((s) => s?._key === (sectionSegment as { _key: string })._key)
         }
         return block?._type === 'carousel' && block?.cardSize === 'large'
       },
@@ -101,15 +100,14 @@ export const cardItem = defineType({
       },
       initialValue: '4:5',
       hidden: ({ document, path }) => {
-        if (!document?.sections || !Array.isArray(path) || path[0] !== 'sections') return false
+        const sections = document?.sections as Array<{ _type?: string; cardSize?: string; _key?: string }> | undefined
+        if (!sections || !Array.isArray(path) || path[0] !== 'sections') return false
         const sectionSegment = path[1]
         let block: { _type?: string; cardSize?: string } | undefined
         if (typeof sectionSegment === 'number') {
-          block = document.sections[sectionSegment]
+          block = sections[sectionSegment]
         } else if (sectionSegment && typeof sectionSegment === 'object' && '_key' in sectionSegment) {
-          block = document.sections?.find(
-            (s: { _key?: string }) => s?._key === (sectionSegment as { _key: string })._key
-          )
+          block = sections.find((s) => s?._key === (sectionSegment as { _key: string })._key)
         }
         return block?._type === 'carousel' && (block?.cardSize === 'large' || block?.cardSize === 'medium')
       },
