@@ -46,16 +46,20 @@ export type GridBreakpoint = {
   containerWidth: number
   /** Derived: (containerWidth - gutter*(columns-1)) / columns */
   columnWidth: number
-  /** 8 cols on desktop. Only at 1440px+. At smaller breakpoints use full container. */
-  contentMaxNarrow: string
-  /** 6 cols on desktop. Only at 1440px+. At smaller breakpoints use full container. */
-  contentMaxEditorial: string
-  /** 10 cols on desktop. Only at 1440px+. At smaller breakpoints use full container. */
+  /** XS: 4 cols. Desktop 1440px+. */
+  contentMaxXS: string
+  /** S: 6 cols. Desktop 1440px+, tablet 768px+. */
+  contentMaxS: string
+  /** M: 8 cols. Desktop 1440px+. */
+  contentMaxM: string
+  /** Default: 10 cols. Desktop 1440px+. */
   contentMaxDefault: string
-  /** 12 cols on desktop. Only at 1440px+. At smaller breakpoints use full container. */
+  /** Wide: 12 cols. Desktop 1440px+. */
   contentMaxWide: string
   /** True when viewport >= 1440 — narrow/default/wide use calculated widths */
   isDesktop: boolean
+  /** Max width for grid wrapper (containerWidth + 2*margin) on desktop. Ensures grid respects 1346px cap. */
+  gridMaxWidth: string | undefined
 }
 
 const CONTAINER_MAX_TOKEN = 'ContainerWidth/L (1440)/100-100-100'
@@ -86,13 +90,17 @@ function resolveGridValues(platform: string, viewport: number): GridBreakpoint {
 
   const spanWide = columns === 12 ? 12 : columns === 8 ? 8 : 4
   const spanDefault = columns === 12 ? 10 : columns === 8 ? 6 : 4
-  const spanNarrow = columns === 12 ? 8 : columns === 8 ? 6 : 4
-  const spanEditorial = columns === 12 ? 6 : columns === 8 ? 4 : 4
+  const spanM = columns === 12 ? 8 : columns === 8 ? 6 : 4
+  const spanS = columns === 12 ? 6 : columns === 8 ? 6 : 4
+  const spanXS = columns === 12 ? 4 : columns === 8 ? 4 : 4
 
-  const widePx = spanWide * columnWidth + (spanWide - 1) * gutter
-  const defaultPx = spanDefault * columnWidth + (spanDefault - 1) * gutter
-  const narrowPx = spanNarrow * columnWidth + (spanNarrow - 1) * gutter
-  const editorialPx = spanEditorial * columnWidth + (spanEditorial - 1) * gutter
+  const pxWide = spanWide * columnWidth + (spanWide - 1) * gutter
+  const pxDefault = spanDefault * columnWidth + (spanDefault - 1) * gutter
+  const pxM = spanM * columnWidth + (spanM - 1) * gutter
+  const pxS = spanS * columnWidth + (spanS - 1) * gutter
+  const pxXS = spanXS * columnWidth + (spanXS - 1) * gutter
+
+  const gridMaxWidth = isDesktop ? `${containerWidth + 2 * margin}px` : undefined
 
   return {
     columns,
@@ -103,11 +111,13 @@ function resolveGridValues(platform: string, viewport: number): GridBreakpoint {
     breakpointWidth,
     containerWidth,
     columnWidth,
-    contentMaxNarrow: isDesktop ? `${narrowPx}px` : '100%',
-    contentMaxEditorial: isDesktop ? `${editorialPx}px` : '100%',
-    contentMaxDefault: isDesktop ? `${defaultPx}px` : '100%',
-    contentMaxWide: isDesktop ? `${widePx}px` : '100%',
+    contentMaxXS: isDesktop ? `${pxXS}px` : '100%',
+    contentMaxS: isDesktop ? `${pxS}px` : '100%',
+    contentMaxM: isDesktop ? `${pxM}px` : '100%',
+    contentMaxDefault: isDesktop ? `${pxDefault}px` : '100%',
+    contentMaxWide: isDesktop ? `${pxWide}px` : '100%',
     isDesktop,
+    gridMaxWidth,
   }
 }
 

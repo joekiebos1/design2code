@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    cssChunking: 'strict',
+  },
   images: {
     remotePatterns: [
       {

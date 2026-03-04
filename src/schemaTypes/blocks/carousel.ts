@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity'
+import { spacingTopField, spacingBottomField } from '../shared/spacingFields'
 
 export const carouselBlock = defineType({
   name: 'carousel',
@@ -6,20 +7,29 @@ export const carouselBlock = defineType({
   title: 'Carousel',
   description: 'A horizontal carousel of cards with navigation arrows.',
   fields: [
+    spacingTopField,
+    spacingBottomField,
     defineField({
-      name: 'spacing',
+      name: 'variant',
       type: 'string',
-      title: 'Spacing',
-      description: 'Space below this block.',
+      title: 'Carousel variant',
+      description: `Variant A — Featured (buttons on sides): Feature product highlights in a large, rich way. Use short videos or striking images for key features at a glance. Placement: top or body of page only, never at bottom. Constraints: large cards only, default width.
+
+Variant B — Informative (buttons below): Inform, educate, showcase detailed functionality, or create an overview of items that link to other sections. Content is more detailed, less impactful, more informative. Placement: anywhere on page, including bottom. Constraints: card shapes 4:5 and 8:5.`,
       options: {
         list: [
-          { value: 'small', title: 'Small' },
-          { value: 'medium', title: 'Medium' },
-          { value: 'large', title: 'Large' },
+          {
+            value: 'featured',
+            title: 'Featured (buttons on sides)',
+          },
+          {
+            value: 'informative',
+            title: 'Informative (buttons below)',
+          },
         ],
         layout: 'radio',
       },
-      initialValue: 'medium',
+      initialValue: 'informative',
     }),
     defineField({
       name: 'title',
@@ -31,11 +41,12 @@ export const carouselBlock = defineType({
       name: 'cardSize',
       type: 'string',
       title: 'Card size',
-      description: 'Large: 8-col cards, 1 visible, 2:1 only. Compact: 3 cards per row (4:5) or mixed 4:5/8:5.',
+      description: 'Compact: 3 cards per row, 4:5 and 8:5 interchangeable. Large 2:1: 1 card spanning Default width, 2:1 only. Large 4:5: 2 cards per row (S width each), 4:5 only.',
       options: {
         list: [
-          { value: 'compact', title: 'Compact (3 per row)' },
-          { value: 'large', title: 'Large (1 per row, 8 cols)' },
+          { value: 'compact', title: 'Compact (3 per row, 4:5 and 8:5)' },
+          { value: 'large', title: 'Large 2:1 (1 per row, Default width)' },
+          { value: 'large-4x5', title: 'Large 4:5 (2 per row, S width each)' },
         ],
         layout: 'radio',
       },

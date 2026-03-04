@@ -37,7 +37,7 @@ const buttonStyle: React.CSSProperties = {
   padding: 0,
   border: 'none',
   borderRadius: 'var(--ds-radius-card-s)',
-  background: 'rgba(0,0,0,0.5)',
+  background: 'var(--local-color-shadow-overlay)',
   color: 'white',
   cursor: 'pointer',
 }

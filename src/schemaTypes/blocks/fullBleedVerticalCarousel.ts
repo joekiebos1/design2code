@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity'
+import { spacingTopField, spacingBottomField } from '../shared/spacingFields'
 
 export const fullBleedVerticalCarouselItem = defineType({
   name: 'fullBleedVerticalCarouselItem',
@@ -60,21 +61,8 @@ export const fullBleedVerticalCarouselBlock = defineType({
   type: 'object',
   title: 'Full bleed vertical carousel',
   fields: [
-    defineField({
-      name: 'spacing',
-      type: 'string',
-      title: 'Spacing',
-      description: 'Space below this block.',
-      options: {
-        list: [
-          { value: 'small', title: 'Small' },
-          { value: 'medium', title: 'Medium' },
-          { value: 'large', title: 'Large' },
-        ],
-        layout: 'radio',
-      },
-      initialValue: 'medium',
-    }),
+    spacingTopField,
+    spacingBottomField,
     defineField({
       name: 'items',
       type: 'array',

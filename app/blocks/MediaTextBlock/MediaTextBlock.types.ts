@@ -6,13 +6,15 @@ export type MediaTextBlockVariant =
   | 'text-only'
   | 'centered-media-below'
   | 'full-bleed'
-  | 'split'
 
-export type MediaTextBlockWidth = 'narrow' | 'default' | 'wide' | 'edgeToEdge'
+export type MediaTextBlockWidth = 'XS' | 'S' | 'M' | 'Default' | 'Wide' | 'edgeToEdge'
 export type MediaTextBlockAlign = 'left' | 'center'
+export type MediaTextBlockMediaStyle = 'contained' | 'overflow'
+export type MediaTextBlockSpacing = 'small' | 'medium' | 'large'
 
 export type MediaTextBlockAspectRatio = '16:9' | '4:3' | '1:1' | '3:4' | 'auto'
-export type SurfaceMode = 'ghost' | 'minimal' | 'subtle' | 'bold'
+/** Block emphasis: content author chooses this; DS components adapt automatically. */
+export type BlockBackgroundMode = 'ghost' | 'none' | 'minimal' | 'subtle' | 'bold'
 
 export interface MediaTextBlockMedia {
   type: 'image' | 'video'
@@ -32,7 +34,11 @@ export interface MediaTextBlockProps {
   size?: MediaTextBlockSize
   variant?: MediaTextBlockVariant
   width?: MediaTextBlockWidth
-  surface?: SurfaceMode
+  mediaStyle?: MediaTextBlockMediaStyle
+  blockBackground?: BlockBackgroundMode
+  spacing?: MediaTextBlockSpacing
+  spacingTop?: MediaTextBlockSpacing
+  spacingBottom?: MediaTextBlockSpacing
   align?: MediaTextBlockAlign
   eyebrow?: string
   headline: string

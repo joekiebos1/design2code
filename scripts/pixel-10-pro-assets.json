@@ -1,5 +1,5 @@
 {
-  "_comment": "Extracted from store.google.com/gb/product/pixel_10_pro?hl=en-GB (UK page) - Use =s1200 for 1200px width images",
+  "_comment": "Image URLs for Pixel 10 Pro product page. Use =s1200 for 1200px width.",
   "images": {
     "hero": "https://lh3.googleusercontent.com/9EB5TlJd0HySceMnILIKLuw6-p1ttfyRo1o3poX6yU1YUuUvYXmMU8a0_AM2ccFQoOaq7t8ud5ildnBt09MIQAaw3sHaFwdTAOax=s1200",
     "pixelProduct1": "https://lh3.googleusercontent.com/-87SuOyWxeEu56zbyGVz4n5Ew0k83nAUYRFFKrq_xowyNeUKgbbVukMTBRt6Sjausb4vXg_NKnzzJLTgB2JTVO2_u1-uTMF7Zg=s1200",
@@ -16,7 +16,7 @@
     "pixelDrops": "https://lh3.googleusercontent.com/WGosaQfH5pOQONUALtPBk0KaCR8pxCu-D7cVS2V7hvLBaDk2iVZKOovfxMlIYATsyvn9R6Doo1tqk2DSmLQZryydjhHo33iv7CY=s1200"
   },
   "videos": {
-    "_comment": "Document order from UK page - first 7 are New on Pixel 10 Pro carousel",
+    "_comment": "Document order - first 7 are New on Pixel 10 Pro carousel",
     "newOnPixel": [
       "https://storage.googleapis.com/mannequin/blobs/4627df29-fe27-4e9c-b58f-8077848e265f.mp4",
       "https://storage.googleapis.com/mannequin/blobs/2163532b-3e1f-4546-84f8-616b5c522551.mp4",

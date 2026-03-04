@@ -60,6 +60,20 @@ export const cardItem = defineType({
       description: 'External video URL. Used when no video is uploaded.',
     }),
     defineField({
+      name: 'cardType',
+      type: 'string',
+      title: 'Card type',
+      description: 'Media: image/video with optional text below. Text on colour: text on coloured background (no media).',
+      options: {
+        list: [
+          { value: 'media', title: 'Media (image/video)' },
+          { value: 'text-on-colour', title: 'Text on colour' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'media',
+    }),
+    defineField({
       name: 'aspectRatio',
       type: 'string',
       title: 'Card size',
@@ -76,9 +90,9 @@ export const cardItem = defineType({
     }),
     defineField({
       name: 'link',
-      type: 'url',
+      type: 'string',
       title: 'Link',
-      description: 'Optional link for the card',
+      description: 'Optional link for the card. Use relative paths (e.g. /games/play) or full URLs (e.g. https://example.com).',
     }),
     defineField({
       name: 'ctaText',

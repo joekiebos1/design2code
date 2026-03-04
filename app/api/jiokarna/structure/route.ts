@@ -5,7 +5,7 @@ import type { PageBrief } from '../../../jiokarna/types'
 const BLOCK_COMPONENTS = [
   'hero',
   'mediaTextBlock',
-  'featureGrid',
+  'cardGrid',
   'carousel',
   'fullBleedVerticalCarousel',
   'proofPoints',
@@ -143,7 +143,7 @@ Output ONLY valid JSON matching this exact shape. No markdown, no explanation.
 8. Never make up IA paths — use placeholders like "/[parent]/[slug]".
 9. CTA destinations must come from the product graph — never invent a product name that isn't in it.
 10. Cross-linking is a CTA decision. A section about music on a glasses page should CTA to the music product, not back to the glasses.
-11. For modules with multiple items (featureGrid, carousel, proofPoints, etc.), use crossLinks to suggest per-item destinations from the product graph. Omit crossLinks when not relevant.`
+11. For modules with multiple items (cardGrid, carousel, proofPoints, etc.), use crossLinks to suggest per-item destinations from the product graph. Omit crossLinks when not relevant.`
 
 export async function POST(req: NextRequest) {
   try {

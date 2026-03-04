@@ -11,24 +11,14 @@ export const PLACEHOLDER_CONTENT = {
     ctaText: 'Get started',
     ctaLink: '/signup',
   },
-  featureGrid: {
+  cardGrid: {
+    columns: '3',
     title: 'Why choose us',
+    titleLevel: 'h2',
     items: [
-      {
-        title: 'Fast',
-        description:
-          'Built for speed. Deploy in seconds, not minutes.',
-      },
-      {
-        title: 'Reliable',
-        description:
-          'Uptime you can count on. We handle the infrastructure.',
-      },
-      {
-        title: 'Secure',
-        description:
-          'Enterprise-grade security. Your data stays yours.',
-      },
+      { cardStyle: 'image-above', title: 'Fast', description: 'Built for speed. Deploy in seconds, not minutes.' },
+      { cardStyle: 'text-on-colour', title: 'Reliable', description: 'Uptime you can count on.', surface: 'bold' },
+      { cardStyle: 'text-on-image', title: 'Secure', description: 'Enterprise-grade security.', surface: 'bold' },
     ],
   },
   mediaTextBlock: {
@@ -39,8 +29,8 @@ export const PLACEHOLDER_CONTENT = {
     ctaText: 'Visit JioGames',
     ctaLink: '/games',
     template: 'SideBySide',
-    spacing: 'medium',
-    contentWidth: 'default',
+    spacing: 'large',
+    contentWidth: 'Default',
     imagePosition: 'left',
     imageAspectRatio: '4:3',
   },

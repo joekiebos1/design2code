@@ -8,6 +8,8 @@ export const fullPageQuery = `*[_type == "page" && _id == $id][0]{
     _key,
     _type == "hero" => {
       variant,
+      spacingTop,
+      spacingBottom,
       spacing,
       productName,
       headline,
@@ -18,17 +20,29 @@ export const fullPageQuery = `*[_type == "page" && _id == $id][0]{
       cta2Link,
       "image": coalesce(imageUrl, image.asset->url)
     },
-    _type == "featureGrid" => {
+    _type == "cardGrid" => {
+      spacingTop,
+      spacingBottom,
       spacing,
+      columns,
       title,
       titleLevel,
       items[]{
+        cardStyle,
         title,
-        description
+        description,
+        "image": coalesce(imageUrl, image.asset->url),
+        "video": coalesce(videoUrl, video.asset->url),
+        ctaText,
+        ctaLink,
+        surface
       }
     },
     _type == "mediaTextBlock" => {
+      spacingTop,
+      spacingBottom,
       spacing,
+      size,
       eyebrow,
       subhead,
       title,
@@ -48,9 +62,13 @@ export const fullPageQuery = `*[_type == "page" && _id == $id][0]{
       overlayAlignment,
       stackImagePosition,
       stackAlignment,
-      imageAspectRatio
+      imageAspectRatio,
+      mediaStyle,
+      blockBackground
     },
     _type == "fullBleedVerticalCarousel" => {
+      spacingTop,
+      spacingBottom,
       spacing,
       items[]{
         title,
@@ -60,11 +78,15 @@ export const fullPageQuery = `*[_type == "page" && _id == $id][0]{
       }
     },
     _type == "carousel" => {
+      spacingTop,
+      spacingBottom,
       spacing,
+      variant,
       title,
       titleLevel,
       cardSize,
       items[]{
+        cardType,
         title,
         description,
         "image": coalesce(imageUrl, image.asset->url),
@@ -75,6 +97,8 @@ export const fullPageQuery = `*[_type == "page" && _id == $id][0]{
       }
     },
     _type == "proofPoints" => {
+      spacingTop,
+      spacingBottom,
       spacing,
       title,
       titleLevel,
@@ -82,6 +106,18 @@ export const fullPageQuery = `*[_type == "page" && _id == $id][0]{
         title,
         description,
         icon
+      }
+    },
+    _type == "rotatingMedia" => {
+      spacingTop,
+      spacingBottom,
+      spacing,
+      variant,
+      surface,
+      items[]{
+        title,
+        label,
+        "image": coalesce(imageUrl, image.asset->url)
       }
     }
   }

@@ -1,36 +1,25 @@
 import { defineField, defineType } from 'sanity'
+import { spacingTopField, spacingBottomField } from '../shared/spacingFields'
 
 export const mediaTextBlock = defineType({
   name: 'mediaTextBlock',
   type: 'object',
   title: 'Media + Text',
   fields: [
-    defineField({
-      name: 'spacing',
-      type: 'string',
-      title: 'Spacing',
-      description: 'Space below this block.',
-      options: {
-        list: [
-          { value: 'small', title: 'Small' },
-          { value: 'medium', title: 'Medium' },
-          { value: 'large', title: 'Large' },
-        ],
-        layout: 'radio',
-      },
-      initialValue: 'medium',
-    }),
+    spacingTopField,
+    spacingBottomField,
     defineField({
       name: 'eyebrow',
       type: 'string',
       title: 'Eyebrow',
-      description: 'Small label above the headline (e.g. "MOBILE GAMES"). Shown in 50/50 layout.',
+      description: 'Small label above the headline (e.g. "MOBILE GAMES").',
     }),
     defineField({
       name: 'subhead',
-      type: 'string',
+      type: 'text',
       title: 'Subhead',
-      description: 'Secondary headline below the main title.',
+      description: 'Secondary headline below the main title. Press Enter for a line break.',
+      rows: 2,
     }),
     defineField({
       name: 'title',
@@ -135,28 +124,30 @@ export const mediaTextBlock = defineType({
     defineField({
       name: 'contentWidth',
       type: 'string',
-      title: 'Media width',
-      description: 'For Stacked/HeroOverlay: edgeToEdge = full viewport width. Default = contained.',
+      title: 'Content width',
+      description: 'XS (4 cols), S (6), M (8), Default (10), Wide (12). Edge to edge = full viewport width. For Stacked/HeroOverlay, Default = contained.',
       options: {
         list: [
-          { value: 'default', title: 'Default (contained)' },
+          { value: 'XS', title: 'XS (4 cols)' },
+          { value: 'S', title: 'S (6 cols)' },
+          { value: 'M', title: 'M (8 cols)' },
+          { value: 'Default', title: 'Default (10 cols)' },
+          { value: 'Wide', title: 'Wide (12 cols)' },
           { value: 'edgeToEdge', title: 'Edge to edge (full width)' },
         ],
         layout: 'radio',
       },
-      initialValue: 'default',
-      hidden: ({ parent }) => !['Stacked', 'HeroOverlay'].includes(parent?.template ?? ''),
+      initialValue: 'Default',
+      hidden: ({ parent }) => parent?.template === 'TextOnly',
     }),
     defineField({
       name: 'template',
       type: 'string',
       title: 'Layout',
-      description: 'SideBySide: text + image side by side. HeroOverlay: full bleed image with overlay. Stacked: large image with text above or below. TextOnly: no media.',
+      description: '50/50: text and image side by side (choose image left or right). HeroOverlay: full bleed image with overlay. Stacked: large image with text above or below. TextOnly: no media.',
       options: {
         list: [
-          { value: 'SideBySide', title: 'SideBySide – Text + image side by side (50/50)' },
-          { value: 'SideBySideNarrow', title: 'SideBySide – Narrow image (1/3 image)' },
-          { value: 'SideBySideWide', title: 'SideBySide – Wide image (2/3 image)' },
+          { value: 'SideBySide', title: '50/50 – Image left or right' },
           { value: 'HeroOverlay', title: 'HeroOverlay – Full bleed image with text overlay' },
           { value: 'Stacked', title: 'Stacked – Large image with text (above or below)' },
           { value: 'TextOnly', title: 'TextOnly – No media, text only' },
@@ -183,12 +174,12 @@ export const mediaTextBlock = defineType({
     defineField({
       name: 'imagePosition',
       type: 'string',
-      title: 'Image Position',
-      description: 'For side-by-side and narrow/wide layouts',
+      title: 'Image position',
+      description: 'For 50/50 layout: image on the left or right.',
       options: {
         list: [
-          { value: 'left', title: 'Left' },
-          { value: 'right', title: 'Right' },
+          { value: 'left', title: 'Image left' },
+          { value: 'right', title: 'Image right' },
         ],
         layout: 'radio',
       },
@@ -241,10 +232,41 @@ export const mediaTextBlock = defineType({
       hidden: ({ parent }) => parent?.template !== 'Stacked',
     }),
     defineField({
+      name: 'blockBackground',
+      type: 'string',
+      title: 'Block background',
+      description: 'Full-width background. Uses DS surface tokens. Ghost = none, Minimal = neutral grey, Subtle = primary tint, Bold = brand colour.',
+      options: {
+        list: [
+          { value: 'ghost', title: 'Ghost (no background)' },
+          { value: 'minimal', title: 'Minimal (neutral gray)' },
+          { value: 'subtle', title: 'Subtle (primary tint)' },
+          { value: 'bold', title: 'Bold (brand colour)' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'ghost',
+    }),
+    defineField({
+      name: 'mediaStyle',
+      type: 'string',
+      title: 'Media style',
+      description: 'Contained: image inside block with padding and border radius. Overflow: bottom-aligned image, top-aligned with text, bleeds below; with background colour, uses specific spacing rules.',
+      options: {
+        list: [
+          { value: 'contained', title: 'Contained' },
+          { value: 'overflow', title: 'Overflow (bottom aligned)' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'contained',
+      hidden: ({ parent }) => ['HeroOverlay', 'TextOnly'].includes(parent?.template ?? ''),
+    }),
+    defineField({
       name: 'imageAspectRatio',
       type: 'string',
       title: 'Image aspect ratio',
-      description: '50/50 layouts: 4:3, 3:4, 1:1. Full-width: 16:7, 16:9, 21:9.',
+      description: '50/50 (contained): 4:3, 3:4, 1:1. Full-width layouts: 16:7, 16:9, 21:9.',
       options: {
         list: [
           { value: '4:3', title: '4:3' },
@@ -263,19 +285,20 @@ export const mediaTextBlock = defineType({
     select: {
       title: 'title',
       template: 'template',
+      imagePosition: 'imagePosition',
     },
-    prepare: ({ title, template }) => {
-      const       layoutLabels: Record<string, string> = {
-        SideBySide: 'SideBySide',
-        SideBySideNarrow: 'SideBySide narrow',
-        SideBySideWide: 'SideBySide wide',
+    prepare: ({ title, template, imagePosition }) => {
+      const layoutLabels: Record<string, string> = {
+        SideBySide: '50/50',
         HeroOverlay: 'HeroOverlay',
         Stacked: 'Stacked',
+        TextOnly: 'TextOnly',
       }
       const layout = layoutLabels[template || 'SideBySide'] ?? template
+      const posLabel = template === 'SideBySide' && imagePosition ? ` · Image ${imagePosition}` : ''
       return {
         title: title || 'Media + Text',
-        subtitle: `Media and text · ${layout}`,
+        subtitle: `Media and text · ${layout}${posLabel}`,
       }
     },
   },

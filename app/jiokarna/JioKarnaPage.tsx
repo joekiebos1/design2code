@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import Link from 'next/link'
+import { Button } from '@marcelinodzn/ds-react'
 import { IntentScreen } from './screens/IntentScreen'
 import { InterviewScreen } from './screens/InterviewScreen'
 import { StructureScreen } from './screens/StructureScreen'
@@ -126,7 +127,7 @@ export function JioKarnaPage() {
   }, [intentData, messages])
 
   return (
-    <main style={{ minHeight: '100vh', background: 'var(--ds-color-background)' }}>
+    <main style={{ minHeight: '100vh', background: 'var(--ds-color-background-ghost)' }}>
       <header
         style={{
           position: 'sticky',
@@ -251,7 +252,7 @@ ${s.contentSlots.headline ? `- Headline: ${s.contentSlots.headline}` : ''}${ctaS
           style={{
             padding: 'var(--ds-spacing-s) var(--ds-spacing-m)',
             border: '1px solid var(--ds-color-stroke-divider)',
-            borderRadius: 8,
+            borderRadius: 'var(--ds-radius-card-s)',
             background: activeTab === 'summary' ? 'var(--ds-color-background-subtle)' : 'transparent',
             cursor: 'pointer',
             fontSize: 'var(--ds-typography-label-s)',
@@ -265,7 +266,7 @@ ${s.contentSlots.headline ? `- Headline: ${s.contentSlots.headline}` : ''}${ctaS
           style={{
             padding: 'var(--ds-spacing-s) var(--ds-spacing-m)',
             border: '1px solid var(--ds-color-stroke-divider)',
-            borderRadius: 8,
+            borderRadius: 'var(--ds-radius-card-s)',
             background: activeTab === 'json' ? 'var(--ds-color-background-subtle)' : 'transparent',
             cursor: 'pointer',
             fontSize: 'var(--ds-typography-label-s)',
@@ -278,7 +279,7 @@ ${s.contentSlots.headline ? `- Headline: ${s.contentSlots.headline}` : ''}${ctaS
         style={{
           padding: 'var(--ds-spacing-m)',
           background: 'var(--ds-color-background-subtle)',
-          borderRadius: 8,
+          borderRadius: 'var(--ds-radius-card-s)',
           overflow: 'auto',
           fontSize: 'var(--ds-typography-body-xs)',
           whiteSpace: 'pre-wrap',
@@ -288,9 +289,8 @@ ${s.contentSlots.headline ? `- Headline: ${s.contentSlots.headline}` : ''}${ctaS
         {activeTab === 'summary' ? markdownSummary : JSON.stringify(brief, null, 2)}
       </pre>
       <div style={{ display: 'flex', gap: 'var(--ds-spacing-m)', marginTop: 'var(--ds-spacing-l)' }}>
-        <button
-          type="button"
-          onClick={() => {
+        <Button
+          onPress={() => {
             const blob = new Blob(
               [activeTab === 'summary' ? markdownSummary : JSON.stringify(brief, null, 2)],
               { type: activeTab === 'summary' ? 'text/markdown' : 'application/json' }
@@ -302,33 +302,15 @@ ${s.contentSlots.headline ? `- Headline: ${s.contentSlots.headline}` : ''}${ctaS
             a.click()
             URL.revokeObjectURL(url)
           }}
-          style={{
-            padding: 'var(--ds-spacing-s) var(--ds-spacing-m)',
-            background: 'var(--ds-color-neutral-bold)',
-            color: 'var(--ds-color-background)',
-            border: 'none',
-            borderRadius: 8,
-            fontWeight: 'var(--ds-typography-weight-high)',
-            cursor: 'pointer',
-            fontSize: 'var(--ds-typography-label-s)',
-          }}
+          appearance="neutral"
+          size="S"
+          attention="high"
         >
           Export {activeTab === 'summary' ? 'Markdown' : 'JSON'}
-        </button>
-        <button
-          type="button"
-          onClick={onStartOver}
-          style={{
-            padding: 'var(--ds-spacing-s) var(--ds-spacing-m)',
-            border: '1px solid var(--ds-color-stroke-divider)',
-            borderRadius: 8,
-            background: 'transparent',
-            cursor: 'pointer',
-            fontSize: 'var(--ds-typography-label-s)',
-          }}
-        >
+        </Button>
+        <Button onPress={onStartOver} appearance="secondary" contained={false} size="S" attention="high">
           Start over
-        </button>
+        </Button>
       </div>
     </div>
   )

@@ -20,6 +20,7 @@
   --ds-breakpoint-desktop: 1440px;
   --ds-breakpoint-desktop-lg: 1920px;
   --ds-color-background-subtle: rgb(237, 237, 240);
+  --ds-color-background-ghost: rgba(255, 255, 255, 0.01);
   --ds-color-text-high: rgb(13, 13, 15);
   --ds-color-text-medium: rgb(26, 28, 31);
   --ds-color-text-low: rgb(26, 28, 31);
@@ -28,6 +29,8 @@
   --ds-color-neutral-bold: rgb(13, 13, 15);
   --ds-color-neutral-subtle: rgb(237, 237, 240);
   --ds-color-stroke-subtle: rgba(255, 255, 255, 0.01);
+  --ds-color-block-background-subtle: rgb(217, 240, 255);
+  --ds-color-block-background-bold: rgb(0, 120, 173);
   --ds-color-stroke-divider: rgba(0, 0, 0, 0.08);
   --ds-typography-label-s: 16px;
   --ds-typography-label-m: 19px;

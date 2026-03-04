@@ -1,6 +1,6 @@
 'use client'
 
-import { Headline, Text, SurfaceProvider, Card, CardBody } from '@marcelinodzn/ds-react'
+import { Headline, Text, SurfaceProvider, Card, CardBody, Button } from '@marcelinodzn/ds-react'
 import type { IntentFormData, PageType } from '../types'
 
 const PAGE_TYPES: { value: PageType; label: string }[] = [
@@ -37,7 +37,7 @@ export function IntentScreen({ data, onChange, onSubmit }: IntentScreenProps) {
             Describe the page you want to produce. We&apos;ll ask a few clarifying questions, then propose a structure.
           </Text>
 
-          <Card surface="subtle" style={{ marginBottom: 'var(--ds-spacing-l)' }}>
+          <Card surface="minimal" style={{ marginBottom: 'var(--ds-spacing-l)' }}>
             <CardBody style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-l)' }}>
               <div>
                 <label
@@ -62,12 +62,12 @@ export function IntentScreen({ data, onChange, onSubmit }: IntentScreenProps) {
                   style={{
                     width: '100%',
                     padding: 'var(--ds-spacing-s) var(--ds-spacing-m)',
-                    borderRadius: 8,
+                    borderRadius: 'var(--ds-radius-card-s)',
                     border: '1px solid var(--ds-color-stroke-divider)',
                     fontSize: 'var(--ds-typography-body-xs)',
                     fontFamily: 'inherit',
                     color: 'var(--ds-color-text-high)',
-                    background: 'var(--ds-color-background)',
+                    background: 'var(--ds-color-background-ghost)',
                   }}
                 />
               </div>
@@ -92,12 +92,12 @@ export function IntentScreen({ data, onChange, onSubmit }: IntentScreenProps) {
                   style={{
                     width: '100%',
                     padding: 'var(--ds-spacing-s) var(--ds-spacing-m)',
-                    borderRadius: 8,
+                    borderRadius: 'var(--ds-radius-card-s)',
                     border: '1px solid var(--ds-color-stroke-divider)',
                     fontSize: 'var(--ds-typography-body-xs)',
                     fontFamily: 'inherit',
                     color: 'var(--ds-color-text-high)',
-                    background: 'var(--ds-color-background)',
+                    background: 'var(--ds-color-background-ghost)',
                   }}
                 >
                   {PAGE_TYPES.map((t) => (
@@ -131,12 +131,12 @@ export function IntentScreen({ data, onChange, onSubmit }: IntentScreenProps) {
                   style={{
                     width: '100%',
                     padding: 'var(--ds-spacing-s) var(--ds-spacing-m)',
-                    borderRadius: 8,
+                    borderRadius: 'var(--ds-radius-card-s)',
                     border: '1px solid var(--ds-color-stroke-divider)',
                     fontSize: 'var(--ds-typography-body-xs)',
                     fontFamily: 'inherit',
                     color: 'var(--ds-color-text-high)',
-                    background: 'var(--ds-color-background)',
+                    background: 'var(--ds-color-background-ghost)',
                     resize: 'vertical',
                     boxSizing: 'border-box',
                   }}
@@ -165,12 +165,12 @@ export function IntentScreen({ data, onChange, onSubmit }: IntentScreenProps) {
                   style={{
                     width: '100%',
                     padding: 'var(--ds-spacing-s) var(--ds-spacing-m)',
-                    borderRadius: 8,
+                    borderRadius: 'var(--ds-radius-card-s)',
                     border: '1px solid var(--ds-color-stroke-divider)',
                     fontSize: 'var(--ds-typography-body-xs)',
                     fontFamily: 'inherit',
                     color: 'var(--ds-color-text-high)',
-                    background: 'var(--ds-color-background)',
+                    background: 'var(--ds-color-background-ghost)',
                     resize: 'vertical',
                     boxSizing: 'border-box',
                   }}
@@ -179,21 +179,9 @@ export function IntentScreen({ data, onChange, onSubmit }: IntentScreenProps) {
             </CardBody>
           </Card>
 
-          <button
-            type="submit"
-            style={{
-              padding: 'var(--ds-spacing-s) var(--ds-spacing-m)',
-              background: 'var(--ds-color-neutral-bold)',
-              color: 'var(--ds-color-background)',
-              border: 'none',
-              borderRadius: 8,
-              fontWeight: 'var(--ds-typography-weight-high)',
-              fontSize: 'var(--ds-typography-label-m)',
-              cursor: 'pointer',
-            }}
-          >
+          <Button type="submit" appearance="neutral" size="M" attention="high">
             Continue to interview
-          </button>
+          </Button>
         </div>
       </form>
     </SurfaceProvider>

@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { getMotionDurationCSS, getMotionEasing, createTransition } from '@marcelinodzn/ds-tokens'
 import { Headline, Text } from '@marcelinodzn/ds-react'
 import { useCarouselReveal } from '../lib/use-carousel-reveal'
+import { BlockContainer } from './BlockContainer'
 
 type CarouselItem = {
   title?: string | null
@@ -141,9 +142,9 @@ export function FullBleedVerticalCarousel({ items }: FullBleedVerticalCarouselPr
 
   const showOverlay = isSticky
 
-  const textColor = showOverlay ? 'var(--ds-color-background)' : 'var(--ds-color-text-high)'
-  const descColor = showOverlay ? 'var(--ds-color-text-on-overlay-subtle)' : 'var(--ds-color-text-medium)'
-  const textShadow = showOverlay ? '0 1px 2px var(--ds-color-shadow-overlay)' : 'none'
+  const textColor = showOverlay ? 'var(--local-color-text-on-overlay)' : 'var(--ds-color-text-high)'
+  const descColor = showOverlay ? 'var(--local-color-text-on-overlay-subtle)' : 'var(--ds-color-text-medium)'
+  const textShadow = showOverlay ? '0 1px 2px var(--local-color-shadow-overlay)' : 'none'
 
   const level = prefersReducedMotion ? 'subtle' : 'moderate'
   const titleTransition = prefersReducedMotion
@@ -234,7 +235,7 @@ export function FullBleedVerticalCarousel({ items }: FullBleedVerticalCarouselPr
                   zIndex: 1,
                   padding: 'var(--ds-spacing-4xl) var(--ds-grid-margin)',
                   textAlign: 'center',
-                  maxWidth: 'calc(var(--ds-breakpoint-desktop) - var(--local-grid-margin) * 2)',
+                  maxWidth: 'calc(var(--ds-breakpoint-desktop) - var(--ds-grid-margin) * 2)',
                   width: '100%',
                   display: 'flex',
                   flexDirection: 'column',
@@ -242,38 +243,41 @@ export function FullBleedVerticalCarousel({ items }: FullBleedVerticalCarouselPr
                 }}
               >
                 {item.title && (
-                  <Headline
-                    size="L"
-                    weight="high"
-                    as="h2"
-                    style={{
-                      color: textColor,
-                      textShadow,
-                      marginBottom: 'var(--ds-spacing-s)',
-                      opacity: containerVisible ? 1 : 0,
-                      transform: containerVisible ? 'translateY(0)' : 'translateY(var(--ds-spacing-xl))',
-                      transition: titleTransition,
-                    }}
-                  >
-                    {item.title}
-                  </Headline>
+                  <BlockContainer contentWidth="Default" style={{ width: '100%', marginBottom: 'var(--ds-spacing-s)' }}>
+                    <Headline
+                      size="L"
+                      weight="high"
+                      as="h2"
+                      style={{
+                        color: textColor,
+                        textShadow,
+                        opacity: containerVisible ? 1 : 0,
+                        transform: containerVisible ? 'translateY(0)' : 'translateY(var(--ds-spacing-xl))',
+                        transition: titleTransition,
+                      }}
+                    >
+                      {item.title}
+                    </Headline>
+                  </BlockContainer>
                 )}
                 {item.description && (
-                  <Text
-                    size="M"
-                    weight="low"
-                    as="p"
-                    style={{
-                      color: descColor,
-                      textShadow,
-                      margin: 0,
-                      maxWidth: 'calc(var(--ds-breakpoint-desktop) / 2 + var(--ds-grid-margin))',
-                      marginInline: 'auto',
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    {item.description}
-                  </Text>
+                  <BlockContainer contentWidth="XS" style={{ width: '100%' }}>
+                    <Text
+                      size="M"
+                      weight="low"
+                      as="p"
+                      style={{
+                        color: descColor,
+                        textShadow,
+                        margin: 0,
+                        lineHeight: 1.5,
+                        textAlign: 'center',
+                        whiteSpace: 'pre-line',
+                      }}
+                    >
+                      {item.description}
+                    </Text>
+                  </BlockContainer>
                 )}
               </div>
             </div>

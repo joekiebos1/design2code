@@ -1,66 +1,29 @@
-/* Design System tokens - generated from @marcelinodzn/ds-tokens (single source of truth) */
+/* Design System tokens – must load first for :root variables to cascade */
 @import './ds-tokens.generated.css';
 /* Fonts - Inter fallback, JioType Var via next/font (--font-jiotype) */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-/* Project-level DS tokens – extend generated tokens */
+/* Local tokens – only what DS does not provide */
 :root {
-  --ds-color-background: rgb(255, 255, 255);
-  --ds-color-overlay-dark: rgba(0, 0, 0, 0.7);
-  --ds-color-text-on-overlay: rgba(255, 255, 255, 0.9);
-  --ds-color-text-on-overlay-subtle: rgba(255, 255, 255, 0.95);
-  --ds-color-shadow-overlay: rgba(0, 0, 0, 0.5);
-  --ds-color-shadow-elevation: rgba(0, 0, 0, 0.08);
-  --ds-max-width-body: 65ch;
-  --ds-max-width-text-block: 52ch;
-  --ds-max-width-headline: 65ch;
-  --ds-breakpoint-tablet-max: calc(var(--ds-breakpoint-tablet) - 1px);
-  --ds-color-surface-secondary-dark: rgb(63, 0, 127);
-  --ds-height-header: 44px;
+  --local-color-overlay-dark: rgba(0, 0, 0, 0.7);
+  --local-color-text-on-overlay: rgb(255, 255, 255);
+  --local-color-text-on-overlay-subtle: rgba(255, 255, 255, 0.95);
+  --local-color-shadow-overlay: rgba(0, 0, 0, 0.5);
 }
 
-/* Block spacing – Apple/Google/Wise style storytelling rhythm */
+/* Block spacing – local clamps (use DS spacing tokens) */
 :root {
-  --ds-spacing-block-gap: clamp(var(--ds-spacing-2xl), 8vw, var(--ds-spacing-4xl));
-  --ds-spacing-block-gap-tight: clamp(var(--ds-spacing-xl), 5vw, var(--ds-spacing-2xl));
-  --ds-spacing-block-gap-chapter: clamp(var(--ds-spacing-3xl), 12vw, calc(var(--ds-spacing-4xl) + var(--ds-spacing-xl)));
-  --ds-spacing-block-gap-huge: calc(var(--ds-spacing-4xl) + var(--ds-spacing-3xl));
+  --local-spacing-block-gap: clamp(var(--ds-spacing-2xl), 8vw, var(--ds-spacing-4xl));
+  --local-spacing-block-gap-tight: clamp(var(--ds-spacing-xl), 5vw, var(--ds-spacing-2xl));
+  --local-spacing-block-gap-chapter: clamp(var(--ds-spacing-3xl), 12vw, calc(var(--ds-spacing-4xl) + var(--ds-spacing-xl)));
 }
 
-/* 50/50 block – de-emphasized eyebrow (derived from text-low) */
-:root {
-  --ds-color-text-ghost: color-mix(in srgb, var(--ds-color-text-low) 50%, transparent);
-}
-
-/* 50/50 block – grid proportions: image 50%, title 40%, body 30%, gap 1 col. 8 cols only. */
-:root {
-  --ds-typography-headline-50-50: 32px;
-  --ds-grid-50-50-col-narrow: 12.5%;
-  --ds-grid-50-50-gap-narrow: 12.5%;
-  --ds-grid-50-50-image: 50%;
-  --ds-grid-50-50-title: 40%;
-  --ds-grid-50-50-body: 30%;
-}
-
-/* 50/50 block – apply gap based on content width (8 cols only) */
-:root {
-  --ds-grid-50-50-gap: var(--ds-grid-50-50-gap-narrow);
-}
-
-@media (max-width: 767px) {
-  :root {
-    --ds-grid-50-50-image: 100%;
-    --ds-grid-50-50-title: 100%;
-    --ds-grid-50-50-body: 100%;
-    --ds-grid-50-50-gap: var(--ds-spacing-m);
-  }
-}
-
-/* Block stack – spacing via marginBottom on each block (per-block spacing) */
+/* Block stack – blocks stack directly; BlockContainer adds padding per block */
 .block-stack {
   display: flex;
   flex-direction: column;
   width: 100%;
+  overflow-x: visible;
 }
 
 html {
@@ -71,7 +34,7 @@ body {
   font-family: var(--ds-font-family);
   margin: 0;
   /* Page background at layout level so BlockContainer inset reads as breathing room */
-  background: var(--ds-color-background-subtle, var(--ds-color-background));
+  background: var(--ds-color-background-ghost);
 }
 
 main {
@@ -86,45 +49,7 @@ main * {
   font-family: var(--ds-font-family) !important;
 }
 
-/* Content width – 7 cols (narrow), 8 cols (default), or full. Responsive per breakpoint.
-   Desktop (12 cols): narrow=7, default=8, full=12
-   Tablet (8 cols): narrow=4, default=5, full=8
-   Mobile (4 cols): narrow=3, default=4, full=4 */
-:root {
-  --ds-content-span-narrow: 3;
-  --ds-content-span-default: 4;
-  --ds-content-span-full: 4;
-  --ds-content-max-narrow: calc(2 * var(--ds-grid-margin) + (var(--ds-breakpoint-mobile) - 2 * var(--ds-grid-margin)) * 3 / 4);
-  --ds-content-max-default: min(100%, var(--ds-breakpoint-mobile));
-  --ds-content-max-full: min(100%, var(--ds-breakpoint-mobile));
-}
-@media (min-width: 768px) {
-  :root {
-    --ds-content-span-narrow: 4;
-    --ds-content-span-default: 5;
-    --ds-content-span-full: 8;
-    --ds-content-max-narrow: calc(2 * var(--ds-grid-margin) + (var(--ds-breakpoint-tablet) - 2 * var(--ds-grid-margin)) * 4 / 8);
-    --ds-content-max-default: calc(2 * var(--ds-grid-margin) + (var(--ds-breakpoint-tablet) - 2 * var(--ds-grid-margin)) * 5 / 8);
-    --ds-content-max-full: min(100%, var(--ds-breakpoint-tablet));
-  }
-}
-@media (min-width: 1440px) {
-  :root {
-    --ds-content-span-narrow: 7;
-    --ds-content-span-default: 8;
-    --ds-content-span-full: 12;
-    --ds-content-max-narrow: calc(2 * var(--ds-grid-margin) + (var(--ds-breakpoint-desktop) - 2 * var(--ds-grid-margin)) * 7 / 12);
-    --ds-content-max-default: calc(2 * var(--ds-grid-margin) + (var(--ds-breakpoint-desktop) - 2 * var(--ds-grid-margin)) * 8 / 12);
-    --ds-content-max-full: min(100%, var(--ds-breakpoint-desktop));
-  }
-}
-@media (min-width: 1920px) {
-  :root {
-    --ds-content-max-narrow: calc(2 * var(--ds-grid-margin) + (var(--ds-breakpoint-desktop-lg) - 2 * var(--ds-grid-margin)) * 7 / 12);
-    --ds-content-max-default: calc(2 * var(--ds-grid-margin) + (var(--ds-breakpoint-desktop-lg) - 2 * var(--ds-grid-margin)) * 8 / 12);
-    --ds-content-max-full: min(100%, var(--ds-breakpoint-desktop-lg));
-  }
-}
+/* Content width: use BlockContainer (editorial, narrow, default, wide, edgeToEdge) - see app/blocks/BlockContainer.tsx */
 
 /* DS grid container – uses DS grid margin (from ds-tokens) */
 .ds-container {
@@ -232,26 +157,6 @@ main * {
 @media (max-width: 767px) {
   .feature-grid-block-grid > * {
     grid-column: span 4 !important;
-  }
-}
-
-/* Proof points grid – aligned to DS foundation grid per breakpoint */
-.proof-points-grid {
-  display: grid;
-  grid-template-columns: repeat(var(--ds-grid-columns), 1fr);
-  gap: var(--ds-grid-gutter);
-}
-.proof-points-grid > * {
-  grid-column: span 4;
-}
-@media (min-width: 768px) {
-  .proof-points-grid > * {
-    grid-column: span 2;
-  }
-}
-@media (min-width: 1440px) {
-  .proof-points-grid > * {
-    grid-column: span 4;
   }
 }
 

@@ -1,38 +1,28 @@
 import { defineField, defineType } from 'sanity'
+import { spacingTopField, spacingBottomField } from '../shared/spacingFields'
 
 export const heroBlock = defineType({
   name: 'hero',
   type: 'object',
   title: 'Hero',
   fields: [
+    spacingTopField,
+    spacingBottomField,
     defineField({
       name: 'variant',
       type: 'string',
       title: 'Variant',
-      description: 'Category: full-width hero for category/landing pages. Product: compact layout for product pages.',
+      description: 'Category: full-width hero. Product: compact layout. Ghost: no background. Full screen image: image as background with overlaid content.',
       options: {
         list: [
           { value: 'category', title: 'Category' },
           { value: 'product', title: 'Product' },
+          { value: 'ghost', title: 'Ghost (no background)' },
+          { value: 'fullscreen', title: 'Full screen image' },
         ],
         layout: 'radio',
       },
       initialValue: 'category',
-    }),
-    defineField({
-      name: 'spacing',
-      type: 'string',
-      title: 'Spacing',
-      description: 'Space below this block.',
-      options: {
-        list: [
-          { value: 'small', title: 'Small' },
-          { value: 'medium', title: 'Medium' },
-          { value: 'large', title: 'Large' },
-        ],
-        layout: 'radio',
-      },
-      initialValue: 'medium',
     }),
     defineField({
       name: 'productName',
@@ -85,14 +75,14 @@ export const heroBlock = defineType({
       name: 'imageUrl',
       type: 'string',
       title: 'Image URL',
-      description: 'External image URL (e.g. from store.google.com). Used when no image is uploaded.',
+      description: 'External image URL. Used when no image is uploaded.',
     }),
   ],
   preview: {
     select: { headline: 'headline', variant: 'variant' },
     prepare: ({ headline, variant }) => ({
       title: headline || 'Hero',
-      subtitle: variant === 'product' ? 'Hero (Product)' : 'Hero (Category)',
+      subtitle: variant === 'fullscreen' ? 'Hero (Full screen)' : variant === 'product' ? 'Hero (Product)' : variant === 'ghost' ? 'Hero (Ghost)' : 'Hero (Category)',
     }),
   },
 })

@@ -64,13 +64,17 @@ export default async function Home() {
         cta2Link,
         "image": coalesce(imageUrl, image.asset->url)
       },
-      _type == "featureGrid" => {
+      _type == "cardGrid" => {
         spacing,
+        columns,
         title,
         titleLevel,
         items[]{
+          cardStyle,
           title,
-          description
+          description,
+          "image": coalesce(imageUrl, image.asset->url),
+          surface
         }
       },
       _type == "mediaTextBlock" => {
@@ -94,7 +98,9 @@ export default async function Home() {
         overlayAlignment,
         stackImagePosition,
         stackAlignment,
-        imageAspectRatio
+        imageAspectRatio,
+        mediaStyle,
+        blockBackground
       },
       _type == "fullBleedVerticalCarousel" => {
         spacing,
@@ -107,6 +113,7 @@ export default async function Home() {
       },
       _type == "carousel" => {
         spacing,
+        variant,
         title,
         titleLevel,
         cardSize,

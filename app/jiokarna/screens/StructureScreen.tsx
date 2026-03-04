@@ -1,6 +1,6 @@
 'use client'
 
-import { Headline, Text, SurfaceProvider, Card, CardHeader, CardBody } from '@marcelinodzn/ds-react'
+import { Headline, Text, SurfaceProvider, Card, CardHeader, CardBody, Button } from '@marcelinodzn/ds-react'
 import type { PageBrief, Section } from '../types'
 
 function formatCta(cta: Section['contentSlots']['cta']): string | null {
@@ -54,7 +54,7 @@ export function StructureScreen({ brief, isGenerating, onApprove, onRegenerate }
           {meta.pageName} · {meta.pageType}
         </Text>
 
-        <Card surface="subtle" style={{ marginBottom: 'var(--ds-spacing-l)' }}>
+        <Card surface="minimal" style={{ marginBottom: 'var(--ds-spacing-l)' }}>
           <CardHeader>
             <Headline level={2} style={{ margin: 0, fontSize: 'var(--ds-typography-h4)' }}>
               Meta
@@ -142,38 +142,12 @@ export function StructureScreen({ brief, isGenerating, onApprove, onRegenerate }
         </div>
 
         <div style={{ display: 'flex', gap: 'var(--ds-spacing-m)' }}>
-          <button
-            type="button"
-            onClick={onApprove}
-            style={{
-              padding: 'var(--ds-spacing-s) var(--ds-spacing-m)',
-              background: 'var(--ds-color-neutral-bold)',
-              color: 'var(--ds-color-background)',
-              border: 'none',
-              borderRadius: 8,
-              fontWeight: 'var(--ds-typography-weight-high)',
-              fontSize: 'var(--ds-typography-label-m)',
-              cursor: 'pointer',
-            }}
-          >
+          <Button onPress={onApprove} appearance="neutral" size="M" attention="high">
             Approve & export
-          </button>
-          <button
-            type="button"
-            onClick={onRegenerate}
-            style={{
-              padding: 'var(--ds-spacing-s) var(--ds-spacing-m)',
-              background: 'transparent',
-              color: 'var(--ds-color-neutral-bold)',
-              border: '1px solid var(--ds-color-stroke-divider)',
-              borderRadius: 8,
-              fontWeight: 'var(--ds-typography-weight-high)',
-              fontSize: 'var(--ds-typography-label-m)',
-              cursor: 'pointer',
-            }}
-          >
+          </Button>
+          <Button onPress={onRegenerate} appearance="secondary" contained={false} size="M" attention="high">
             Regenerate
-          </button>
+          </Button>
         </div>
       </div>
     </SurfaceProvider>

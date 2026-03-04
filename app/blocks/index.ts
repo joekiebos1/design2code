@@ -6,8 +6,9 @@
  */
 
 export { HeroBlock } from './HeroBlock'
-export { FeatureGridBlock } from './FeatureGridBlock'
 export { MediaTextBlock } from './MediaTextBlock'
+export { CardGridBlock } from './CardGridBlock/CardGridBlock'
+export { RotatingMediaBlock } from './RotatingMediaBlock/RotatingMediaBlock'
 export type { MediaTextBlockProps } from './MediaTextBlock'
 export { CarouselBlock } from './CarouselBlock'
 export { FullBleedVerticalCarousel } from './FullBleedVerticalCarousel'
@@ -16,8 +17,9 @@ export { BlockContainer } from './BlockContainer'
 
 export const BLOCK_REGISTRY = {
   hero: 'HeroBlock',
-  featureGrid: 'FeatureGridBlock',
   mediaTextBlock: 'MediaTextBlock',
+  cardGrid: 'CardGridBlock',
+  rotatingMedia: 'RotatingMediaBlock',
   carousel: 'CarouselBlock',
   fullBleedVerticalCarousel: 'FullBleedVerticalCarousel',
   proofPoints: 'ProofPointsBlock',

@@ -29,37 +29,36 @@ const client = createClient({
   useCdn: false,
 })
 
-/** Fetch image from URL and upload to Sanity */
-async function uploadImageFromUrl(url, filename = 'image.jpg') {
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`)
-  const buffer = Buffer.from(await res.arrayBuffer())
-  const asset = await client.assets.upload('image', buffer, { filename })
-  return asset._id
-}
-
 async function seed() {
   console.log('Seeding Sanity...')
 
-  // Upload placeholder images (picsum.photos - allows hotlinking)
-  let heroImageId, mediaTextId, carouselImage1, carouselImage2, carouselImage3, carouselImage4
-  let productHeroId, productMediaTextId
-  try {
-    const uploads = await Promise.all([
-      uploadImageFromUrl('https://picsum.photos/1200/675', 'hero.jpg'),
-      uploadImageFromUrl('https://picsum.photos/800/600', 'text-image.jpg'),
-      uploadImageFromUrl('https://picsum.photos/400/500', 'card1.jpg'),
-      uploadImageFromUrl('https://picsum.photos/400/500', 'card2.jpg'),
-      uploadImageFromUrl('https://picsum.photos/400/500', 'card3.jpg'),
-      uploadImageFromUrl('https://picsum.photos/400/500', 'card4.jpg'),
-      uploadImageFromUrl('https://picsum.photos/1200/675', 'product-hero.jpg'),
-      uploadImageFromUrl('https://picsum.photos/800/600', 'product-text.jpg'),
-    ])
-    ;[heroImageId, mediaTextId, carouselImage1, carouselImage2, carouselImage3, carouselImage4, productHeroId, productMediaTextId] = uploads
-    console.log('Uploaded placeholder images')
-  } catch (err) {
-    console.warn('Image upload failed, using text-only content:', err.message)
+  // Use images from Sanity Image Library only (no external URLs)
+  const imageAssets = await client.fetch(`*[_type == "sanity.imageAsset"]{ _id }`)
+  const assetIds = imageAssets.map((a) => a._id)
+  const getAsset = (i) => (assetIds.length > 0 ? assetIds[i % assetIds.length] : null)
+
+  if (assetIds.length === 0) {
+    console.warn('Image Library is empty. Upload images via Image Library → Upload images in Sanity Studio, then re-run this seed.')
+  } else {
+    console.log(`Using ${assetIds.length} image(s) from Image Library`)
   }
+
+  const heroImageId = getAsset(0)
+  const mediaTextId = getAsset(1)
+  const carouselImage1 = getAsset(2)
+  const carouselImage2 = getAsset(3)
+  const carouselImage3 = getAsset(4)
+  const carouselImage4 = getAsset(5)
+  const productHeroId = getAsset(6)
+  const productMediaTextId = getAsset(7)
+  const rotImg1 = getAsset(8)
+  const rotImg2 = getAsset(9)
+  const rotImg3 = getAsset(10)
+  const rotImg4 = getAsset(11)
+  const rotImg5 = getAsset(12)
+  const rotImg6 = getAsset(13)
+  const rotImg7 = getAsset(14)
+  const rotImg8 = getAsset(15)
 
   const imageRef = (id) => id ? { _type: 'image', asset: { _type: 'reference', _ref: id } } : undefined
 
@@ -87,13 +86,16 @@ async function seed() {
         ],
       },
       {
-        _type: 'featureGrid',
-        _key: 'fg-1',
+        _type: 'cardGrid',
+        _key: 'cg-1',
+        spacing: 'medium',
+        columns: '3',
         title: 'Why choose us',
+        titleLevel: 'h2',
         items: [
-          { _key: 'f1', title: 'Fast', description: 'Built for speed. Deploy in seconds, not minutes.' },
-          { _key: 'f2', title: 'Reliable', description: 'Uptime you can count on. We handle the infrastructure.' },
-          { _key: 'f3', title: 'Secure', description: 'Enterprise-grade security. Your data stays yours.' },
+          { _type: 'cardGridItem', _key: 'c1', cardStyle: 'image-above', title: 'Fast', description: 'Built for speed. Deploy in seconds, not minutes.', image: imageRef(mediaTextId) },
+          { _type: 'cardGridItem', _key: 'c2', cardStyle: 'text-on-colour', title: 'Reliable', description: 'Uptime you can count on. We handle the infrastructure.', surface: 'bold' },
+          { _type: 'cardGridItem', _key: 'c3', cardStyle: 'text-on-image', title: 'Secure', description: 'Enterprise-grade security. Your data stays yours.', image: imageRef(carouselImage1), surface: 'bold' },
         ],
       },
       // MediaTextBlock – all variants with all content fields
@@ -108,7 +110,7 @@ async function seed() {
         ctaText: 'Visit JioFinance',
         ctaLink: '/finance',
         template: 'SideBySide',
-        contentWidth: 'default',
+        contentWidth: 'Default',
         imagePosition: 'left',
         imageAspectRatio: '4:3',
         image: imageRef(mediaTextId),
@@ -124,7 +126,7 @@ async function seed() {
         ctaText: 'Get started',
         ctaLink: '/signup',
         template: 'SideBySide',
-        contentWidth: 'default',
+        contentWidth: 'Default',
         imagePosition: 'right',
         imageAspectRatio: '3:4',
         image: imageRef(mediaTextId),
@@ -133,14 +135,14 @@ async function seed() {
         _type: 'mediaTextBlock',
         _key: 'tib-3',
         spacing: 'large',
-        eyebrow: 'NARROW IMAGE',
-        title: 'SideBySideNarrow – text gets more space',
+        eyebrow: 'SIDE BY SIDE',
+        title: 'SideBySide – image left',
         titleLevel: 'h3',
-        body: 'Narrow image (1/3 width). Text dominates. Use for editorial or feature content where copy is primary.',
+        body: 'Text and image side by side. Image on the left.',
         ctaText: 'Learn more',
         ctaLink: '/about',
-        template: 'SideBySideNarrow',
-        contentWidth: 'default',
+        template: 'SideBySide',
+        contentWidth: 'Default',
         imagePosition: 'left',
         imageAspectRatio: '1:1',
         image: imageRef(mediaTextId),
@@ -149,14 +151,14 @@ async function seed() {
         _type: 'mediaTextBlock',
         _key: 'tib-4',
         spacing: 'small',
-        eyebrow: 'WIDE IMAGE',
-        title: 'SideBySideWide – image dominates',
+        eyebrow: 'SIDE BY SIDE',
+        title: 'SideBySide – image right',
         titleLevel: 'h3',
-        body: 'Wide image (2/3 width). Great for hero-style content or product showcases.',
+        body: 'Text and image side by side. Image on the right.',
         ctaText: 'View product',
         ctaLink: '/products',
-        template: 'SideBySideWide',
-        contentWidth: 'default',
+        template: 'SideBySide',
+        contentWidth: 'Default',
         imagePosition: 'right',
         imageAspectRatio: '16:9',
         image: imageRef(mediaTextId),
@@ -172,7 +174,7 @@ async function seed() {
         ctaText: 'Read more',
         ctaLink: '/blog',
         template: 'SideBySide',
-        contentWidth: 'default',
+        contentWidth: 'M',
         imagePosition: 'left',
         imageAspectRatio: '4:3',
         image: imageRef(mediaTextId),
@@ -264,10 +266,10 @@ async function seed() {
       _key: 'car-1',
       title: 'Featured products',
       items: [
-        { _type: 'cardItem', _key: 'c1', title: 'Product One', description: 'The first in our lineup. Built for performance.', image: imageRef(carouselImage1), aspectRatio: '4:5', link: '/products/1', ctaText: 'View' },
-        { _type: 'cardItem', _key: 'c2', title: 'Product Two', description: 'Double the power. Half the effort.', image: imageRef(carouselImage2), aspectRatio: '4:5', link: '/products/2', ctaText: 'View' },
-        { _type: 'cardItem', _key: 'c3', title: 'Product Three', description: 'Our flagship offering. Everything you need.', image: imageRef(carouselImage3), aspectRatio: '8:5', link: '/products/3', ctaText: 'View' },
-        { _type: 'cardItem', _key: 'c4', title: 'Product Four', description: 'The complete solution for modern teams.', image: imageRef(carouselImage4), aspectRatio: '4:5', link: '/products/4', ctaText: 'View' },
+        { _type: 'cardItem', _key: 'c1', cardType: 'media', title: 'Product One', description: 'The first in our lineup. Built for performance.', image: imageRef(carouselImage1), aspectRatio: '4:5', link: '/products/1', ctaText: 'View' },
+        { _type: 'cardItem', _key: 'c2', cardType: 'media', title: 'Product Two', description: 'Double the power. Half the effort.', image: imageRef(carouselImage2), aspectRatio: '4:5', link: '/products/2', ctaText: 'View' },
+        { _type: 'cardItem', _key: 'c3', cardType: 'media', title: 'Product Three', description: 'Our flagship offering. Everything you need.', image: imageRef(carouselImage3), aspectRatio: '8:5', link: '/products/3', ctaText: 'View' },
+        { _type: 'cardItem', _key: 'c4', cardType: 'media', title: 'Product Four', description: 'The complete solution for modern teams.', image: imageRef(carouselImage4), aspectRatio: '4:5', link: '/products/4', ctaText: 'View' },
       ],
     })
     sections.push({
@@ -282,6 +284,28 @@ async function seed() {
     })
   } else {
     console.warn('Skipping carousel blocks (images required)')
+  }
+
+  if (rotImg1 && rotImg2 && rotImg3 && rotImg4) {
+    sections.push({
+      _type: 'rotatingMedia',
+      _key: 'rot-1',
+      spacing: 'medium',
+      variant: 'small',
+      surface: 'ghost',
+      items: [
+        { _type: 'rotatingMediaItem', _key: 'r1', title: 'Game One', image: imageRef(rotImg1) },
+        { _type: 'rotatingMediaItem', _key: 'r2', title: 'Game Two', image: imageRef(rotImg2) },
+        { _type: 'rotatingMediaItem', _key: 'r3', title: 'Game Three', image: imageRef(rotImg3) },
+        { _type: 'rotatingMediaItem', _key: 'r4', title: 'Game Four', image: imageRef(rotImg4) },
+        { _type: 'rotatingMediaItem', _key: 'r5', title: 'Game Five', image: imageRef(rotImg5 || rotImg1) },
+        { _type: 'rotatingMediaItem', _key: 'r6', title: 'Game Six', image: imageRef(rotImg6 || rotImg2) },
+        { _type: 'rotatingMediaItem', _key: 'r7', title: 'Game Seven', image: imageRef(rotImg7 || rotImg3) },
+        { _type: 'rotatingMediaItem', _key: 'r8', title: 'Game Eight', image: imageRef(rotImg8 || rotImg4) },
+      ],
+    })
+  } else {
+    console.warn('Skipping rotatingMedia block (images required)')
   }
 
   const homePage = {
@@ -322,17 +346,6 @@ async function seed() {
         { _key: 'pp5', title: 'Secure by design', description: 'Enterprise-grade security', icon: 'IcLock' },
       ],
     },
-    {
-      _type: 'featureGrid',
-      _key: 'p-fg',
-      title: 'Product features',
-      items: [
-        { _key: 'f1', title: 'Fast', description: 'Built for speed. Deploy in seconds, not minutes.' },
-        { _key: 'f2', title: 'Reliable', description: 'Uptime you can count on. We handle the infrastructure.' },
-        { _key: 'f3', title: 'Secure', description: 'Enterprise-grade security. Your data stays yours.' },
-        { _key: 'f4', title: 'Flexible', description: 'Adapt to your workflow. Customize everything.' },
-      ],
-    },
     // MediaTextBlock – all variants with all content fields
     {
       _type: 'mediaTextBlock',
@@ -345,7 +358,7 @@ async function seed() {
       ctaText: 'Visit JioFinance',
       ctaLink: '/finance',
       template: 'SideBySide',
-      contentWidth: 'default',
+      contentWidth: 'Default',
       imagePosition: 'left',
       imageAspectRatio: '4:3',
       image: productImg,
@@ -361,7 +374,7 @@ async function seed() {
       ctaText: 'Get started',
       ctaLink: '/signup',
       template: 'SideBySide',
-      contentWidth: 'default',
+      contentWidth: 'Default',
       imagePosition: 'right',
       imageAspectRatio: '3:4',
       image: productImg,
@@ -377,7 +390,7 @@ async function seed() {
       ctaText: 'Learn more',
       ctaLink: '/about',
       template: 'SideBySide',
-      contentWidth: 'default',
+      contentWidth: 'Default',
       imagePosition: 'right',
       imageAspectRatio: '1:1',
       image: productImg,
@@ -386,14 +399,14 @@ async function seed() {
       _type: 'mediaTextBlock',
       _key: 'p-tib-4',
       spacing: 'medium',
-      eyebrow: 'NARROW IMAGE',
-      title: 'SideBySideNarrow – image left',
+      eyebrow: 'SIDE BY SIDE',
+      title: 'SideBySide – image left',
       titleLevel: 'h3',
-      body: 'Narrow image (1/3 width). Text gets more space. Ideal when copy is primary.',
+      body: 'Text and image side by side. Image on the left.',
       ctaText: 'View product',
       ctaLink: '/products',
-      template: 'SideBySideNarrow',
-      contentWidth: 'default',
+      template: 'SideBySide',
+      contentWidth: 'Default',
       imagePosition: 'left',
       imageAspectRatio: '3:4',
       image: productImg,
@@ -402,14 +415,14 @@ async function seed() {
       _type: 'mediaTextBlock',
       _key: 'p-tib-5',
       spacing: 'medium',
-      eyebrow: 'SIDEBAR STYLE',
-      title: 'SideBySideNarrow – image right',
+      eyebrow: 'SIDE BY SIDE',
+      title: 'SideBySide – image right',
       titleLevel: 'h3',
-      body: 'Narrow image on the right. Good for sidebars or supporting visuals.',
+      body: 'Text and image side by side. Image on the right.',
       ctaText: 'Explore',
       ctaLink: '/explore',
-      template: 'SideBySideNarrow',
-      contentWidth: 'default',
+      template: 'SideBySide',
+      contentWidth: 'Default',
       imagePosition: 'right',
       imageAspectRatio: '3:4',
       image: productImg,
@@ -418,14 +431,14 @@ async function seed() {
       _type: 'mediaTextBlock',
       _key: 'p-tib-6',
       spacing: 'large',
-      eyebrow: 'WIDE IMAGE',
-      title: 'SideBySideWide – image left',
+      eyebrow: 'SIDE BY SIDE',
+      title: 'SideBySide – image left',
       titleLevel: 'h2',
-      body: 'Wide image (2/3 width). Image dominates the layout. Great for hero-style content.',
+      body: 'Text and image side by side. Image on the left.',
       ctaText: 'Join now',
       ctaLink: '/join',
-      template: 'SideBySideWide',
-      contentWidth: 'default',
+      template: 'SideBySide',
+      contentWidth: 'Default',
       imagePosition: 'left',
       imageAspectRatio: '4:3',
       image: productImg,
@@ -434,14 +447,14 @@ async function seed() {
       _type: 'mediaTextBlock',
       _key: 'p-tib-7',
       spacing: 'medium',
-      eyebrow: 'IMAGE FOCUS',
-      title: 'SideBySideWide – image right',
+      eyebrow: 'SIDE BY SIDE',
+      title: 'SideBySide – image right',
       titleLevel: 'h2',
-      body: 'Wide image on the right. Great for hero-style content or product showcases.',
+      body: 'Text and image side by side. Image on the right.',
       ctaText: 'Read more',
       ctaLink: '/blog',
-      template: 'SideBySideWide',
-      contentWidth: 'default',
+      template: 'SideBySide',
+      contentWidth: 'Default',
       imagePosition: 'right',
       imageAspectRatio: '4:3',
       image: productImg,
@@ -564,10 +577,10 @@ async function seed() {
       _key: 'p-car',
       title: 'Product carousel (4+ items)',
       items: [
-        { _type: 'cardItem', _key: 'pc1', title: 'Product A', description: 'First in the lineup.', image: imageRef(carouselImage1), aspectRatio: '4:5', link: '/products/a', ctaText: 'View' },
-        { _type: 'cardItem', _key: 'pc2', title: 'Product B', description: 'Second option for you.', image: imageRef(carouselImage2), aspectRatio: '4:5', link: '/products/b', ctaText: 'View' },
-        { _type: 'cardItem', _key: 'pc3', title: 'Product C', description: 'Wider card (8:5).', image: imageRef(carouselImage3), aspectRatio: '8:5', link: '/products/c', ctaText: 'View' },
-        { _type: 'cardItem', _key: 'pc4', title: 'Product D', description: 'Fourth and final.', image: imageRef(carouselImage4), aspectRatio: '4:5', link: '/products/d', ctaText: 'View' },
+        { _type: 'cardItem', _key: 'pc1', cardType: 'media', title: 'Product A', description: 'First in the lineup.', image: imageRef(carouselImage1), aspectRatio: '4:5', link: '/products/a', ctaText: 'View' },
+        { _type: 'cardItem', _key: 'pc2', cardType: 'media', title: 'Product B', description: 'Second option for you.', image: imageRef(carouselImage2), aspectRatio: '4:5', link: '/products/b', ctaText: 'View' },
+        { _type: 'cardItem', _key: 'pc3', cardType: 'media', title: 'Product C', description: 'Wider card (8:5).', image: imageRef(carouselImage3), aspectRatio: '8:5', link: '/products/c', ctaText: 'View' },
+        { _type: 'cardItem', _key: 'pc4', cardType: 'media', title: 'Product D', description: 'Fourth and final.', image: imageRef(carouselImage4), aspectRatio: '4:5', link: '/products/d', ctaText: 'View' },
       ],
     })
     productSections.push({

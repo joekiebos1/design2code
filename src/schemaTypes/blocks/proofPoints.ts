@@ -1,5 +1,6 @@
 import { defineField, defineType } from 'sanity'
 import { IconPickerInput } from '../../components/IconPickerInput'
+import { spacingTopField, spacingBottomField } from '../shared/spacingFields'
 
 export const proofPointsBlock = defineType({
   name: 'proofPoints',
@@ -7,21 +8,8 @@ export const proofPointsBlock = defineType({
   title: 'Proof Points',
   description: 'Text + icon strip for top reasons to believe. Often used at the top of a page.',
   fields: [
-    defineField({
-      name: 'spacing',
-      type: 'string',
-      title: 'Spacing',
-      description: 'Space below this block.',
-      options: {
-        list: [
-          { value: 'small', title: 'Small' },
-          { value: 'medium', title: 'Medium' },
-          { value: 'large', title: 'Large' },
-        ],
-        layout: 'radio',
-      },
-      initialValue: 'medium',
-    }),
+    spacingTopField,
+    spacingBottomField,
     defineField({
       name: 'title',
       type: 'string',

@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useEffect } from 'react'
-import { Headline, Text, SurfaceProvider, Card } from '@marcelinodzn/ds-react'
+import { Headline, Text, SurfaceProvider, Card, Button } from '@marcelinodzn/ds-react'
 
 type Message = { role: 'user' | 'assistant'; content: string }
 
@@ -52,7 +52,7 @@ export function InterviewScreen({
           {intentData.pageName} - {intentData.pageType}
         </Text>
 
-        <Card surface="subtle" style={{ marginBottom: 'var(--ds-spacing-l)' }}>
+        <Card surface="minimal" style={{ marginBottom: 'var(--ds-spacing-l)' }}>
           <div
             ref={scrollRef}
             style={{
@@ -76,9 +76,9 @@ export function InterviewScreen({
                   alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
                   maxWidth: '90%',
                   padding: 'var(--ds-spacing-s) var(--ds-spacing-m)',
-                  borderRadius: 8,
+                  borderRadius: 'var(--ds-radius-card-s)',
                   background: m.role === 'user' ? 'var(--ds-color-neutral-bold)' : 'var(--ds-color-background-subtle)',
-                  color: m.role === 'user' ? 'var(--ds-color-background)' : 'var(--ds-color-text-high)',
+                  color: m.role === 'user' ? 'var(--local-color-text-on-overlay)' : 'var(--ds-color-text-high)',
                   fontSize: 'var(--ds-typography-body-xs)',
                   lineHeight: 1.5,
                   whiteSpace: 'pre-wrap',
@@ -102,22 +102,9 @@ export function InterviewScreen({
 
           {isReady ? (
             <div style={{ padding: 'var(--ds-spacing-m)', borderTop: '1px solid var(--ds-color-stroke-divider)' }}>
-              <button
-                type="button"
-                onClick={onReady}
-                style={{
-                  padding: 'var(--ds-spacing-s) var(--ds-spacing-m)',
-                  background: 'var(--ds-color-neutral-bold)',
-                  color: 'var(--ds-color-background)',
-                  border: 'none',
-                  borderRadius: 8,
-                  fontWeight: 'var(--ds-typography-weight-high)',
-                  fontSize: 'var(--ds-typography-label-m)',
-                  cursor: 'pointer',
-                }}
-              >
+              <Button onPress={onReady} appearance="neutral" size="M" attention="high">
                 Propose structure
-              </button>
+              </Button>
             </div>
           ) : (
             <form
@@ -135,7 +122,7 @@ export function InterviewScreen({
                 style={{
                   width: '100%',
                   padding: 'var(--ds-spacing-s)',
-                  borderRadius: 8,
+                  borderRadius: 'var(--ds-radius-card-s)',
                   border: '1px solid var(--ds-color-stroke-divider)',
                   fontSize: 'var(--ds-typography-body-xs)',
                   fontFamily: 'inherit',
@@ -144,23 +131,9 @@ export function InterviewScreen({
                   marginBottom: 'var(--ds-spacing-s)',
                 }}
               />
-              <button
-                type="submit"
-                disabled={isThinking}
-                style={{
-                  padding: 'var(--ds-spacing-s) var(--ds-spacing-m)',
-                  background: 'var(--ds-color-neutral-bold)',
-                  color: 'var(--ds-color-background)',
-                  border: 'none',
-                  borderRadius: 8,
-                  fontWeight: 'var(--ds-typography-weight-high)',
-                  fontSize: 'var(--ds-typography-label-m)',
-                  cursor: isThinking ? 'not-allowed' : 'pointer',
-                  opacity: isThinking ? 0.7 : 1,
-                }}
-              >
+              <Button type="submit" isDisabled={isThinking} appearance="neutral" size="M" attention="high">
                 {isThinking ? 'Sending...' : 'Send'}
-              </button>
+              </Button>
             </form>
           )}
         </Card>

@@ -15,13 +15,13 @@ export const pageBuilderType = defineType({
       },
     }),
     defineArrayMember({
-      type: 'featureGrid',
+      type: 'mediaTextBlock',
       components: {
         input: FillWithSampleBlock,
       },
     }),
     defineArrayMember({
-      type: 'mediaTextBlock',
+      type: 'cardGrid',
       components: {
         input: FillWithSampleBlock,
       },
@@ -40,6 +40,12 @@ export const pageBuilderType = defineType({
     }),
     defineArrayMember({
       type: 'proofPoints',
+      components: {
+        input: FillWithSampleBlock,
+      },
+    }),
+    defineArrayMember({
+      type: 'rotatingMedia',
       components: {
         input: FillWithSampleBlock,
       },

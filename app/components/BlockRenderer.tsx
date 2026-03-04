@@ -1,10 +1,12 @@
 import {
   HeroBlock,
-  FeatureGridBlock,
   MediaTextBlock,
+  CardGridBlock,
   FullBleedVerticalCarousel,
   CarouselBlock,
   ProofPointsBlock,
+  RotatingMediaBlock,
+  BlockContainer,
 } from '../blocks'
 import type { MediaTextBlockProps } from '../blocks'
 
@@ -12,24 +14,25 @@ type Block = {
   _type: string
   _key?: string
   spacing?: 'small' | 'medium' | 'large'
+  spacingTop?: 'small' | 'medium' | 'large'
+  spacingBottom?: 'small' | 'medium' | 'large'
   [key: string]: unknown
 }
 
 function mapMediaTextBlock(block: Block): MediaTextBlockProps {
   const template = (block.template as string) ?? 'SideBySide'
   const imagePosition = (block.imagePosition as string) ?? 'right'
-  const contentWidth = (block.contentWidth as string) ?? 'default'
+  const contentWidth = (block.contentWidth as string) ?? 'Default'
   const imageAspectRatio = (block.imageAspectRatio as string) ?? '4:3'
 
+  const sideBySide = imagePosition === 'left' ? 'media-left' : 'media-right'
   const variantMap: Record<string, MediaTextBlockProps['variant']> = {
-    SideBySide: imagePosition === 'left' ? 'media-left' : 'media-right',
-    SideBySideNarrow: imagePosition === 'left' ? 'media-left' : 'media-right',
-    SideBySideWide: imagePosition === 'left' ? 'media-left' : 'media-right',
+    SideBySide: sideBySide,
     HeroOverlay: 'full-bleed',
     Stacked: 'centered-media-below',
     TextOnly: 'text-only',
   }
-  const variant = variantMap[template] ?? 'media-right'
+  const variant = variantMap[template] ?? sideBySide
 
   const aspectRatioMap: Record<string, NonNullable<MediaTextBlockProps['media']>['aspectRatio']> = {
     '16:7': '16:9',
@@ -77,16 +80,21 @@ function mapMediaTextBlock(block: Block): MediaTextBlockProps {
     media,
     variant,
     size: (block.size as MediaTextBlockProps['size']) ?? 'feature',
-    width:
-      contentWidth === 'edgeToEdge' || contentWidth === 'full' /* full = legacy, map to edgeToEdge */
-        ? 'edgeToEdge'
-        : contentWidth === 'wide'
-          ? 'wide'
-          : contentWidth === 'editorial'
-            ? 'narrow' /* editorial is for body copy; block uses narrow */
-            : contentWidth === 'default'
-              ? 'default'
-              : 'narrow',
+    mediaStyle: (block.mediaStyle as MediaTextBlockProps['mediaStyle']) ?? 'contained',
+    blockBackground: (block.blockBackground as MediaTextBlockProps['blockBackground']) ?? 'ghost',
+    spacing: (block.spacing as MediaTextBlockProps['spacing']) ?? 'large',
+    spacingTop: (block.spacingTop as MediaTextBlockProps['spacingTop']) ?? undefined,
+    spacingBottom: (block.spacingBottom as MediaTextBlockProps['spacingBottom']) ?? undefined,
+    width: (() => {
+      if (contentWidth === 'edgeToEdge' || contentWidth === 'full') return 'edgeToEdge'
+      const map: Record<string, MediaTextBlockProps['width']> = {
+        XS: 'XS', S: 'S', M: 'M', Default: 'Default', Wide: 'Wide',
+        narrow: 'M', editorial: 'XS', default: 'Default', wide: 'Wide',
+        // Legacy mapping
+        L: 'M', XL: 'Default', '2XL': 'Wide',
+      }
+      return map[contentWidth] ?? 'Default'
+    })(),
     align: alignSource === 'center' || alignSource === 'left' ? alignSource : undefined,
   }
 }
@@ -95,28 +103,20 @@ type BlockRendererProps = {
   blocks: Block[] | unknown[] | null | undefined
 }
 
-const SPACING_VAR: Record<string, string> = {
-  small: 'var(--ds-spacing-2xl)',
-  medium: 'var(--ds-spacing-4xl)',
-  large: 'var(--ds-spacing-block-gap-chapter)',
-}
-
 export function BlockRenderer({ blocks }: BlockRendererProps) {
   if (!blocks?.length) return null
 
   const blocks_ = blocks as Block[]
   return (
     <div className="block-stack">
-      {blocks_.map((block, index) => {
-        const blockSpacing = (block.spacing as string) ?? 'medium'
-        const marginBottom = SPACING_VAR[blockSpacing] ?? SPACING_VAR.medium
+      {blocks_.map((block) => {
         let content: React.ReactNode = null
         switch (block._type) {
           case 'hero':
             content = (
               <HeroBlock
                 key={block._key || block._type}
-                variant={(block.variant as 'category' | 'product') ?? 'category'}
+                variant={(block.variant as 'category' | 'product' | 'ghost' | 'fullscreen') ?? 'category'}
                 productName={block.productName as string}
                 headline={block.headline as string}
                 subheadline={block.subheadline as string}
@@ -128,19 +128,29 @@ export function BlockRenderer({ blocks }: BlockRendererProps) {
               />
             )
             break
-          case 'featureGrid':
-            content = (
-              <FeatureGridBlock
-                key={block._key || block._type}
-                title={block.title as string}
-                titleLevel={(block.titleLevel as 'h2' | 'h3' | 'h4') ?? 'h2'}
-                items={block.items as { title?: string; description?: string }[]}
-              />
-            )
-            break
           case 'mediaTextBlock':
             content = (
               <MediaTextBlock key={block._key || block._type} {...mapMediaTextBlock(block)} />
+            )
+            break
+          case 'cardGrid':
+            content = (
+              <CardGridBlock
+                key={block._key || block._type}
+                columns={(parseInt(block.columns as string, 10) || 3) as 2 | 3 | 4}
+                title={block.title as string}
+                titleLevel={(block.titleLevel as 'h2' | 'h3' | 'h4') ?? 'h2'}
+                items={(block.items as { cardStyle?: string; title?: string; description?: string; image?: string; video?: string; ctaText?: string; ctaLink?: string; surface?: string }[])?.map((i) => ({
+                  cardStyle: (i.cardStyle as 'image-above' | 'text-on-colour' | 'text-on-image') ?? 'image-above',
+                  title: i.title ?? '',
+                  description: i.description,
+                  image: i.image,
+                  video: i.video,
+                  ctaText: i.ctaText,
+                  ctaLink: i.ctaLink,
+                  surface: (i.surface as 'subtle' | 'bold') ?? 'bold',
+                }))}
+              />
             )
             break
           case 'fullBleedVerticalCarousel':
@@ -157,7 +167,8 @@ export function BlockRenderer({ blocks }: BlockRendererProps) {
                 key={block._key || block._type}
                 title={block.title as string}
                 titleLevel={(block.titleLevel as 'h2' | 'h3' | 'h4') ?? 'h2'}
-                cardSize={(block.cardSize as 'compact' | 'large') ?? 'compact'}
+                variant={(block.variant as 'featured' | 'informative') ?? 'informative'}
+                cardSize={(block.cardSize as 'compact' | 'large' | 'large-4x5') ?? 'compact'}
                 items={block.items as { title?: string; description?: string; image?: string; video?: string; link?: string; ctaText?: string; aspectRatio?: '4:5' | '8:5' | '2:1' }[]}
               />
             )
@@ -172,15 +183,47 @@ export function BlockRenderer({ blocks }: BlockRendererProps) {
               />
             )
             break
+          case 'rotatingMedia':
+            content = (
+              <RotatingMediaBlock
+                key={block._key || block._type}
+                variant={(block.variant as 'small' | 'large' | 'combined') ?? 'small'}
+                surface={(block.surface as 'ghost' | 'minimal' | 'subtle' | 'bold') ?? 'ghost'}
+                items={(block.items as { image?: string; title?: string; label?: string }[])?.map((i) => ({
+                  image: i.image ?? '',
+                  title: i.title,
+                  label: i.label,
+                }))}
+              />
+            )
+            break
           default:
             return null
         }
         if (!content) return null
-        const isLast = index === blocks_.length - 1
+        const fallbackSpacing = (block.spacing as 'small' | 'medium' | 'large') ?? 'large'
+        const spacingTop = (block.spacingTop as 'small' | 'medium' | 'large') ?? fallbackSpacing
+        const spacingBottom = (block.spacingBottom as 'small' | 'medium' | 'large') ?? fallbackSpacing
+        const blockBg = block.blockBackground as string | undefined
+        const hasColouredBackground = Boolean(
+          block._type === 'mediaTextBlock' &&
+            blockBg &&
+            !['ghost', 'none'].includes(blockBg)
+        )
+        const isOverflow =
+          block._type === 'mediaTextBlock' && block.mediaStyle === 'overflow'
         return (
-          <div key={block._key || block._type} style={{ marginBottom: isLast ? 0 : marginBottom }}>
+          <BlockContainer
+            key={block._key || block._type}
+            contentWidth="full"
+            spacingTop={spacingTop}
+            spacingBottom={spacingBottom}
+            hasColouredBackground={hasColouredBackground}
+            spacingOnlyOnContent={isOverflow}
+            style={{ overflow: 'visible' }}
+          >
             {content}
-          </div>
+          </BlockContainer>
         )
       })}
     </div>
