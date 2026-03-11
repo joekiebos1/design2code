@@ -45,12 +45,12 @@ function getBlockTypeTitle(_type: string): string {
   return titles[_type] ?? _type
 }
 
-export function getBlockSettings(block: LabBlock): string {
+/** Layout setting only – used as section title (h2) above each block. */
+export function getBlockLayoutTitle(block: LabBlock): string {
   switch (block._type) {
     case 'hero': {
       const contentLayout = ((block.contentLayout as string) ?? 'sideBySide').toLowerCase()
       const containerLayout = (block.containerLayout as string) ?? (block.layout as string) ?? 'edgeToEdge'
-      const surface = String(block.emphasis ?? 'bold')
       const anchor = (block.imageAnchor as string) ?? 'center'
       const textAlign = (block.textAlign as string) ?? 'left'
       const hasVideo = Boolean((block.videoUrl as string)?.trim())
@@ -66,70 +66,102 @@ export function getBlockSettings(block: LabBlock): string {
                 : containerLayout === 'contained'
                   ? 'Side by side (Contained)'
                   : 'Side by side (Edge to edge)'
-      const surfaceLabel =
-        contentLayout === 'category'
-          ? 'Background'
-          : contentLayout === 'mediaoverlay'
-            ? 'Bold'
-            : surface === 'ghost'
-            ? 'No colour'
-            : (surface && typeof surface === 'string' ? surface.charAt(0).toUpperCase() + surface.slice(1) : 'Minimal')
-      const parts = [layoutLabel, surfaceLabel]
+      const parts = [layoutLabel]
       if (contentLayout === 'sidebyside' && anchor === 'bottom') parts.push('Top to bottom')
       if (hasVideo) parts.push('Video')
       return parts.join(' · ')
     }
     case 'fullBleedVerticalCarousel':
-      return `Emphasis: ${block.emphasis ?? ''}`
-    case 'rotatingMedia':
-      return `Variant: ${(block.variant as string) ?? 'small'} · Emphasis: ${block.emphasis ?? ''}`
+      return 'Full bleed'
+    case 'rotatingMedia': {
+      const v = (block.variant as string) ?? 'small'
+      return v === 'combined' ? 'Combined' : v === 'large' ? 'Large' : 'Small'
+    }
     case 'labCardGrid':
-      return `Columns: ${(block.columns as string) ?? '3'} · Emphasis: ${block.emphasis ?? ''} · Surface colour: ${block.surfaceColour ?? ''}`
+      return `${block.columns ?? '3'} columns`
     case 'mediaZoomOutOnScroll':
       return block.videoUrl ? 'With video' : 'Image only'
-    case 'iconGrid':
-      return `Items: ${Array.isArray(block.items) ? block.items.length : 0} · Columns: ${(block.columns as number) ?? 'auto'}`
-    case 'proofPoints':
-      return `Variant: ${(block.variant as string) ?? 'icon'} · Emphasis: ${block.emphasis ?? ''} · Items: ${Array.isArray(block.items) ? block.items.length : 0}`
+    case 'iconGrid': {
+      const cols = (block.columns as number) ?? 'auto'
+      return cols === 'auto' || cols == null ? 'Auto columns' : `${cols} columns`
+    }
+    case 'proofPoints': {
+      const v = (block.variant as string) ?? 'icon'
+      return v === 'stat' ? 'Stat' : 'Icon'
+    }
     case 'mediaText5050': {
       const variant = (block.variant as string) ?? 'paragraphs'
-      const variantLabels: Record<string, string> = {
-        paragraphs: 'Paragraphs',
-        accordion: 'Accordion',
-      }
+      const variantLabels: Record<string, string> = { paragraphs: 'Paragraphs', accordion: 'Accordion' }
       const imagePosition = (block.imagePosition as string) ?? 'right'
-      const itemCount = Array.isArray(block.items) ? block.items.length : 0
-      return `Variant: ${variantLabels[variant] ?? variant} · Items: ${itemCount} · Image ${imagePosition}`
+      return `${variantLabels[variant] ?? variant} · Image ${imagePosition}`
     }
     case 'mediaTextStacked':
     case 'mediaTextBlock': {
       const rawTemplate = (block.template as string) ?? 'Stacked'
-      /** Legacy: SideBySide is now mediaText5050; treat as Stacked for display. */
-      const template = (rawTemplate === 'SideBySide' || rawTemplate === 'sideBySide') ? 'Stacked' : rawTemplate
-      const bg = block.emphasis ?? 'ghost'
-      const parts = [`Template: ${template}`, `Emphasis: ${bg}`]
-      if (template === 'HeroOverlay') {
-        parts.push(`Align: ${(block.overlayAlignment as string) ?? 'left'}`)
-      }
-      if (template === 'Stacked') {
-        parts.push(`Image: ${(block.stackImagePosition as string) ?? 'top'}`)
-        parts.push(`Width: ${(block.mediaSize as string) ?? 'default'}`)
-        const mediaSize = (block.mediaSize as string) ?? 'default'
-        if (mediaSize !== 'edgeToEdge') {
-          parts.push(`Text align: ${(block.stackAlignment as string) ?? 'left'}`)
-        }
-      }
-      return parts.join(' · ')
+      const template = (rawTemplate === 'SideBySide' || rawTemplate === 'sideBySide') ? 'Stacked' : rawTemplate === 'MediaOverlay' ? 'Overlay' : rawTemplate
+      if (template === 'TextOnly') return `Text only · Align ${(block.alignment as string) ?? 'left'}`
+      const mediaSize = (block.mediaSize as string) ?? 'edgeToEdge'
+      const sizeLabel = mediaSize === 'edgeToEdge' ? 'Edge to edge' : 'Contained'
+      if (template === 'Overlay') return `Overlay · ${sizeLabel} · Align ${(block.alignment as string) ?? block.overlayAlignment ?? 'left'}`
+      return `Stacked · ${sizeLabel} · Align ${(block.alignment as string) ?? block.stackAlignment ?? 'left'}`
     }
-    case 'carousel':
-      return `Responsive · Card size: ${(block.cardSize as string) ?? 'medium'} · Emphasis: ${block.emphasis ?? ''}`
-    case 'list':
-      return `Variant: ${(block.listVariant as string) ?? 'textList'} · Emphasis: ${block.emphasis ?? ''} · Items: ${Array.isArray(block.items) ? block.items.length : 0}`
+    case 'carousel': {
+      const size = (block.cardSize as string) ?? 'medium'
+      return size === 'compact' ? 'Compact' : size === 'large' ? 'Large' : 'Medium'
+    }
+    case 'list': {
+      const v = (block.listVariant as string) ?? 'textList'
+      return v === 'faq' ? 'FAQ' : v === 'links' ? 'Links' : 'Text list'
+    }
     case 'topNavBlock':
-      return 'Mega menu with L1/L2/L3 navigation'
+      return 'Mega menu'
+    default:
+      return getBlockTypeTitle(block._type)
+  }
+}
+
+/** Other settings (emphasis, surface colour, counts) – used as subtitle (smaller font) under the title. */
+export function getBlockOtherSettings(block: LabBlock): string {
+  switch (block._type) {
+    case 'hero': {
+      const surface = String(block.emphasis ?? 'bold')
+      const surfaceLabel =
+        surface === 'ghost' ? 'No colour' : (surface && typeof surface === 'string' ? surface.charAt(0).toUpperCase() + surface.slice(1) : 'Minimal')
+      return `Emphasis: ${surfaceLabel} · Surface colour: ${block.surfaceColour ?? ''}`
+    }
+    case 'fullBleedVerticalCarousel':
+      return `Emphasis: ${block.emphasis ?? ''} · Surface colour: ${block.surfaceColour ?? ''}`
+    case 'rotatingMedia':
+      return `Emphasis: ${block.emphasis ?? ''} · Surface colour: ${block.surfaceColour ?? ''}`
+    case 'labCardGrid':
+      return `Emphasis: ${block.emphasis ?? ''} · Surface colour: ${block.surfaceColour ?? ''} · ${Array.isArray(block.items) ? block.items.length : 0} card(s)`
+    case 'mediaZoomOutOnScroll':
+      return ''
+    case 'iconGrid':
+      return `Emphasis: ${block.emphasis ?? ''} · Surface colour: ${block.surfaceColour ?? ''} · ${Array.isArray(block.items) ? block.items.length : 0} item(s)`
+    case 'proofPoints':
+      return `Emphasis: ${block.emphasis ?? ''} · Surface colour: ${block.surfaceColour ?? ''} · ${Array.isArray(block.items) ? block.items.length : 0} item(s)`
+    case 'mediaText5050':
+      return `Emphasis: ${block.emphasis ?? ''} · Surface colour: ${block.surfaceColour ?? ''} · ${Array.isArray(block.items) ? block.items.length : 0} item(s)`
+    case 'mediaTextStacked':
+    case 'mediaTextBlock':
+      return `Emphasis: ${block.emphasis ?? ''} · Surface colour: ${block.surfaceColour ?? ''}`
+    case 'carousel':
+      return `Emphasis: ${block.emphasis ?? ''} · Surface colour: ${block.surfaceColour ?? ''} · ${Array.isArray(block.items) ? block.items.length : 0} item(s)`
+    case 'list':
+      return `Emphasis: ${block.emphasis ?? ''} · Surface colour: ${block.surfaceColour ?? ''} · ${Array.isArray(block.items) ? block.items.length : 0} item(s)`
+    case 'topNavBlock':
+      return 'L1/L2/L3 navigation'
     default:
       return ''
   }
+}
+
+/** @deprecated Use getBlockLayoutTitle + getBlockOtherSettings. Kept for LabBlockPageClient variant count. */
+export function getBlockSettings(block: LabBlock): string {
+  const layout = getBlockLayoutTitle(block)
+  const other = getBlockOtherSettings(block)
+  return other ? `${layout} · ${other}` : layout
 }
 
 type BlockSpacingValue = 'none' | 'medium' | 'large'
@@ -142,18 +174,17 @@ function normalizeSpacing(v: unknown): BlockSpacingValue {
 
 function mapMediaTextBlock(block: LabBlock): MediaTextBlockProps {
   const rawTemplate = block.template as string
-  /** Legacy: SideBySide is now mediaText5050; treat as Stacked. */
-  const template = (rawTemplate === 'SideBySide' || rawTemplate === 'sideBySide') ? 'Stacked' : (rawTemplate ?? 'Stacked')
-  const mediaSize = block.mediaSize as string
-  const imageAspectRatio =
-    template === 'Stacked'
-      ? '2:1'
-      : template === 'HeroOverlay'
-        ? '16:9'
-        : '16:9'
+  /** Legacy: SideBySide is now mediaText5050; treat as Stacked. MediaOverlay → Overlay. */
+  const template = (rawTemplate === 'SideBySide' || rawTemplate === 'sideBySide')
+    ? 'Stacked'
+    : rawTemplate === 'MediaOverlay'
+      ? 'Overlay'
+      : (rawTemplate ?? 'Stacked')
+  /** Same aspect ratio for Stacked and Overlay so contained media containers match (2:1). */
+  const imageAspectRatio = '2:1'
 
   const variantMap: Record<string, MediaTextBlockProps['variant']> = {
-    HeroOverlay: 'full-bleed',
+    Overlay: 'full-bleed',
     Stacked: 'centered-media-below',
     TextOnly: 'text-only',
   }
@@ -183,12 +214,11 @@ function mapMediaTextBlock(block: LabBlock): MediaTextBlockProps {
         : undefined
 
   const rawAlign = (() => {
+    const a = block.alignment as string
+    if (a) return a
     if (template === 'TextOnly') return block.textOnlyAlignment as string
-    if (template === 'Stacked') {
-      if (mediaSize === 'edgeToEdge') return 'center'
-      return block.stackAlignment as string
-    }
-    if (template === 'HeroOverlay') return block.overlayAlignment as string
+    if (template === 'Stacked') return block.stackAlignment as string
+    if (template === 'Overlay') return block.overlayAlignment as string
     return block.align as string
   })()
   const alignSource =
@@ -198,8 +228,10 @@ function mapMediaTextBlock(block: LabBlock): MediaTextBlockProps {
         ? 'left'
         : undefined
 
+  const mediaSize = (block.mediaSize as string) ?? 'edgeToEdge'
+  /** Stacked and Overlay: edge to edge or contained based on mediaSize. */
   const width =
-    (template === 'Stacked' || template === 'HeroOverlay') && mediaSize === 'edgeToEdge'
+    (template === 'Stacked' || template === 'Overlay') && mediaSize === 'edgeToEdge'
       ? 'edgeToEdge'
       : 'Default'
 
@@ -357,16 +389,18 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, listBlockOpenLi
     )
 
     if (clean) return <React.Fragment key={block._key}>{blockContent}</React.Fragment>
-    const sectionTitle = variantLabels?.[i] ?? getBlockTypeTitle(block._type)
-    const settings = getBlockSettings(block)
+    const layoutTitle = variantLabels?.[i] ?? getBlockLayoutTitle(block)
+    const otherSettings = getBlockOtherSettings(block)
     return (
       <section key={block._key}>
         <h2 style={{ fontSize: 'var(--ds-typography-h4)', fontWeight: 'var(--ds-typography-weight-medium)', marginBottom: 'var(--ds-spacing-xs)' }}>
-          {sectionTitle}
+          {layoutTitle}
         </h2>
-        <p style={{ fontSize: 'var(--ds-typography-body-xs)', color: 'var(--ds-color-text-low)', margin: 0, marginBottom: 'var(--ds-spacing-l)' }}>
-          {settings}
-        </p>
+        {otherSettings && (
+          <p style={{ fontSize: 'var(--ds-typography-body-xs)', color: 'var(--ds-color-text-low)', margin: 0, marginBottom: 'var(--ds-spacing-l)' }}>
+            {otherSettings}
+          </p>
+        )}
         {blockContent}
       </section>
     )

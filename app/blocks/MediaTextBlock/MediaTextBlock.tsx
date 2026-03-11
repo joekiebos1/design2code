@@ -97,21 +97,15 @@ export function MediaTextBlock({
     else window.location.href = href
   }
 
-  const derivedCentered =
-    isNarrow ||
-    variant === 'centered-media-below' ||
-    variant === 'text-only' ||
-    !hasMedia
-  const textAlign = align ?? (derivedCentered ? 'center' : 'left')
+  /** Text alignment must match container alignment. When align is set, use it; otherwise default center. */
+  const textAlign = (align === 'center' || align === 'left') ? align : 'center'
 
-  /** Titles: M (8 cols). Body: XS (4 cols) or S (6 cols) for text-only left. 50/50 blocks use Default. */
-  const titleContentWidth = derivedCentered ? 'M' : 'Default'
+  /** Left = Default grid width. Center = M (title) / XS (body) for centered content. */
+  const titleContentWidth = align === 'left' ? 'Default' : 'M'
   const bodyContentWidth =
-    variant === 'text-only' && align === 'left'
-      ? 'S'
-      : derivedCentered
-        ? 'XS'
-        : 'Default'
+    align === 'left'
+      ? (variant === 'text-only' ? 'S' : 'Default')
+      : 'XS'
 
   /** Text-only left: BlockContainers align to start of Default grid (no center margin). */
   const textOnlyLeftContainerStyle =
@@ -405,6 +399,66 @@ export function MediaTextBlock({
     const ratio = media.aspectRatio ?? '16:9'
     const aspectRatio = ASPECT_RATIOS[ratio] ?? '16 / 9'
     const isVideo = media.type === 'video'
+    const isOverlayContained = width === 'Default'
+
+    if (isOverlayContained) {
+      return blockBgWrapper(
+        <BlockReveal>
+          <SurfaceProvider {...surfaceProps}>
+            <GridBlock as="section">
+              <div style={{ ...cellMedia }}>
+                <BlockContainer contentWidth="Default" style={{ width: '100%' }}>
+                  <div
+                    style={{
+                      position: 'relative',
+                      width: '100%',
+                      aspectRatio,
+                      overflow: 'hidden',
+                      borderRadius: 'var(--ds-radius-card-m)',
+                    }}
+                  >
+                    <div style={{ position: 'absolute', inset: 0 }}>
+                      {isVideo ? (
+                        <VideoWithControls
+                          src={media.src}
+                          poster={media.poster}
+                          prefersReducedMotion={prefersReducedMotion}
+                        />
+                      ) : (
+                        <Image src={media.src} alt={media.alt ?? ''} fill style={{ objectFit: 'cover' }} sizes="(max-width: 768px) 100vw, 80vw" />
+                      )}
+                    </div>
+                    <div
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'linear-gradient(to top, var(--local-color-overlay-dark) 0%, transparent 60%)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'flex-end',
+                        paddingBlock: 'var(--ds-spacing-3xl)',
+                        paddingInline: 0,
+                      }}
+                    >
+                      {align === 'left' ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-l)', alignItems: 'flex-start', paddingInlineStart: 'var(--ds-spacing-3xl)' }}>
+                          {textContent}
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-l)', alignItems: 'center', width: '100%' }}>
+                          {textContent}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </BlockContainer>
+              </div>
+            </GridBlock>
+          </SurfaceProvider>
+        </BlockReveal>
+      )
+    }
+
     return blockBgWrapper(
       <BlockReveal>
         <SurfaceProvider {...surfaceProps}>
@@ -432,9 +486,17 @@ export function MediaTextBlock({
                 paddingInline: 0,
               }}
             >
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-l)', alignItems: 'center' }}>
-                {textContent}
-              </div>
+              {align === 'left' ? (
+                <GridBlock as="div">
+                  <div style={{ ...cellMedia, display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-l)', alignItems: 'flex-start', paddingInlineStart: 'var(--ds-spacing-3xl)' }}>
+                    {textContent}
+                  </div>
+                </GridBlock>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-l)', alignItems: 'center', width: '100%' }}>
+                  {textContent}
+                </div>
+              )}
             </div>
           </section>
         </SurfaceProvider>
@@ -460,8 +522,8 @@ export function MediaTextBlock({
 
   if (variant === 'centered-media-below' && hasMedia) {
     const stackedIsEdgeToEdge = width === 'edgeToEdge'
-    const stackedAlignItems = stackedIsEdgeToEdge ? 'center' : (align === 'center' ? 'center' : 'flex-start')
-    const textAlignStacked = stackedIsEdgeToEdge ? 'center' : (align ?? 'left')
+    const stackedAlignItems = align === 'center' ? 'center' : 'flex-start'
+    const textAlignStacked = align ?? 'left'
 
     /** Text above image: eyebrow, title, subhead, body. */
     const stackedTextAbove = hasTextAbove && (
@@ -529,7 +591,7 @@ export function MediaTextBlock({
             ...cellMedia,
             display: 'flex',
             flexDirection: 'column',
-            alignItems: stackedIsEdgeToEdge ? 'center' : stackedAlignItems,
+            alignItems: stackedAlignItems,
             gap: 'var(--ds-spacing-l)',
           }}
         >
@@ -545,31 +607,38 @@ export function MediaTextBlock({
             style={{
               display: 'flex',
               flexDirection: 'column',
-              alignItems: stackedIsEdgeToEdge ? 'center' : stackedAlignItems,
+              alignItems: stackedAlignItems,
               gap: 'var(--ds-spacing-l)',
             }}
           >
             {stackedIsEdgeToEdge ? (
               <>
-                {stackedTextAbove}
+                {stackedTextAbove &&
+                  (align !== 'center'
+                    ? gridWrappedSection(stackedTextAbove)
+                    : stackedTextAbove)}
                 {stackedMediaBlock}
                 {hasTextBelow && gridWrappedSection(stackedTextBelow)}
               </>
             ) : (
-              <BlockContainer contentWidth="Default" style={{ width: '100%' }}>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: stackedAlignItems,
-                    gap: 'var(--ds-spacing-l)',
-                  }}
-                >
-                  {stackedTextAbove}
-                  {stackedMediaBlock}
-                  {stackedTextBelow}
+              <GridBlock as="div">
+                <div style={{ ...cellMedia }}>
+                  <BlockContainer contentWidth="Default" style={{ width: '100%' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: stackedAlignItems,
+                        gap: 'var(--ds-spacing-l)',
+                      }}
+                    >
+                      {stackedTextAbove}
+                      {stackedMediaBlock}
+                      {stackedTextBelow}
+                    </div>
+                  </BlockContainer>
                 </div>
-              </BlockContainer>
+              </GridBlock>
             )}
           </section>
         </SurfaceProvider>

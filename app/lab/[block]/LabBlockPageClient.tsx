@@ -8,7 +8,7 @@
 
 import { DsProvider } from '@marcelinodzn/ds-react'
 import { TopNavBlock } from '../blocks'
-import { LabBlockRenderer, getBlockSettings } from '../LabBlockRenderer'
+import { LabBlockRenderer, getBlockLayoutTitle } from '../LabBlockRenderer'
 
 type LabBlockPageClientProps = {
   title: string
@@ -18,7 +18,7 @@ type LabBlockPageClientProps = {
 export function LabBlockPageClient({ title, blocks }: LabBlockPageClientProps) {
   const blockList = Array.isArray(blocks) ? blocks : []
   const variantLabels = blockList.map((b) =>
-    getBlockSettings(b as { _type: string; _key?: string; [key: string]: unknown })
+    getBlockLayoutTitle(b as { _type: string; _key?: string; [key: string]: unknown })
   )
 
   return (

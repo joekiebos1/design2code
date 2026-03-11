@@ -370,9 +370,9 @@ export function HeroBlock({
   if (isMediaOverlay) {
     const align = textAlign ?? 'left'
     const isCenter = align === 'center'
-    /** Left-aligned: align to left edge of Wide grid (not page). Grid is centered; left edge = (100vw - gridMaxWidth)/2 + marginPx. */
+    /** Left-aligned: align to left edge of Wide grid + ample padding. Grid is centered; left edge = (100vw - gridMaxWidth)/2 + marginPx. */
     const leftPaddingInline =
-      isCenter ? 0 : gridMaxWidth ? `calc((100vw - ${gridMaxWidth}) / 2 + ${marginPx})` : marginPx
+      isCenter ? 0 : gridMaxWidth ? `calc((100vw - ${gridMaxWidth}) / 2 + ${marginPx} + var(--ds-spacing-3xl))` : `calc(${marginPx} + var(--ds-spacing-3xl))`
     return (
       <div style={EDGE_TO_EDGE_BREAKOUT}>
         <div style={edgeStyles.inner}>

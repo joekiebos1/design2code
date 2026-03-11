@@ -66,18 +66,17 @@ function mapMediaText5050Items(block: Block): { subtitle?: string; body?: string
 
 function mapMediaTextBlock(block: Block): MediaTextBlockProps {
   const rawTemplate = block.template as string
-  /** Legacy: SideBySide is now mediaText5050; treat as Stacked. */
-  const template = (rawTemplate === 'SideBySide' || rawTemplate === 'sideBySide') ? 'Stacked' : (rawTemplate ?? 'Stacked')
-  const mediaSize = block.mediaSize as string
-  const imageAspectRatio =
-    template === 'Stacked'
-      ? '2:1'
-      : template === 'HeroOverlay'
-        ? '16:9'
-        : '16:9'
+  /** Legacy: SideBySide is now mediaText5050; treat as Stacked. MediaOverlay → Overlay. */
+  const template = (rawTemplate === 'SideBySide' || rawTemplate === 'sideBySide')
+    ? 'Stacked'
+    : rawTemplate === 'MediaOverlay'
+      ? 'Overlay'
+      : (rawTemplate ?? 'Stacked')
+  /** Same aspect ratio for Stacked and Overlay so contained media containers match (2:1). */
+  const imageAspectRatio = '2:1'
 
   const variantMap: Record<string, MediaTextBlockProps['variant']> = {
-    HeroOverlay: 'full-bleed',
+    Overlay: 'full-bleed',
     Stacked: 'centered-media-below',
     TextOnly: 'text-only',
   }
@@ -107,12 +106,11 @@ function mapMediaTextBlock(block: Block): MediaTextBlockProps {
         : undefined
 
   const rawAlign = (() => {
+    const a = block.alignment as string
+    if (a) return a
     if (template === 'TextOnly') return block.textOnlyAlignment as string
-    if (template === 'Stacked') {
-      if (mediaSize === 'edgeToEdge') return 'center'
-      return block.stackAlignment as string
-    }
-    if (template === 'HeroOverlay') return block.overlayAlignment as string
+    if (template === 'Stacked') return block.stackAlignment as string
+    if (template === 'Overlay') return block.overlayAlignment as string
     return block.align as string
   })()
   const alignSource =
@@ -122,8 +120,10 @@ function mapMediaTextBlock(block: Block): MediaTextBlockProps {
         ? 'left'
         : undefined
 
+  const mediaSize = (block.mediaSize as string) ?? 'edgeToEdge'
+  /** Stacked and Overlay: edge to edge or contained based on mediaSize. */
   const width =
-    (template === 'Stacked' || template === 'HeroOverlay') && mediaSize === 'edgeToEdge'
+    (template === 'Stacked' || template === 'Overlay') && mediaSize === 'edgeToEdge'
       ? 'edgeToEdge'
       : 'Default'
 

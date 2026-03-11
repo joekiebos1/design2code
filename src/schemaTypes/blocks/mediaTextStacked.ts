@@ -16,12 +16,12 @@ export const mediaTextStackedBlock = defineType({
       name: 'template',
       type: 'string',
       title: 'Variant',
-      description: 'HeroOverlay: full bleed image with overlay. Stacked: large image with text above or below. TextOnly: no media. For 50/50 layouts use Media + Text: 50/50 block.',
+      description: 'Text only: no media. Stacked: text above/below image. Overlay: text on top of image. For 50/50 layouts use Media + Text: 50/50 block.',
       options: {
         list: [
-          { value: 'HeroOverlay', title: 'HeroOverlay – Full bleed image with text overlay' },
-          { value: 'Stacked', title: 'Stacked – Large image with text (above or below)' },
-          { value: 'TextOnly', title: 'TextOnly – No media, text only' },
+          { value: 'TextOnly', title: 'Text only' },
+          { value: 'Stacked', title: 'Stacked – Text above/below image' },
+          { value: 'Overlay', title: 'Overlay – Text on top of image' },
         ],
         layout: 'dropdown',
       },
@@ -31,7 +31,7 @@ export const mediaTextStackedBlock = defineType({
       name: 'mediaSize',
       type: 'string',
       title: 'Media size',
-      description: 'Edge to edge: full viewport, text always center. Contained: media within grid, choose left or center alignment.',
+      description: 'Edge to edge: full viewport. Contained: media within Default grid.',
       options: {
         list: [
           { value: 'edgeToEdge', title: 'Edge to edge' },
@@ -39,14 +39,14 @@ export const mediaTextStackedBlock = defineType({
         ],
         layout: 'radio',
       },
-      initialValue: 'default',
-      hidden: ({ parent }) => parent?.template !== 'Stacked',
+      initialValue: 'edgeToEdge',
+      hidden: ({ parent }) => parent?.template === 'TextOnly',
     }),
     defineField({
-      name: 'overlayAlignment',
+      name: 'alignment',
       type: 'string',
       title: 'Text alignment',
-      description: 'For full bleed hero only',
+      description: 'Left = aligned to Default grid width. Center = viewport center.',
       options: {
         list: [
           { value: 'left', title: 'Left' },
@@ -55,38 +55,6 @@ export const mediaTextStackedBlock = defineType({
         layout: 'radio',
       },
       initialValue: 'left',
-      hidden: ({ parent }) => parent?.template !== 'HeroOverlay',
-    }),
-    defineField({
-      name: 'stackAlignment',
-      type: 'string',
-      title: 'Text alignment',
-      description: 'Left or center. Only shown when media is Default width (edge-to-edge is always center).',
-      options: {
-        list: [
-          { value: 'left', title: 'Left' },
-          { value: 'center', title: 'Center' },
-        ],
-        layout: 'radio',
-      },
-      initialValue: 'left',
-      hidden: ({ parent }) =>
-        parent?.template !== 'Stacked' || parent?.mediaSize === 'edgeToEdge',
-    }),
-    defineField({
-      name: 'textOnlyAlignment',
-      type: 'string',
-      title: 'Text alignment',
-      description: 'For TextOnly layout: center or left. Left: title M width, body S width, aligned to Default grid.',
-      options: {
-        list: [
-          { value: 'center', title: 'Center' },
-          { value: 'left', title: 'Left' },
-        ],
-        layout: 'radio',
-      },
-      initialValue: 'center',
-      hidden: ({ parent }) => parent?.template !== 'TextOnly',
     }),
     // Colour
     defineField({
@@ -208,9 +176,9 @@ export const mediaTextStackedBlock = defineType({
     },
     prepare: ({ title, eyebrow, template }) => {
       const layoutLabels: Record<string, string> = {
-        HeroOverlay: 'HeroOverlay',
+        TextOnly: 'Text only',
         Stacked: 'Stacked',
-        TextOnly: 'TextOnly',
+        Overlay: 'Overlay',
       }
       const layout = layoutLabels[template || 'Stacked'] ?? template
       const inferredTitle = (title || eyebrow || '').toString().trim() || 'Media + Text: Stacked'

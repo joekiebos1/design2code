@@ -121,7 +121,7 @@ For 50/50 (text and image side by side) layouts, use **mediaText5050** instead.
   a) A major section-break statement (hero size, centered, bold or subtle background)
   b) An editorial passage that genuinely needs no visual
   Maximum 2 TextOnly blocks per page.
-- `HeroOverlay` — full-bleed cinematic moment. Use once in Engage for maximum
+- `Overlay` — full-bleed cinematic moment. Use once in Engage for maximum
   impact. Not in Setup or Resolve.
 
 **Alignment rules:**
@@ -147,7 +147,7 @@ For 50/50 (text and image side by side) layouts, use **mediaText5050** instead.
 - `overflow` → device shots, product close-ups, hardware, app screens.
 - `contained` → lifestyle photography, human moments, contextual scenes.
 
-**Valid template values:** `HeroOverlay` | `Stacked` | `TextOnly`
+**Valid template values:** `TextOnly` | `Stacked` | `Overlay`
 **Valid size values:** `hero` | `feature` | `editorial`
 **Valid align values:** `left` | `center`
 **Valid mediaStyle values:** `contained` | `overflow`

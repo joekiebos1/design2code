@@ -42,7 +42,7 @@ export type BlockOptions = {
   surfaceColour?: 'primary' | 'secondary' | 'sparkle' | 'neutral' | null
   variant?: string | null
   size?: 'hero' | 'feature' | 'editorial' | null
-  template?: 'HeroOverlay' | 'Stacked' | 'TextOnly' | null
+  template?: 'TextOnly' | 'Stacked' | 'Overlay' | null
   imagePosition?: 'left' | 'right' | null
   mediaStyle?: 'contained' | 'overflow' | null
   imageAspectRatio?: string | null

@@ -24,7 +24,7 @@ Options: variant (category | product | ghost | fullscreen), productName, headlin
 ### mediaTextStacked
 Media + text stacked. Flexible layout for features, intros, CTAs.
 Options:
-- template: HeroOverlay (full bleed), Stacked (image above/below), TextOnly (no media — use for CTA banners)
+- template: TextOnly | Stacked | Overlay. mediaSize: edgeToEdge | default (Stacked/Overlay only). alignment: left | center (left = Default grid).
 - size: hero (largest), feature (standard), editorial (compact)
 - emphasis: ghost | minimal | subtle | bold
 - surfaceColour: primary | secondary | neutral
@@ -169,7 +169,7 @@ Output ONLY valid JSON matching this exact shape. No markdown, no explanation.
         "surfaceColour": "primary | secondary | neutral | null",
         "variant": "string or null (block-specific)",
         "size": "hero | feature | editorial | null (mediaTextStacked)",
-        "template": "HeroOverlay | Stacked | TextOnly | null (mediaTextStacked)",
+        "template": "TextOnly | Stacked | Overlay | null (mediaTextStacked)",
         "cardSize": "compact | medium | large | null (carousel)",
         "columns": "2 | 3 | 4 | null (cardGrid)"
       } | null,

@@ -126,8 +126,7 @@ export function briefToSanityBlocks(brief: PageBrief, assetIds: string[]): Sanit
         return {
           ...base,
           template: hasMedia ? template : 'TextOnly',
-          size: opts.size ?? 'feature',
-          stackImagePosition: (opts.stackImagePosition as 'top' | 'bottom') ?? 'top',
+          alignment: (opts.alignment as 'left' | 'center') ?? 'left',
           surfaceColour: opts.surfaceColour,
           emphasis: opts.emphasis,
           contentWidth: 'Default',

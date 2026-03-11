@@ -21,7 +21,7 @@ export const FullBleed: Story = {
   args: {
     variant: 'full-bleed',
     size: 'hero',
-    headline: 'Full-bleed hero overlay',
+    headline: 'Media overlay',
     subhead: 'Text overlaid on image.',
     media: { ...media, aspectRatio: '16:9' as const },
   },

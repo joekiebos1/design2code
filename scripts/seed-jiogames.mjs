@@ -85,15 +85,15 @@ async function seed() {
         { _key: 'pp4', title: 'Cross-device play', description: 'Start on phone, continue on TV or tablet.', icon: 'IcCheckboxOn' },
       ],
     },
-    // 3. MediaText – HeroOverlay center (full screen image), Games-themed
+    // 3. MediaText – Overlay center (full screen image), Games-themed
     {
       _type: 'mediaTextStacked',
       _key: 'jg-mt-1',
       spacingTop: 'large',
       spacingBottom: 'large',
-      template: 'HeroOverlay',
-      overlayAlignment: 'center',
+      template: 'Overlay',
       mediaSize: 'edgeToEdge',
+      alignment: 'center',
       surfaceColour: 'primary',
       emphasis: 'ghost',
       title: 'Play anywhere. Anytime.',
