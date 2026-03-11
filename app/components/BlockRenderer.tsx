@@ -31,10 +31,6 @@ function normalizeSpacing(v: unknown): BlockSpacingValue {
   return 'large'
 }
 
-function isEmpty(v: unknown): boolean {
-  return v === undefined || v === null || (typeof v === 'string' && v.trim() === '')
-}
-
 /** Map mediaText5050 block to items array. Supports new structure (items) and legacy (singleParagraph, accordionItems, paragraphItems). */
 function mapMediaText5050Items(block: Block): { subtitle?: string; body?: string }[] {
   const items = Array.isArray(block.items)

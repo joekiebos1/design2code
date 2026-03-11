@@ -190,11 +190,13 @@ export default function TestImagesPage() {
                   source?: string
                   ready?: boolean
                 }
-                if (event.slot && event.url) {
+                const slot = event.slot
+                const url = event.url
+                if (slot && url) {
                   setImages((prev) => ({
                     ...prev,
-                    [event.slot]: {
-                      url: event.url,
+                    [slot]: {
+                      url,
                       alt: event.alt ?? '',
                       source: event.source ?? 'database',
                       ready: event.ready ?? true,

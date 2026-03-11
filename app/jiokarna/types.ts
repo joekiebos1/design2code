@@ -37,6 +37,7 @@ export type ImageIntent = 'lifestyle' | 'product' | 'abstract'
 
 /** Block-level options content managers can set per block. */
 export type BlockOptions = {
+  contentLayout?: 'stacked' | 'sideBySide' | 'category' | 'mediaOverlay' | 'textOnly' | 'fullscreen' | null
   blockSurface?: 'ghost' | 'minimal' | 'subtle' | 'bold' | null
   blockAccent?: 'primary' | 'secondary' | 'neutral' | null
   variant?: string | null

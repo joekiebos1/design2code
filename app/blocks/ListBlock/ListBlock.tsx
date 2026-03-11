@@ -10,7 +10,6 @@ import {
 } from '@marcelinodzn/ds-react'
 import { Collapsible } from '@base-ui/react/collapsible'
 import { GridBlock, useGridCell } from '../../components/GridBlock'
-import { BlockContainer } from '../BlockContainer'
 import { BlockSurfaceProvider } from '../../lib/block-surface'
 import { useGridBreakpoint } from '../../lib/use-grid-breakpoint'
 import {
@@ -221,7 +220,7 @@ export function ListBlock({
   blockTitle,
   listVariant = 'textList',
   items,
-  size = 'feature',
+  size: _size = 'feature',
   blockSurface,
   minimalBackgroundStyle,
   blockAccent,

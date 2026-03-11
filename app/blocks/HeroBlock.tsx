@@ -155,13 +155,14 @@ export function HeroBlock({
 
   /** Category and mediaOverlay: Bold (option hidden). All other variants: ghost, minimal, subtle. Default from schema/query. */
   const effectiveSurface: BlockSurface =
-    isMediaOverlay || isCategory ? 'bold' : blockSurface
+    isMediaOverlay || isCategory ? 'bold' : (blockSurface ?? 'minimal')
   const effectiveAccent: BlockAccent = blockAccent ?? 'primary'
 
   const surfaceProps = getSurfaceProviderProps(effectiveSurface)
   const bgColor = useBlockBackgroundColor(effectiveSurface, effectiveAccent)
   /** Fallback when tokenContext unavailable (e.g. outside DsProvider). Uses DS-generated variable. */
-  const resolvedBoldColor = effectiveSurface === 'bold' && (bgColor ?? 'var(--ds-color-block-background-bold)')
+  const resolvedBoldColor =
+    effectiveSurface === 'bold' ? (bgColor ?? 'var(--ds-color-block-background-bold)') : undefined
 
   const headlineMarginBottom = subheadline ? 'var(--ds-spacing-s)' : (ctaText || cta2Text) ? 'var(--ds-spacing-xl)' : 0
   const subheadlineMarginBottom = (ctaText || cta2Text) ? 'var(--ds-spacing-xl)' : 0

@@ -10,7 +10,6 @@
 import jioColors from './jioColors.json'
 
 type SpectrumName = keyof Omit<typeof jioColors, 'primary'>
-type Shade = keyof (typeof jioColors)[SpectrumName]
 
 const colors = jioColors as {
   primary: Record<string, string>

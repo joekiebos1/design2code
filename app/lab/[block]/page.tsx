@@ -41,23 +41,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return { title: `${title} · Lab` }
 }
 
+type LabBlockPageData = { _id: string; slug: string; title: string; sections?: unknown[] }
+
 export default async function LabBlockPage({ params }: PageProps) {
   const { block } = await params
   const { isEnabled: draft } = await draftMode()
   const sanity = getClient(draft)
-  let page: { _id: string; slug: string; title: string; sections?: unknown[] } | null = null
+  let page: LabBlockPageData | null = null
   try {
-    page = await sanity.fetch<typeof page>(labBlockPageBySlugQuery, { slug: block })
+    page = await sanity.fetch<LabBlockPageData | null>(labBlockPageBySlugQuery, { slug: block })
   } catch {
     page = null
   }
   if (!page) {
     notFound()
   }
+  const pageData: LabBlockPageData = page
   return (
     <LabBlockPageClient
-      title={page.title}
-      blocks={page.sections ?? []}
+      title={pageData.title}
+      blocks={pageData.sections ?? []}
     />
   )
 }

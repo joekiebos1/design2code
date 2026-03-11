@@ -13,12 +13,11 @@ import {
   SurfaceProvider,
 } from '@marcelinodzn/ds-react'
 import { GridBlock, useGridCell } from '../../components/GridBlock'
-import { useGridBreakpoint } from '../../lib/use-grid-breakpoint'
 import { BlockContainer, SPACING_VAR } from '../BlockContainer'
 import { BlockReveal } from '../BlockReveal'
 import { VideoWithControls } from '../../components/VideoWithControls'
 import { StreamImage } from '../../components/StreamImage'
-import { MEDIA_TEXT_SUBTITLE_BODY_STYLE, SUBHEAD_STYLE, TYPOGRAPHY } from '../../lib/semantic-headline'
+import { MEDIA_TEXT_SUBTITLE_BODY_STYLE, TYPOGRAPHY } from '../../lib/semantic-headline'
 import { getSurfaceProviderProps, useBlockBackgroundColor } from '../../lib/block-surface'
 import type { MediaTextBlockProps } from './MediaTextBlock.types'
 
@@ -40,9 +39,9 @@ export function MediaTextBlock({
   blockBackground,
   minimalBackgroundStyle,
   blockAccent,
-  spacing,
-  spacingTop,
-  spacingBottom,
+  spacing: _spacing,
+  spacingTop: _spacingTop,
+  spacingBottom: _spacingBottom,
   align,
   eyebrow,
   headline,
@@ -82,7 +81,7 @@ export function MediaTextBlock({
     else window.location.href = href
   }
 
-  const bullets = bulletList.slice(0, 6)
+  const bullets = (bulletList ?? []).slice(0, 6)
 
   const derivedCentered =
     isNarrow ||
@@ -365,11 +364,7 @@ export function MediaTextBlock({
 
   /** Internal vertical padding for background colour: always Large (4xl) per spec. */
   const internalPaddingLarge = SPACING_VAR.large
-  const paddingBlockStart = SPACING_VAR[(spacingTop ?? spacing) as keyof typeof SPACING_VAR] ?? SPACING_VAR.large
-  const paddingBlockEnd = SPACING_VAR[(spacingBottom ?? spacing) as keyof typeof SPACING_VAR] ?? SPACING_VAR.large
   const cellMedia = useGridCell('Default')
-  const { columns } = useGridBreakpoint()
-  const isStacked = columns < 8
 
   const bgColor = useBlockBackgroundColor(blockBackground, blockAccent)
   const useGradient =
