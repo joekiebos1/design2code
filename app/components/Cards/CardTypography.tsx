@@ -11,6 +11,7 @@ export function CardTitle({ children }: { children: React.ReactNode }) {
         fontWeight: 'var(--ds-typography-weight-medium)',
         color: 'var(--ds-color-text-high)',
         lineHeight: 1.4,
+        whiteSpace: 'pre-line',
       }}
     >
       {children}
@@ -46,6 +47,7 @@ export function CardOverlayTitle({ children }: { children: React.ReactNode }) {
         fontWeight: 'var(--ds-typography-weight-medium)',
         color: 'var(--local-color-text-on-overlay)',
         lineHeight: 1.4,
+        whiteSpace: 'pre-line',
       }}
     >
       {children}

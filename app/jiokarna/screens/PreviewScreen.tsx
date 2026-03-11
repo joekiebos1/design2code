@@ -1,30 +1,42 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { Headline, Text, SurfaceProvider, Button } from '@marcelinodzn/ds-react'
 import { BlockRenderer } from '../../components/BlockRenderer'
 import { briefToBlocks } from '../briefToBlocks'
+import { useImageStream } from '../../hooks/useImageStream'
 import type { PageBrief } from '../types'
+import type { PreviewImageSource } from '../JioKarnaContext'
 
 type PreviewScreenProps = {
   brief: PageBrief
+  imageSource: PreviewImageSource
   onApprove: () => void
   onBack: () => void
 }
 
-export function PreviewScreen({ brief, onApprove, onBack }: PreviewScreenProps) {
-  const [sanityImageUrls, setSanityImageUrls] = useState<string[]>([])
+export function PreviewScreen({ brief, imageSource, onApprove, onBack }: PreviewScreenProps) {
+  const jobIdRef = useRef<string | null>(null)
+  if (jobIdRef.current === null) {
+    jobIdRef.current = crypto.randomUUID()
+  }
+  const jobId = jobIdRef.current
 
+  const { images, readyCount, totalCount, allReady } = useImageStream(
+    imageSource === 'artDirector' ? jobId : null,
+    imageSource === 'artDirector' ? brief : null
+  )
+
+  const [sanityUrls, setSanityUrls] = useState<string[]>([])
   useEffect(() => {
+    if (imageSource !== 'sanityOnly') return
     fetch('/api/jiokarna/images')
       .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data?.urls)) setSanityImageUrls(data.urls)
-      })
-      .catch(() => {})
-  }, [])
+      .then((data) => setSanityUrls(data?.urls ?? []))
+      .catch(() => setSanityUrls([]))
+  }, [imageSource])
 
-  const blocks = briefToBlocks(brief, sanityImageUrls)
+  const blocks = briefToBlocks(brief, imageSource === 'sanityOnly' ? sanityUrls : [])
 
   return (
     <SurfaceProvider level={0}>
@@ -47,7 +59,7 @@ export function PreviewScreen({ brief, onApprove, onBack }: PreviewScreenProps) 
               Page preview
             </Headline>
             <Text appearance="secondary" style={{ fontSize: 'var(--ds-typography-body-xs)' }}>
-              {brief.meta.pageName} · Preview of proposed structure
+              {brief.meta.pageName} · Preview ({imageSource === 'artDirector' ? 'Art Director' : 'Sanity only'})
             </Text>
           </div>
           <div style={{ display: 'flex', gap: 'var(--ds-spacing-m)' }}>
@@ -60,6 +72,25 @@ export function PreviewScreen({ brief, onApprove, onBack }: PreviewScreenProps) 
           </div>
         </div>
 
+        {imageSource === 'artDirector' && !allReady && totalCount > 0 && (
+          <div
+            style={{
+              position: 'sticky',
+              top: 0,
+              zIndex: 10,
+              display: 'flex',
+              justifyContent: 'center',
+              padding: 'var(--ds-spacing-s)',
+              background: 'var(--ds-color-background-ghost)',
+              borderBottom: '1px solid var(--ds-color-stroke-subtle)',
+            }}
+          >
+            <Text size="S" appearance="secondary">
+              {readyCount} of {totalCount} images ready
+            </Text>
+          </div>
+        )}
+
         <div
           style={{
             borderTop: '1px solid var(--ds-color-stroke-subtle)',
@@ -67,7 +98,7 @@ export function PreviewScreen({ brief, onApprove, onBack }: PreviewScreenProps) 
             minHeight: '60vh',
           }}
         >
-          <BlockRenderer blocks={blocks} />
+          <BlockRenderer blocks={blocks} images={imageSource === 'artDirector' ? images : undefined} />
         </div>
       </div>
     </SurfaceProvider>

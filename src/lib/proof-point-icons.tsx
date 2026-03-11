@@ -25,6 +25,9 @@ import {
   IcThunderstorm,
   IcRocket,
   IcTarget,
+  IcComputer,
+  IcGlobe,
+  IcWifiNetwork,
 } from '@marcelinodzn/ds-react/icons'
 
 /** Curated proof point icons from DS - statically imported for reliable rendering */
@@ -52,6 +55,9 @@ const PROOF_POINT_ICON_MAP: Record<string, ComponentType<SVGProps<SVGSVGElement>
   IcThunderstorm,
   IcRocket,
   IcTarget,
+  IcComputer,
+  IcGlobe,
+  IcWifiNetwork,
 }
 
 const DEFAULT_ICON = IcCheckboxOn

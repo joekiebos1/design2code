@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 
 const BLOCK_DESCRIPTIONS: Record<string, string> = {
-  hero: 'Hero block: variant, productName, headline, subheadline, ctaText, ctaLink, cta2Text, cta2Link, image',
+  hero: 'Hero block: contentLayout (stacked|sideBySide|mediaOverlay), overlayHeight (band|fullscreen) when mediaOverlay, blockSurface, blockAccent, productName, headline, subheadline, ctaText, ctaLink, cta2Text, cta2Link, image',
   mediaTextBlock:
     'Media+Text block: template, size, title, subhead, body, bulletList, ctaText, ctaLink, blockBackground, contentWidth, image',
   cardGrid: 'Card grid: columns, title, items (cardStyle, title, description, image, ctaText, ctaLink, surface)',

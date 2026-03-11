@@ -5,74 +5,25 @@ import { Headline } from '@marcelinodzn/ds-react'
 import { GridBlock, useGridCell } from '../../components/GridBlock'
 import { BlockContainer } from '../BlockContainer'
 import { BlockReveal } from '../BlockReveal'
-import {
-  MediaCard,
-  TextOnColourCard,
-  TextOnImageCard,
-} from '../../components/Cards'
+import { CardRenderer } from './CardRenderer'
 import { useGridBreakpoint } from '../../lib/use-grid-breakpoint'
-import { getHeadlineFontSize, normalizeHeadingLevel } from '../../lib/semantic-headline'
+import { normalizeHeadingLevel, TYPOGRAPHY } from '../../lib/semantic-headline'
 import { BlockSurfaceProvider } from '../../lib/block-surface'
-import type { CardGridBlockProps, CardGridItem } from './CardGridBlock.types'
+import type { CardGridBlockProps } from './CardGridBlock.types'
 
 const MAX_ITEMS = 12
 
-function CardGridCard({
-  item,
-  prefersReducedMotion,
-}: {
-  item: CardGridItem
-  prefersReducedMotion: boolean
-}) {
-  const { cardStyle, title, description, image, video, ctaText, ctaLink, surface = 'bold' } = item
-  const hasImage = image && typeof image === 'string' && image.trim() !== ''
-
-  if (cardStyle === 'text-on-colour') {
-    return (
-      <TextOnColourCard
-        title={title}
-        description={description}
-        surface={surface}
-      />
-    )
-  }
-
-  if (cardStyle === 'text-on-image' && hasImage) {
-    return (
-      <TextOnImageCard
-        title={title}
-        description={description}
-        image={image}
-        config={{ aspectRatio: '4/5' }}
-      />
-    )
-  }
-
-  // image-above (default): same 4:5 card as Carousel, no light blue background
-  return (
-    <MediaCard
-      title={title}
-      description={description}
-      image={image}
-      video={video}
-      link={ctaLink}
-      ctaText={ctaText}
-      aspectRatio="4:5"
-      prefersReducedMotion={prefersReducedMotion}
-      config={{ layout: 'compact' }}
-    />
-  )
-}
-
 export function CardGridBlock({
-  columns = 3,
+  columns,
   title,
-  blockSurface = 'ghost',
-  blockAccent = 'primary',
+  blockSurface,
+  minimalBackgroundStyle,
+  blockAccent,
   items,
+  images,
 }: CardGridBlockProps) {
   const level = normalizeHeadingLevel('h2')
-  const items_ = (items ?? []).filter((i) => i?.title || i?.image || i?.video).slice(0, MAX_ITEMS)
+  const items_ = (items ?? []).filter((i) => i?.title || (i as { image?: string })?.image || (i as { video?: string })?.video).slice(0, MAX_ITEMS)
   const cell = useGridCell('Default')
   const { columns: gridColumns } = useGridBreakpoint()
 
@@ -87,19 +38,19 @@ export function CardGridBlock({
 
   if (items_.length === 0) return null
 
-  const colsDesktop = Math.min(columns, 4)
+  const colsDesktop = Math.min(columns!, 4)
   const cols =
     gridColumns <= 4 ? 1 : gridColumns <= 8 ? Math.min(2, colsDesktop) : colsDesktop
   const gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`
 
   return (
     <BlockReveal>
-      <BlockSurfaceProvider blockSurface={blockSurface} blockAccent={blockAccent} fullWidth>
+      <BlockSurfaceProvider blockSurface={blockSurface} blockAccent={blockAccent} minimalBackgroundStyle={minimalBackgroundStyle} fullWidth>
         <GridBlock as="section">
           <div style={{ ...cell, display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-2xl)' }}>
             {title && (
               <BlockContainer contentWidth="Default">
-                <Headline size="S" weight="high" as={level} align="center" style={{ margin: 0, fontSize: getHeadlineFontSize(level) }}>
+                <Headline size="S" weight="high" as={level} align="center" style={{ margin: 0, fontSize: TYPOGRAPHY.h2, whiteSpace: 'pre-line' }}>
                   {title}
                 </Headline>
               </BlockContainer>
@@ -114,7 +65,14 @@ export function CardGridBlock({
                 }}
               >
                 {items_.map((item, i) => (
-                  <CardGridCard key={i} item={item} prefersReducedMotion={prefersReducedMotion} />
+                  <CardRenderer
+                    key={(item as { _key?: string })._key ?? i}
+                    item={item}
+                    prefersReducedMotion={prefersReducedMotion}
+                    imageState={(item as { imageSlot?: string }).imageSlot && images
+                      ? images[(item as { imageSlot: string }).imageSlot]
+                      : undefined}
+                  />
                 ))}
               </div>
             </BlockContainer>

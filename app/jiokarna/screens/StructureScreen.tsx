@@ -27,11 +27,12 @@ function formatBlockOptions(opts: Section['blockOptions']): string | null {
 type StructureScreenProps = {
   brief: PageBrief | null
   isGenerating: boolean
-  onPreview: () => void
+  onPreviewArtDirector: () => void
+  onPreviewSanityOnly: () => void
   onRegenerate: () => void
 }
 
-export function StructureScreen({ brief, isGenerating, onPreview, onRegenerate }: StructureScreenProps) {
+export function StructureScreen({ brief, isGenerating, onPreviewArtDirector, onPreviewSanityOnly, onRegenerate }: StructureScreenProps) {
   if (isGenerating) {
     return (
       <SurfaceProvider level={0}>
@@ -158,9 +159,12 @@ export function StructureScreen({ brief, isGenerating, onPreview, onRegenerate }
             ))}
         </div>
 
-        <div style={{ display: 'flex', gap: 'var(--ds-spacing-m)' }}>
-          <Button onPress={onPreview} appearance="neutral" size="M" attention="high">
-            Preview page
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--ds-spacing-m)' }}>
+          <Button onPress={onPreviewArtDirector} appearance="neutral" size="M" attention="high">
+            Preview with Art Director
+          </Button>
+          <Button onPress={onPreviewSanityOnly} appearance="secondary" size="M" attention="high">
+            Preview with Sanity only
           </Button>
           <Button onPress={onRegenerate} appearance="secondary" contained={false} size="M" attention="high">
             Regenerate

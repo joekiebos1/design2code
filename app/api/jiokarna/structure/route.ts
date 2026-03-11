@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { readFileSync } from 'fs'
 import { join } from 'path'
+import JSON5 from 'json5'
 import Anthropic from '@anthropic-ai/sdk'
+import { transformJSONSchema } from '@anthropic-ai/sdk/lib/transform-json-schema'
 import type { PageBrief } from '../../../jiokarna/types'
+import { PAGE_BRIEF_SCHEMA } from '../structure-schema'
 
 /** Page Architect rules — product page structure principles. Sent when proposing structure. */
 const ARCHITECT_RULES = readFileSync(
@@ -19,15 +22,20 @@ Full-width or compact hero. Use for page opening, product launch, campaign hero.
 Options: variant (category | product | ghost | fullscreen), productName, headline, subheadline, ctaText, ctaLink, cta2Text, cta2Link, image.
 
 ### mediaTextBlock
-Media + text. Flexible layout for features, intros, CTAs.
+Media + text stacked. Flexible layout for features, intros, CTAs.
 Options:
-- template: SideBySide (50/50), HeroOverlay (full bleed), Stacked (image above/below), TextOnly (no media — use for CTA banners)
+- template: HeroOverlay (full bleed), Stacked (image above/below), TextOnly (no media — use for CTA banners)
 - size: hero (largest), feature (standard), editorial (compact)
 - blockBackground: ghost | minimal | subtle | bold
 - blockAccent: primary | secondary | neutral
-- imagePosition: left | right (for SideBySide)
+- stackImagePosition: top | bottom (for Stacked)
 - contentWidth: XS | S | M | Default | Wide | edgeToEdge
 Slots: eyebrow, title, subhead, body, bulletList (max 6), ctaText, ctaLink, cta2Text, cta2Link, image, video.
+
+### mediaText5050
+Media + text 50/50. Text and image side by side. Use for feature comparisons, accordions, multi-paragraph content.
+Options: variant (paragraphs | accordion), imagePosition (left | right), blockBackground, blockAccent.
+Slots: headline, items[] (subtitle, body), image, video.
 
 ### cardGrid
 Grid of 2, 3, or 4 cards. Use for feature comparison, benefits, product highlights.
@@ -123,9 +131,9 @@ Output ONLY valid JSON matching this exact shape. No markdown, no explanation.
 
 {
   "meta": {
-    "pageName": "string",
+    "pageName": "string (use product from intent)",
     "pageType": "campaign | product-launch | editorial | category | other",
-    "slug": "string (URL-friendly)",
+    "slug": "string (URL-friendly, derive from page path)",
     "intent": "string",
     "audience": "string",
     "primaryAction": "string",
@@ -141,7 +149,7 @@ Output ONLY valid JSON matching this exact shape. No markdown, no explanation.
     {
       "order": 1,
       "sectionName": "string",
-      "component": "string (use only: hero, mediaTextBlock, cardGrid, carousel, proofPoints)",
+      "component": "string (use only: hero, mediaTextBlock, mediaText5050, cardGrid, carousel, proofPoints)",
       "rationale": "string",
       "narrativeRole": "string",
       "contentSlots": {
@@ -161,12 +169,14 @@ Output ONLY valid JSON matching this exact shape. No markdown, no explanation.
         "blockAccent": "primary | secondary | neutral | null",
         "variant": "string or null (block-specific)",
         "size": "hero | feature | editorial | null (mediaTextBlock)",
-        "template": "SideBySide | HeroOverlay | Stacked | TextOnly | null (mediaTextBlock)",
+        "template": "HeroOverlay | Stacked | TextOnly | null (mediaTextBlock)",
         "cardSize": "compact | medium | large | null (carousel)",
         "columns": "2 | 3 | 4 | null (cardGrid)"
       } | null,
       "crossLinks": [{ "label": "string", "destination": "string", "rationale": "string" }] | null,
-      "flags": []
+      "flags": [],
+      "imageBrief": "string or null — description of the ideal visual for this block (Art Director uses this)",
+      "imageIntent": "lifestyle | product | abstract | null — visual intent signal"
     }
   ],
   "launchChecklist": [],
@@ -208,8 +218,12 @@ export async function POST(req: NextRequest) {
       .join('\n\n')
 
     const userPrompt = `Page intent:
-- Name: ${intentData.pageName || 'Untitled'}
+- Product: ${intentData.product || 'Untitled'}
 - Type: ${intentData.pageType || 'other'}
+- Audience: ${intentData.audience || 'Not specified'}
+- Primary action: ${intentData.primaryAction || 'Not specified'}
+- Key message: ${intentData.keyMessage || 'Not specified'}
+- Page path: ${intentData.pagePath || 'Not specified'}
 - Intent: ${intentData.intent || 'Not specified'}
 ${intentData.briefContent ? `- Brief: ${intentData.briefContent}` : ''}
 
@@ -223,24 +237,85 @@ ${BLOCK_LIBRARY}
 
 Propose the page structure as JSON. Output ONLY the JSON object, no markdown.`
 
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4096,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: userPrompt }],
-    })
+    let response: Awaited<ReturnType<typeof anthropic.messages.create>>
+    try {
+      response = await anthropic.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 8192,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: userPrompt }],
+      output_config: {
+        format: {
+          type: 'json_schema',
+          schema: transformJSONSchema(PAGE_BRIEF_SCHEMA as Record<string, unknown>),
+        },
+      },
+      })
+    } catch (structuredErr: unknown) {
+      // Fallback if structured output not supported (e.g. model or schema)
+      const err = structuredErr as { status?: number }
+      if (err?.status === 400) {
+        response = await anthropic.messages.create({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 8192,
+          system: SYSTEM_PROMPT,
+          messages: [{ role: 'user', content: userPrompt }],
+        })
+      } else {
+        throw structuredErr
+      }
+    }
 
     const textContent = response.content.find((c) => c.type === 'text')
     if (!textContent || textContent.type !== 'text') {
       return NextResponse.json({ error: 'No text in AI response' }, { status: 500 })
     }
 
-    let parsed: PageBrief
-    try {
-      const text = textContent.text.trim().replace(/^```json?\s*|\s*```$/g, '')
-      parsed = JSON.parse(text) as PageBrief
-    } catch {
-      return NextResponse.json({ error: 'Invalid JSON from AI', raw: textContent.text }, { status: 500 })
+    /** Extract and normalize JSON from AI response. */
+    function extractJson(raw: string): string {
+      let text = raw.trim().replace(/^\uFEFF/, '')
+      const codeBlock = text.match(/```(?:json)?\s*([\s\S]*?)```/)
+      if (codeBlock) text = codeBlock[1].trim()
+      const firstBrace = text.indexOf('{')
+      const lastBrace = text.lastIndexOf('}')
+      if (firstBrace !== -1 && lastBrace > firstBrace) {
+        text = text.slice(firstBrace, lastBrace + 1)
+      }
+      // Fix common LLM output issues
+      text = text
+        .replace(/[\u201C\u201D]/g, '"')
+        .replace(/[\u2018\u2019]/g, "'")
+        .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '')
+      return text
+    }
+
+    const text = extractJson(textContent.text)
+
+    function tryParse(t: string): PageBrief | null {
+      try {
+        return JSON.parse(t) as PageBrief
+      } catch {
+        try {
+          return JSON5.parse(t) as PageBrief
+        } catch {
+          return null
+        }
+      }
+    }
+
+    const parsed = tryParse(text)
+
+    if (!parsed) {
+      console.error('Structure JSON parse error')
+      console.error('Extracted text (first 2000 chars):', text.slice(0, 2000))
+      return NextResponse.json(
+        {
+          error: 'Invalid JSON from AI',
+          snippet: text.length > 800 ? `...${text.slice(-600)}` : text,
+          hint: 'Common causes: truncated response (try shorter interview), unescaped quotes in strings, or smart quotes.',
+        },
+        { status: 500 }
+      )
     }
 
     if (!parsed.meta) parsed.meta = {} as PageBrief['meta']
@@ -249,6 +324,13 @@ Propose the page structure as JSON. Output ONLY the JSON object, no markdown.`
     parsed.createdAt = new Date().toISOString()
     parsed.version = 1
     parsed.status = 'draft'
+
+    const id = intentData as { product?: string; pagePath?: string; audience?: string; primaryAction?: string; keyMessage?: string }
+    if (id.product && !parsed.meta.pageName) parsed.meta.pageName = id.product
+    if (id.pagePath) parsed.meta.slug = id.pagePath.replace(/^\//, '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9/-]/g, '')
+    if (id.audience && !parsed.meta.audience) parsed.meta.audience = id.audience
+    if (id.primaryAction && !parsed.meta.primaryAction) parsed.meta.primaryAction = id.primaryAction
+    if (id.keyMessage && !parsed.meta.keyMessage) parsed.meta.keyMessage = id.keyMessage
 
     return NextResponse.json({ brief: parsed })
   } catch (err) {

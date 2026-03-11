@@ -5,6 +5,8 @@
 
 /* Local tokens – only what DS does not provide */
 :root {
+  /* Fifth functional colour: Background. Placeholder until DS adds it. Hero Category variant only. */
+  --ds-color-background-functional: #200066;
   --local-color-overlay-dark: rgba(0, 0, 0, 0.7);
   --local-color-text-on-overlay: rgb(255, 255, 255);
   --local-color-text-on-overlay-subtle: rgba(255, 255, 255, 0.95);
@@ -229,5 +231,11 @@ main * {
   .media-text-narrow-wide-grid .media-text-narrow-wide-grid__image {
     grid-column: span 4;
   }
+}
+
+/* Stream image skeleton – progressive image loading */
+@keyframes stream-image-skeleton {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
 }
 

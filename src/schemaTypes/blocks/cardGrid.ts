@@ -1,5 +1,7 @@
 import { defineField, defineType } from 'sanity'
+import { DS_THEMES, DS_THEME_DEFAULT } from '../shared/dsThemes'
 import { spacingTopField, spacingBottomField } from '../shared/spacingFields'
+import { minimalBackgroundStyleField } from '../shared/minimalBackgroundStyleField'
 
 export const cardGridItem = defineType({
   name: 'cardGridItem',
@@ -10,11 +12,10 @@ export const cardGridItem = defineType({
       name: 'cardStyle',
       type: 'string',
       title: 'Card style',
-      description: 'image-above: image on top, text below. text-on-colour: text on coloured background. text-on-image: text overlay on image.',
+      description: 'image-above: image on top, text below. text-on-image: text overlay on image. For text on colour, use Text on colour card type.',
       options: {
         list: [
           { value: 'image-above', title: 'Image above' },
-          { value: 'text-on-colour', title: 'Text on colour' },
           { value: 'text-on-image', title: 'Text on image' },
         ],
         layout: 'radio',
@@ -23,8 +24,10 @@ export const cardGridItem = defineType({
     }),
     defineField({
       name: 'title',
-      type: 'string',
+      type: 'text',
       title: 'Title',
+      rows: 2,
+      description: 'Press Enter for a line break.',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
@@ -38,57 +41,40 @@ export const cardGridItem = defineType({
       type: 'image',
       title: 'Image',
       options: { hotspot: true },
-      hidden: ({ parent }) => parent?.cardStyle === 'text-on-colour',
     }),
     defineField({
       name: 'imageUrl',
       type: 'string',
       title: 'Image URL',
       description: 'External image URL. Used when no image is uploaded.',
-      hidden: ({ parent }) => parent?.cardStyle === 'text-on-colour',
     }),
     defineField({
       name: 'videoUrl',
       type: 'string',
       title: 'Video URL',
       description: 'External video URL. When set, video is shown instead of image (image-above only).',
-      hidden: ({ parent }) => parent?.cardStyle === 'text-on-colour',
+      hidden: ({ parent }) => parent?.cardStyle !== 'image-above',
     }),
     defineField({
       name: 'ctaText',
       type: 'string',
       title: 'CTA label',
       description: 'Call-to-action button label.',
-      hidden: ({ parent }) => parent?.cardStyle === 'text-on-colour',
+      hidden: ({ parent }) => parent?.cardStyle !== 'image-above',
     }),
     defineField({
       name: 'ctaLink',
       type: 'string',
       title: 'CTA link',
       description: 'Call-to-action destination URL.',
-      hidden: ({ parent }) => parent?.cardStyle === 'text-on-colour' || !parent?.ctaText,
-    }),
-    defineField({
-      name: 'surface',
-      type: 'string',
-      title: 'Background',
-      description: 'For text-on-colour: subtle or bold background.',
-      options: {
-        list: [
-          { value: 'subtle', title: 'Subtle' },
-          { value: 'bold', title: 'Bold' },
-        ],
-        layout: 'radio',
-      },
-      initialValue: 'bold',
-      hidden: ({ parent }) => parent?.cardStyle !== 'text-on-colour',
+      hidden: ({ parent }) => parent?.cardStyle !== 'image-above' || !parent?.ctaText,
     }),
   ],
   preview: {
     select: { title: 'title', cardStyle: 'cardStyle' },
     prepare: ({ title, cardStyle }) => ({
       title: title || 'Card',
-      subtitle: cardStyle === 'image-above' ? 'Image above' : cardStyle === 'text-on-colour' ? 'Text on colour' : 'Text on image',
+      subtitle: cardStyle === 'image-above' ? 'Image above' : 'Text on image',
     }),
   },
 })
@@ -101,6 +87,7 @@ export const cardGridBlock = defineType({
   fields: [
     spacingTopField,
     spacingBottomField,
+    // Layout
     defineField({
       name: 'columns',
       type: 'string',
@@ -116,10 +103,17 @@ export const cardGridBlock = defineType({
       },
       initialValue: '3',
     }),
+    // Colour
     defineField({
-      name: 'title',
+      name: 'theme',
       type: 'string',
-      title: 'Section title',
+      title: 'Theme',
+      description: 'Design system theme. Default: MyJio.',
+      options: {
+        list: [...DS_THEMES],
+        layout: 'dropdown',
+      },
+      initialValue: DS_THEME_DEFAULT,
     }),
     defineField({
       name: 'blockAccent',
@@ -152,19 +146,31 @@ export const cardGridBlock = defineType({
       },
       initialValue: 'ghost',
     }),
+    minimalBackgroundStyleField('surface'),
+    // Content
+    defineField({
+      name: 'title',
+      type: 'text',
+      title: 'Section title',
+      rows: 2,
+      description: 'Press Enter for a line break.',
+    }),
     defineField({
       name: 'items',
       type: 'array',
       title: 'Cards',
-      of: [{ type: 'cardGridItem' }],
+      of: [{ type: 'cardGridItem' }, { type: 'textOnColourCardItem' }],
       validation: (Rule) => Rule.required().min(1).max(12),
     }),
   ],
   preview: {
     select: { title: 'title', columns: 'columns', items: 'items' },
-    prepare: ({ title, columns, items }) => ({
-      title: title || 'Card grid',
-      subtitle: `${columns} cols · ${items?.length ?? 0} card(s)`,
-    }),
+    prepare: ({ title, columns, items }) => {
+      const inferredTitle = (title || '').toString().trim() || 'Card grid'
+      return {
+        title: inferredTitle,
+        subtitle: `Card grid · ${columns ?? '3'} cols · ${items?.length ?? 0} card(s)`,
+      }
+    },
   },
 })

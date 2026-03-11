@@ -82,7 +82,8 @@ async function seed() {
     {
       _type: 'hero',
       _key: 'hero',
-      variant: 'ghost',
+      contentLayout: 'stacked',
+      blockSurface: 'ghost',
       spacingBottom: 'large',
       productName: 'Pixel 10 Pro',
       headline: 'Meet the new status pro.',
@@ -157,7 +158,7 @@ async function seed() {
         { _type: 'cardItem', _key: 'g2-t', cardType: 'text-on-colour', title: 'Talk to Gemini about anything you see', description: 'Share your camera in Gemini Live to have a back-and-forth chat about what\'s around you.', link: 'https://store.google.com/intl/en_uk/ideas/gemini-ai-assistant/', ctaText: 'Read more' },
         { _type: 'cardItem', _key: 'g3-m', cardType: 'media', videoUrl: VIDEO.g3 },
         { _type: 'cardItem', _key: 'g3-t', cardType: 'text-on-colour', title: 'Ask Gemini about anything, from anywhere', description: 'Go Live with Gemini to have a natural, free-flowing conversation. Just start talking to get info, brainstorm ideas and more.', link: 'https://store.google.com/intl/en_uk/ideas/gemini-ai-assistant/', ctaText: 'Read more' },
-        { _type: 'cardItem', _key: 'g4-m', cardType: 'media', title: 'Talk through whatever\'s on your screen', description: 'Curious about something you\'re browsing? Just ask Gemini for more details.', image: imageRef(getAsset(7)) },
+        { _type: 'cardItem', _key: 'g4-m', cardType: 'media', title: 'Talk through whatever\'s on your screen', image: imageRef(getAsset(7)) },
         { _type: 'cardItem', _key: 'g4-t', cardType: 'text-on-colour', title: 'Talk through whatever\'s on your screen', description: 'Curious about something you\'re browsing? Just ask Gemini for more details.', link: 'https://store.google.com/intl/en_uk/ideas/gemini-ai-assistant/', ctaText: 'Read more' },
         { _type: 'cardItem', _key: 'g5-m', cardType: 'media', videoUrl: VIDEO.g5 },
         { _type: 'cardItem', _key: 'g5-t', cardType: 'text-on-colour', title: 'Ask Gemini to multitask across your apps', description: 'Save time by asking Gemini to find info and get things done for you - like checking your calendar, then texting a reminder.', link: 'https://store.google.com/intl/en_uk/ideas/articles/gemini-app-extensions/', ctaText: 'Read more' },

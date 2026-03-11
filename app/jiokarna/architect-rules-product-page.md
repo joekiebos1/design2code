@@ -111,26 +111,18 @@ These rules exist because AI tends toward the obvious. Fight it.
 
 ### MediaTextBlock
 The primary storytelling unit. Use throughout Engage. Rich, varied, human.
+For 50/50 (text and image side by side) layouts, use **mediaText5050** instead.
 
 **Template rules:**
-- `SideBySide` — default for most feature and use case blocks. Always include
-  a strong visual. Use `overflow` for device/product shots, `contained` for
-  lifestyle and human moments.
+- `Stacked` — default for most feature and use case blocks. Image above or
+  below text. Always include a strong visual. Use `overflow` for device/product
+  shots, `contained` for lifestyle and human moments.
 - `TextOnly` — use sparingly. Only for:
   a) A major section-break statement (hero size, centered, bold or subtle background)
   b) An editorial passage that genuinely needs no visual
   Maximum 2 TextOnly blocks per page.
 - `HeroOverlay` — full-bleed cinematic moment. Use once in Engage for maximum
   impact. Not in Setup or Resolve.
-- `Stacked` — image above or below text. Use for product close-ups where the
-  image needs full width to breathe.
-
-**Zigzag rule:**
-When placing 3 or more SideBySide mediaTextBlocks consecutively, alternate image
-position: right → left → right → left.
-The zigzag only applies to consecutive runs of 3 or more SideBySide blocks.
-Two SideBySide blocks in a row do not need to zigzag but should still alternate.
-Never place the same imagePosition twice in a row within a consecutive run of 3+.
 
 **Alignment rules:**
 - `center` alignment is high-attention. Reserve for the single most important
@@ -155,10 +147,10 @@ Never place the same imagePosition twice in a row within a consecutive run of 3+
 - `overflow` → device shots, product close-ups, hardware, app screens.
 - `contained` → lifestyle photography, human moments, contextual scenes.
 
-**Valid template values:** `SideBySide` | `HeroOverlay` | `Stacked` | `TextOnly`
+**Valid template values:** `HeroOverlay` | `Stacked` | `TextOnly`
 **Valid size values:** `hero` | `feature` | `editorial`
 **Valid align values:** `left` | `center`
-**Valid imagePosition values:** `left` | `right`
+**Valid stackImagePosition values (Stacked only):** `top` | `bottom`
 **Valid mediaStyle values:** `contained` | `overflow`
 **Valid blockBackground values:** `ghost` | `minimal` | `subtle` | `bold`
 

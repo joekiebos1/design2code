@@ -1,6 +1,6 @@
 /**
  * Semantic headline size mapping.
- * When AI/content assigns h2, h3, or h4, size adjusts accordingly.
+ * Use fixed DS typography tokens (var(--ds-typography-*)) — tokens come from ds-tokens / generated CSS.
  */
 export type HeadingLevel = 'h2' | 'h3' | 'h4'
 
@@ -21,41 +21,8 @@ export const HEADLINE_SIZE_BY_LEVEL: Record<HeadingLevel, 'L' | 'M' | 'S' | 'XS'
   h4: 'S',
 }
 
-/** DS typography tokens: H2 slightly smaller than H1 (hero), H3/H4 step down */
-export const HEADLINE_FONT_SIZE_BY_LEVEL: Record<HeadingLevel, string> = {
-  h2: 'var(--ds-typography-h2)',
-  h3: 'var(--ds-typography-h3)',
-  h4: 'var(--ds-typography-h4)',
-}
-
 export function getHeadlineSize(level: HeadingLevel): 'L' | 'M' | 'S' | 'XS' {
   return HEADLINE_SIZE_BY_LEVEL[level]
-}
-
-export function getHeadlineFontSize(level: HeadingLevel): string {
-  return HEADLINE_FONT_SIZE_BY_LEVEL[level]
-}
-
-/** One step larger: h2→h1, h3→h2, h4→h3 */
-export const HEADLINE_FONT_SIZE_ONE_STEP_UP: Record<HeadingLevel, string> = {
-  h2: 'var(--ds-typography-h1)',
-  h3: 'var(--ds-typography-h2)',
-  h4: 'var(--ds-typography-h3)',
-}
-
-export function getHeadlineFontSizeOneStepUp(level: HeadingLevel): string {
-  return HEADLINE_FONT_SIZE_ONE_STEP_UP[level]
-}
-
-/** One step smaller: h2→h3, h3→h4, h4→label-m */
-export const HEADLINE_FONT_SIZE_ONE_STEP_DOWN: Record<HeadingLevel, string> = {
-  h2: 'var(--ds-typography-h3)',
-  h3: 'var(--ds-typography-h4)',
-  h4: 'var(--ds-typography-label-m)',
-}
-
-export function getHeadlineFontSizeOneStepDown(level: HeadingLevel): string {
-  return HEADLINE_FONT_SIZE_ONE_STEP_DOWN[level]
 }
 
 /** Child level (one step down): h2→h3, h3→h4, h4→h4 */
@@ -63,8 +30,41 @@ export function getChildLevel(level: HeadingLevel): HeadingLevel {
   return level === 'h2' ? 'h3' : level === 'h3' ? 'h4' : 'h4'
 }
 
+/** Fixed DS typography tokens. Use these instead of helper functions. */
+export const TYPOGRAPHY = {
+  h1: 'var(--ds-typography-h1)',
+  h2: 'var(--ds-typography-h2)',
+  h3: 'var(--ds-typography-h3)',
+  h4: 'var(--ds-typography-h4)',
+  h5: 'var(--ds-typography-h5)',
+  labelM: 'var(--ds-typography-label-m)',
+} as const
+
 /** Subhead typography: standardised across HeroBlock, MediaTextBlock, lab variants */
 export const SUBHEAD_STYLE = {
-  fontSize: 'var(--ds-typography-h5)',
+  fontSize: TYPOGRAPHY.h5,
   fontWeight: 'var(--ds-typography-weight-medium)',
+} as const
+
+/** Hero body/subheadline typography: reference = side-by-side edge-to-edge. Use for all Hero variants. */
+export const HERO_BODY_STYLE = {
+  fontSize: 'var(--ds-typography-headline-xs)',
+  fontWeight: 'var(--ds-typography-weight-low)',
+  lineHeight: 1.5,
+} as const
+
+/** Media text block subtitle + body: matches carousel card (Nano Banana section). Use for MediaTextBlock subhead/body and MediaText5050Block subtitles/body. */
+export const MEDIA_TEXT_SUBTITLE_BODY_STYLE = {
+  subtitle: {
+    fontSize: 'var(--ds-typography-h5)',
+    fontWeight: 'var(--ds-typography-weight-medium)',
+    lineHeight: 1.4,
+  } as const,
+  body: {
+    fontSize: 'var(--ds-typography-label-s)',
+    fontWeight: 'var(--ds-typography-weight-low)',
+    lineHeight: 1.4,
+  } as const,
+  gap: 'var(--ds-spacing-m)' as const,
+  paddingRight: 'var(--ds-spacing-l)' as const,
 } as const

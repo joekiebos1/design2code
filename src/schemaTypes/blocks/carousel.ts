@@ -1,5 +1,7 @@
 import { defineField, defineType } from 'sanity'
+import { DS_THEMES, DS_THEME_DEFAULT } from '../shared/dsThemes'
 import { spacingTopField, spacingBottomField } from '../shared/spacingFields'
+import { minimalBackgroundStyleField } from '../shared/minimalBackgroundStyleField'
 
 export const carouselBlock = defineType({
   name: 'carousel',
@@ -9,12 +11,7 @@ export const carouselBlock = defineType({
   fields: [
     spacingTopField,
     spacingBottomField,
-    defineField({
-      name: 'title',
-      type: 'string',
-      title: 'Section title',
-      description: 'Optional heading above the carousel',
-    }),
+    // Layout
     defineField({
       name: 'cardSize',
       type: 'string',
@@ -29,6 +26,18 @@ export const carouselBlock = defineType({
         layout: 'radio',
       },
       initialValue: 'compact',
+    }),
+    // Colour
+    defineField({
+      name: 'theme',
+      type: 'string',
+      title: 'Theme',
+      description: 'Design system theme. Default: MyJio.',
+      options: {
+        list: [...DS_THEMES],
+        layout: 'dropdown',
+      },
+      initialValue: DS_THEME_DEFAULT,
     }),
     defineField({
       name: 'blockAccent',
@@ -61,6 +70,15 @@ export const carouselBlock = defineType({
       },
       initialValue: 'ghost',
     }),
+    minimalBackgroundStyleField('surface'),
+    // Content
+    defineField({
+      name: 'title',
+      type: 'text',
+      title: 'Section title',
+      rows: 2,
+      description: 'Optional heading above the carousel. Press Enter for a line break.',
+    }),
     defineField({
       name: 'items',
       type: 'array',
@@ -73,10 +91,13 @@ export const carouselBlock = defineType({
     }),
   ],
   preview: {
-    select: { title: 'title', items: 'items' },
-    prepare: ({ title, items }) => ({
-      title: title || 'Carousel',
-      subtitle: `${items?.length ?? 0} card(s)`,
-    }),
+    select: { title: 'title', cardSize: 'cardSize', items: 'items' },
+    prepare: ({ title, cardSize, items }) => {
+      const inferredTitle = (title || '').toString().trim() || 'Carousel'
+      return {
+        title: inferredTitle,
+        subtitle: `Carousel · ${cardSize ?? 'compact'} · ${items?.length ?? 0} card(s)`,
+      }
+    },
   },
 })

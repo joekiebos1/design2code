@@ -32,13 +32,17 @@ export type ContentSlots = {
   items: unknown[] | null
 }
 
+/** Art Director: lifestyle | product | abstract */
+export type ImageIntent = 'lifestyle' | 'product' | 'abstract'
+
 /** Block-level options content managers can set per block. */
 export type BlockOptions = {
   blockSurface?: 'ghost' | 'minimal' | 'subtle' | 'bold' | null
   blockAccent?: 'primary' | 'secondary' | 'neutral' | null
   variant?: string | null
   size?: 'hero' | 'feature' | 'editorial' | null
-  template?: 'SideBySide' | 'HeroOverlay' | 'Stacked' | 'TextOnly' | null
+  template?: 'HeroOverlay' | 'Stacked' | 'TextOnly' | null
+  stackImagePosition?: 'top' | 'bottom' | null
   imagePosition?: 'left' | 'right' | null
   mediaStyle?: 'contained' | 'overflow' | null
   imageAspectRatio?: string | null
@@ -56,6 +60,10 @@ export type Section = {
   blockOptions?: BlockOptions | null
   crossLinks?: SectionCrossLink[] | null
   flags: string[]
+  /** Architect: description of ideal visual for this block. */
+  imageBrief?: string | null
+  /** Art Director: lifestyle | product | abstract */
+  imageIntent?: ImageIntent | null
 }
 
 export type PageBriefMeta = {
@@ -86,8 +94,15 @@ export type PageBrief = {
 }
 
 export type IntentFormData = {
-  pageName: string
+  /** Product or page name. */
+  product: string
   pageType: PageType
+  /** What the page should accomplish; who it's for. */
   intent: string
+  audience: string
+  primaryAction: string
+  keyMessage: string
+  /** URL path (e.g. /products/jiosaavn). */
+  pagePath: string
   briefContent?: string
 }

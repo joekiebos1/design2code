@@ -36,6 +36,8 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
+    "lib/**/*.ts",
+    "lib/**/*.json",
     "sanity.config.ts",
     "sanity.cli.ts",
     "app/**/*.ts",

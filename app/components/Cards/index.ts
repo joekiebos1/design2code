@@ -11,11 +11,13 @@
 export { MediaCard } from './MediaCard'
 export { MediaCardContained } from './MediaCardContained'
 export { TextOnColourCard } from './TextOnColourCard'
+export { TextOnColourCardGrid } from './TextOnColourCardGrid'
 export { TextOnImageCard } from './TextOnImageCard'
 
 export type { MediaCardProps, MediaCardLayout } from './MediaCard'
 export type { MediaCardContainedProps } from './MediaCardContained'
 export type { TextOnColourCardProps, TextOnColourCardSize } from './TextOnColourCard'
+export type { TextOnColourCardGridProps, TextOnColourCardGridBackground } from './TextOnColourCardGrid'
 export type { TextOnImageCardProps } from './TextOnImageCard'
 
 export type {

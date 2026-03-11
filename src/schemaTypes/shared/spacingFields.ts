@@ -2,14 +2,14 @@ import { defineField } from 'sanity'
 
 const spacingOptions = {
   list: [
-    { value: 'small', title: 'Small' },
-    { value: 'medium', title: 'Medium' },
-    { value: 'large', title: 'Large' },
+    { value: 'none', title: 'No padding' },
+    { value: 'medium', title: 'Medium padding' },
+    { value: 'large', title: 'Large padding' },
   ],
   layout: 'radio' as const,
 }
 
-/** Padding above this block (paddingBlockStart). */
+/** Padding above this block (paddingBlockStart). DS tokens: none=0, medium=3xl, large=4xl. */
 export const spacingTopField = defineField({
   name: 'spacingTop',
   type: 'string',
@@ -19,7 +19,7 @@ export const spacingTopField = defineField({
   initialValue: 'large',
 })
 
-/** Padding below this block (paddingBlockEnd). */
+/** Padding below this block (paddingBlockEnd). DS tokens: none=0, medium=3xl, large=4xl. */
 export const spacingBottomField = defineField({
   name: 'spacingBottom',
   type: 'string',

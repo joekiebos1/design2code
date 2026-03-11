@@ -26,9 +26,8 @@ export const PLACEHOLDER_CONTENT = {
     body: 'The Home tab is your all-in-one destination for getting back into the games you love. Browse trending titles, pick up where you left off, and discover new favorites—all in one place.',
     ctaText: 'Visit JioGames',
     ctaLink: '/games',
-    template: 'SideBySide',
-    imagePosition: 'left',
-    imageAspectRatio: '4:3',
+    template: 'Stacked',
+    stackImagePosition: 'top',
   },
   proofPoints: {
     title: 'Why believe us',

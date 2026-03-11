@@ -5,13 +5,19 @@
  * Content managers set these per block via Sanity; blocks use them for SurfaceProvider and background colours.
  *
  * DS terminology (from @marcelinodzn/ds-tokens colors.appearance):
- * - Primary = brand primary (block-background-bold/subtle)
- * - Secondary = brand secondary (surface-secondary)
+ * - Primary = brand primary (Background/Minimal, Background/Subtle, Background/Bold)
+ * - Secondary = brand secondary
  * - Neutral = neutral grey scale
+ *
+ * Context/theme coupling: BlockSurfaceProvider uses useDsContext() from ds-react to get tokenContext.
+ * Colors are resolved at runtime via colors.appearance(), so they stay in sync with DsProvider (platform,
+ * colorMode, theme). If you add dark mode or responsive platform to DsProvider, block backgrounds adapt.
  */
 
+import { useMemo } from 'react'
 import type { ReactNode } from 'react'
-import { SurfaceProvider } from '@marcelinodzn/ds-react'
+import { SurfaceProvider, useDsContext } from '@marcelinodzn/ds-react'
+import { colors } from '@marcelinodzn/ds-tokens'
 
 /** Block surface/background: ghost, minimal, subtle, bold. Maps to SurfaceProvider level + hasBoldBackground. */
 export type BlockSurface = 'ghost' | 'minimal' | 'subtle' | 'bold'
@@ -48,69 +54,95 @@ export function getSurfaceProviderProps(blockSurface: BlockSurface | 'none' | nu
 }
 
 /**
- * Returns the background colour CSS value for a block with coloured surface.
- * Use when blockSurface is minimal, subtle, or bold. Returns undefined for ghost/none.
- *
- * DS tokens used:
- * - primary: --ds-color-block-background-subtle, --ds-color-block-background-bold
- * - secondary: --ds-color-surface-secondary (bold); subtle uses color-mix (no dedicated token)
- * - neutral: --ds-color-neutral-subtle, --ds-color-neutral-bold
+ * Resolve block background color from DS at runtime.
+ * Uses tokenContext from DsProvider — platform, colorMode, theme flow through automatically.
  */
-export function getBlockBackgroundColor(
+function resolveBlockBackgroundColor(
+  blockSurface: BlockSurface | 'none' | null | undefined,
+  blockAccent: BlockAccent | null | undefined,
+  tokenContext: Record<string, string> | undefined
+): string | undefined {
+  const accent = blockAccent ?? 'primary'
+  if (!blockSurface || blockSurface === 'ghost' || blockSurface === 'none' || !tokenContext) return undefined
+
+  const appearanceMap: Record<BlockAccent, 'Primary' | 'Secondary' | 'Neutral'> = {
+    primary: 'Primary',
+    secondary: 'Secondary',
+    neutral: 'Neutral',
+  }
+  const variantMap = {
+    minimal: 'Background/Minimal',
+    subtle: 'Background/Subtle',
+    bold: 'Background/Bold',
+  } as const
+  const variant = variantMap[blockSurface]
+  if (!variant) return undefined
+  const value = colors.appearance(appearanceMap[accent], variant, tokenContext)
+  return value != null ? String(value) : undefined
+}
+
+/**
+ * Hook to resolve block background color from DS at runtime.
+ * Use when you need the color outside BlockSurfaceProvider (e.g. MediaTextBlock).
+ * Requires DsProvider — uses useDsContext() for platform, colorMode, theme.
+ */
+export function useBlockBackgroundColor(
   blockSurface: BlockSurface | 'none' | null | undefined,
   blockAccent: BlockAccent | null | undefined = 'primary'
 ): string | undefined {
-  const accent = blockAccent ?? 'primary'
-  if (!blockSurface || blockSurface === 'ghost' || blockSurface === 'none') return undefined
-
-  const subtleMap: Record<BlockAccent, string> = {
-    primary: 'var(--ds-color-block-background-subtle)',
-    secondary: 'color-mix(in srgb, var(--ds-color-surface-secondary) 15%, white)',
-    neutral: 'var(--ds-color-neutral-subtle)',
-  }
-  const boldMap: Record<BlockAccent, string> = {
-    primary: 'var(--ds-color-block-background-bold)',
-    secondary: 'var(--ds-color-surface-secondary)',
-    neutral: 'var(--ds-color-neutral-bold)',
-  }
-
-  switch (blockSurface) {
-    case 'minimal':
-      return subtleMap[accent]
-    case 'subtle':
-      return subtleMap[accent]
-    case 'bold':
-      return boldMap[accent]
-    default:
-      return undefined
-  }
+  const { tokenContext } = useDsContext()
+  return useMemo(
+    () => resolveBlockBackgroundColor(blockSurface, blockAccent, tokenContext),
+    [blockSurface, blockAccent, tokenContext]
+  )
 }
+
+/** Minimal background style: block (solid) or gradient (white to minimal). Only applies when blockSurface is minimal. */
+export type MinimalBackgroundStyle = 'block' | 'gradient'
 
 export type BlockSurfaceProviderProps = {
   blockSurface?: BlockSurface | 'none' | null
   blockAccent?: BlockAccent | null
+  /** When minimal: block = solid, gradient = white to minimal. Ignored for other surfaces. */
+  minimalBackgroundStyle?: MinimalBackgroundStyle | null
   children: ReactNode
   /** When true, background spans full viewport width (100vw). Default false. */
   fullWidth?: boolean
+  /** When true, omit top padding so content (e.g. media) sits flush at top. Used for sideBySide edgeToEdge Hero with minimal/subtle. */
+  flushTop?: boolean
+  /** When true, omit bottom padding. Use with flushTop for symmetric vertical alignment (sideBySide edgeToEdge). */
+  flushBottom?: boolean
 }
 
 /**
  * Wraps children with SurfaceProvider and optionally a coloured background band.
  * Use when a block needs block-level surface + accent. For blocks with custom layout (e.g. MediaTextBlock),
- * use getSurfaceProviderProps and getBlockBackgroundColor directly.
+ * use getSurfaceProviderProps and useBlockBackgroundColor directly.
+ *
+ * Uses useDsContext() for token resolution — stays in sync with DsProvider (platform, colorMode, theme).
  */
 export function BlockSurfaceProvider({
   blockSurface = 'ghost',
   blockAccent = 'primary',
+  minimalBackgroundStyle = 'block',
   children,
   fullWidth = false,
+  flushTop = false,
+  flushBottom = false,
 }: BlockSurfaceProviderProps) {
   const surfaceProps = getSurfaceProviderProps(blockSurface)
-  const bgColor = getBlockBackgroundColor(blockSurface, blockAccent)
+  const bgColor = useBlockBackgroundColor(blockSurface, blockAccent)
 
   const content = <SurfaceProvider {...surfaceProps}>{children}</SurfaceProvider>
 
   if (bgColor) {
+    const useGradient =
+      blockSurface === 'minimal' && minimalBackgroundStyle === 'gradient'
+    const background = useGradient
+      ? `linear-gradient(to bottom, white 0%, ${bgColor} 100%)`
+      : bgColor
+
+        /** Coloured padding: Large (4xl) by default. flushTop/flushBottom omit padding for symmetric alignment (sideBySide edgeToEdge Hero). */
     return (
       <div
         style={{
@@ -118,10 +150,10 @@ export function BlockSurfaceProvider({
           maxWidth: fullWidth ? '100vw' : undefined,
           marginLeft: fullWidth ? 'calc(50% - 50vw)' : undefined,
           marginRight: fullWidth ? 'calc(50% - 50vw)' : undefined,
-          backgroundColor: bgColor,
+          background,
           boxSizing: 'border-box',
-          /** Internal padding when background is present (ghost = none). Vertical only; GridBlock provides horizontal inset. */
-          paddingBlock: 'var(--ds-spacing-3xl)',
+          paddingBlockStart: flushTop ? 0 : 'var(--ds-spacing-4xl)',
+          paddingBlockEnd: flushBottom ? 0 : 'var(--ds-spacing-4xl)',
         }}
       >
         {content}

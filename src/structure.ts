@@ -14,10 +14,9 @@ export const structure: StructureResolver = (S) =>
         .title('Lab')
         .icon(BulbOutlineIcon)
         .child(
-          S.document()
-            .documentId('labPage')
-            .schemaType('labPage')
+          S.documentList()
             .title('Lab')
+            .filter('_type in ["labOverview", "labBlockPage"]')
         ),
       S.listItem()
         .title('Image Library')
@@ -39,7 +38,8 @@ export const structure: StructureResolver = (S) =>
       ...S.documentTypeListItems().filter(
         (item) =>
           item.getId() !== 'page' &&
-          item.getId() !== 'labPage' &&
+          item.getId() !== 'labBlockPage' &&
+          item.getId() !== 'labOverview' &&
           item.getId() !== 'sanity.imageAsset' &&
           item.getId() !== 'sanity.fileAsset'
       ),

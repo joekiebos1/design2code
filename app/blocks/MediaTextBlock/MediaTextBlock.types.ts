@@ -1,8 +1,6 @@
 export type MediaTextBlockSize = 'hero' | 'feature' | 'editorial'
 
 export type MediaTextBlockVariant =
-  | 'media-right'
-  | 'media-left'
   | 'text-only'
   | 'centered-media-below'
   | 'full-bleed'
@@ -10,7 +8,7 @@ export type MediaTextBlockVariant =
 export type MediaTextBlockWidth = 'XS' | 'S' | 'M' | 'Default' | 'Wide' | 'edgeToEdge'
 export type MediaTextBlockAlign = 'left' | 'center'
 export type MediaTextBlockMediaStyle = 'contained' | 'overflow'
-export type MediaTextBlockSpacing = 'small' | 'medium' | 'large'
+export type MediaTextBlockSpacing = 'none' | 'medium' | 'large'
 
 export type MediaTextBlockAspectRatio = '16:9' | '4:3' | '1:1' | '3:4' | '2:1' | 'auto'
 /** Block emphasis: content author chooses this; DS components adapt automatically. */
@@ -32,16 +30,17 @@ export interface MediaTextBlockCTA {
   appearance?: 'primary' | 'secondary' | 'ghost'
 }
 
-export type MediaTextBlockImagePosition = 'left' | 'right'
+export type MediaTextBlockStackImagePosition = 'top' | 'bottom'
 
 export interface MediaTextBlockProps {
   size?: MediaTextBlockSize
   variant?: MediaTextBlockVariant
-  /** For SideBySide: image on left or right. Takes precedence over variant when provided. */
-  imagePosition?: MediaTextBlockImagePosition
+  /** For Stacked: image on top or bottom. When top, title renders as subtitle (smaller, lighter). */
+  stackImagePosition?: MediaTextBlockStackImagePosition
   width?: MediaTextBlockWidth
   mediaStyle?: MediaTextBlockMediaStyle
   blockBackground?: BlockBackgroundMode
+  minimalBackgroundStyle?: 'block' | 'gradient' | null
   blockAccent?: BlockAccent
   spacing?: MediaTextBlockSpacing
   spacingTop?: MediaTextBlockSpacing
@@ -55,4 +54,7 @@ export interface MediaTextBlockProps {
   cta?: MediaTextBlockCTA
   ctaSecondary?: MediaTextBlockCTA
   media?: MediaTextBlockMedia
+  /** JioKarna preview: progressive image stream slot and state. */
+  imageSlot?: string | null
+  imageState?: import('../../hooks/useImageStream').ImageSlotState | null
 }

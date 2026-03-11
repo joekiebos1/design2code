@@ -21,6 +21,12 @@ export const pageBuilderType = defineType({
       },
     }),
     defineArrayMember({
+      type: 'mediaText5050',
+      components: {
+        input: BlockWithAIAssist,
+      },
+    }),
+    defineArrayMember({
       type: 'cardGrid',
       components: {
         input: BlockWithAIAssist,
@@ -34,6 +40,18 @@ export const pageBuilderType = defineType({
     }),
     defineArrayMember({
       type: 'proofPoints',
+      components: {
+        input: BlockWithAIAssist,
+      },
+    }),
+    defineArrayMember({
+      type: 'iconGrid',
+      components: {
+        input: BlockWithAIAssist,
+      },
+    }),
+    defineArrayMember({
+      type: 'list',
       components: {
         input: BlockWithAIAssist,
       },

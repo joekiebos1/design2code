@@ -34,3 +34,7 @@ Thumbs.db
 
 # Sanity
 .sanity
+scripts/sanity-export.json
+
+*storybook.log
+storybook-static

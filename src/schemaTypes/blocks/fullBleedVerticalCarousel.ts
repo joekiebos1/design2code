@@ -1,5 +1,7 @@
 import { defineField, defineType } from 'sanity'
+import { DS_THEMES, DS_THEME_DEFAULT } from '../shared/dsThemes'
 import { spacingTopField, spacingBottomField } from '../shared/spacingFields'
+import { minimalBackgroundStyleField } from '../shared/minimalBackgroundStyleField'
 
 export const fullBleedVerticalCarouselItem = defineType({
   name: 'fullBleedVerticalCarouselItem',
@@ -8,8 +10,10 @@ export const fullBleedVerticalCarouselItem = defineType({
   fields: [
     defineField({
       name: 'title',
-      type: 'string',
+      type: 'text',
       title: 'Title',
+      rows: 2,
+      description: 'Press Enter for a line break.',
     }),
     defineField({
       name: 'description',
@@ -63,6 +67,18 @@ export const fullBleedVerticalCarouselBlock = defineType({
   fields: [
     spacingTopField,
     spacingBottomField,
+    // Colour
+    defineField({
+      name: 'theme',
+      type: 'string',
+      title: 'Theme',
+      description: 'Design system theme. Default: MyJio.',
+      options: {
+        list: [...DS_THEMES],
+        layout: 'dropdown',
+      },
+      initialValue: DS_THEME_DEFAULT,
+    }),
     defineField({
       name: 'blockAccent',
       type: 'string',
@@ -94,6 +110,8 @@ export const fullBleedVerticalCarouselBlock = defineType({
       },
       initialValue: 'ghost',
     }),
+    minimalBackgroundStyleField('surface'),
+    // Content
     defineField({
       name: 'items',
       type: 'array',
@@ -108,10 +126,13 @@ export const fullBleedVerticalCarouselBlock = defineType({
     }),
   ],
   preview: {
-    select: { items: 'items' },
-    prepare: ({ items }) => ({
-      title: 'Full bleed vertical carousel',
-      subtitle: `${items?.length ?? 0} item(s)`,
-    }),
+    select: { 'firstItemTitle': 'items.0.title', surface: 'surface', items: 'items' },
+    prepare: ({ firstItemTitle, surface, items }) => {
+      const inferredTitle = (firstItemTitle || '').toString().trim() || 'Full bleed vertical carousel'
+      return {
+        title: inferredTitle,
+        subtitle: `Full bleed vertical carousel · ${surface ?? 'ghost'} · ${items?.length ?? 0} item(s)`,
+      }
+    },
   },
 })

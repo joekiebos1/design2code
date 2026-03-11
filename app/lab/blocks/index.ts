@@ -4,8 +4,10 @@
  * Promote to app/blocks/ when ready.
  */
 
-export { HeroSplit50 } from './HeroVariants/HeroSplit50'
-export { HeroSplit50Reveal } from './HeroVariants/HeroSplit50Reveal'
-export { HeroColourImage } from './HeroVariants/HeroColourImage'
-export { HeroColourEdge } from './HeroVariants/HeroColourEdge'
+export { HeroColour } from './HeroVariants/HeroColour'
+export { IconGridBlock } from './IconGridBlock/IconGridBlock'
 export { TopNavBlock } from './TopNavBlock'
+export { MediaZoomOutOnScroll } from './MediaZoomOutOnScroll/MediaZoomOutOnScroll'
+export { FullBleedVerticalCarousel } from './FullBleedVerticalCarousel'
+export { RotatingMediaBlock } from './RotatingMediaBlock/RotatingMediaBlock'
+export { MediaText5050Block } from './MediaText5050Block/MediaText5050Block'

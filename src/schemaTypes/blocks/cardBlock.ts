@@ -7,9 +7,10 @@ export const cardItem = defineType({
   fields: [
     defineField({
       name: 'title',
-      type: 'string',
+      type: 'text',
       title: 'Title',
-      description: 'Required for text-only cards. Optional for media-only cards.',
+      rows: 2,
+      description: 'Required for text-only cards. Optional for media-only cards. Press Enter for a line break.',
       validation: (Rule) =>
         Rule.custom((title, ctx) => {
           const parent = (ctx as { parent?: { imageUrl?: string; image?: unknown; video?: unknown; videoUrl?: string } })?.parent

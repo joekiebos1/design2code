@@ -54,11 +54,11 @@ async function seed() {
   const imageRef = (id) => id ? { _type: 'image', asset: { _type: 'reference', _ref: id } } : undefined
 
   const sections = [
-    // 1. Hero – fullscreen variant, Games-themed
+    // 1. Hero – media overlay band, Games-themed
     {
       _type: 'hero',
       _key: 'jg-hero',
-      variant: 'fullscreen',
+      contentLayout: 'mediaOverlay',
       spacingBottom: 'large',
       productName: 'Games',
       headline: 'Limitless play, for everyone.',
@@ -102,17 +102,16 @@ async function seed() {
       ctaLink: '/games/signup',
       image: imageRef(mediaTextFullId),
     },
-    // 4. MediaText – SideBySide image left
+    // 4. MediaText – Stacked
     {
       _type: 'mediaTextBlock',
       _key: 'jg-mt-2',
       spacingTop: 'large',
       spacingBottom: 'large',
-      template: 'SideBySide',
-      imagePosition: 'left',
+      template: 'Stacked',
+      stackImagePosition: 'top',
       blockAccent: 'primary',
       blockBackground: 'bold',
-      imageAspectRatio: '4:3',
       eyebrow: 'CLOUD GAMING',
       title: 'Stream games in seconds',
       body: 'No downloads, no storage limits. Jump straight into the action with our cloud gaming technology. Low latency, high quality.',
@@ -120,17 +119,16 @@ async function seed() {
       ctaLink: '/games/cloud',
       image: imageRef(mediaTextLeftId),
     },
-    // 5. MediaText – SideBySide image right
+    // 5. MediaText – Stacked
     {
       _type: 'mediaTextBlock',
       _key: 'jg-mt-3',
       spacingTop: 'large',
       spacingBottom: 'large',
-      template: 'SideBySide',
-      imagePosition: 'right',
+      template: 'Stacked',
+      stackImagePosition: 'top',
       blockAccent: 'primary',
       blockBackground: 'ghost',
-      imageAspectRatio: '4:3',
       eyebrow: 'EXCLUSIVE TITLES',
       title: 'Games you can\'t play anywhere else',
       body: 'From indie gems to blockbuster exclusives, JioGames brings you titles crafted for our platform. New releases every month.',
@@ -138,17 +136,16 @@ async function seed() {
       ctaLink: '/games/exclusives',
       image: imageRef(mediaTextRightId),
     },
-    // 6. MediaText – SideBySide image left again
+    // 6. MediaText – Stacked
     {
       _type: 'mediaTextBlock',
       _key: 'jg-mt-4',
       spacingTop: 'large',
       spacingBottom: 'large',
-      template: 'SideBySide',
-      imagePosition: 'left',
+      template: 'Stacked',
+      stackImagePosition: 'top',
       blockAccent: 'primary',
       blockBackground: 'ghost',
-      imageAspectRatio: '3:4',
       eyebrow: 'FAMILY MODE',
       title: 'Safe, curated fun for everyone',
       body: 'Parental controls, age ratings, and a dedicated family section. Let the kids play while you stay in control.',

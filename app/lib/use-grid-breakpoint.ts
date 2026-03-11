@@ -56,6 +56,8 @@ export type GridBreakpoint = {
   contentMaxDefault: string
   /** Wide: 12 cols. Desktop 1440px+. */
   contentMaxWide: string
+  /** 5 cols. Desktop 1440px+. For Medium carousel cards. */
+  contentMax5Cols: string
   /** True when viewport >= 1440 — narrow/default/wide use calculated widths */
   isDesktop: boolean
   /** Max width for grid wrapper (containerWidth + 2*margin) on desktop. Ensures grid respects 1346px cap. */
@@ -93,12 +95,14 @@ function resolveGridValues(platform: string, viewport: number): GridBreakpoint {
   const spanM = columns === 12 ? 8 : columns === 8 ? 6 : 4
   const spanS = columns === 12 ? 6 : columns === 8 ? 6 : 4
   const spanXS = columns === 12 ? 4 : columns === 8 ? 4 : 4
+  const span5 = columns >= 5 ? 5 : 4
 
   const pxWide = spanWide * columnWidth + (spanWide - 1) * gutter
   const pxDefault = spanDefault * columnWidth + (spanDefault - 1) * gutter
   const pxM = spanM * columnWidth + (spanM - 1) * gutter
   const pxS = spanS * columnWidth + (spanS - 1) * gutter
   const pxXS = spanXS * columnWidth + (spanXS - 1) * gutter
+  const px5 = span5 * columnWidth + (span5 - 1) * gutter
 
   const gridMaxWidth = isDesktop ? `${containerWidth + 2 * margin}px` : undefined
 
@@ -116,6 +120,7 @@ function resolveGridValues(platform: string, viewport: number): GridBreakpoint {
     contentMaxM: isDesktop ? `${pxM}px` : '100%',
     contentMaxDefault: isDesktop ? `${pxDefault}px` : '100%',
     contentMaxWide: isDesktop ? `${pxWide}px` : '100%',
+    contentMax5Cols: isDesktop ? `${px5}px` : '100%',
     isDesktop,
     gridMaxWidth,
   }

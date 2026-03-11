@@ -1,75 +1,24 @@
 /**
- * Lab – Block experiments
- *
- * Fetches content from Sanity (Lab page). Images from Image Library.
+ * Lab – Overview page. Content from Sanity (labOverview with List block).
  */
 
 import { draftMode } from 'next/headers'
-import type { Metadata } from 'next'
-import { getClient } from '../../lib/sanity/client'
-import { labPageQuery } from '../../lib/sanity/queries'
 import { LabPageClient } from './LabPageClient'
+import { getClient } from '../../lib/sanity/client'
+import { labOverviewQuery } from '../../lib/sanity/queries'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-export async function generateMetadata(): Promise<Metadata> {
-  const { isEnabled: draft } = await draftMode()
-  const sanity = getClient(draft)
-  let labData: { title?: string | null } | null = null
-  try {
-    labData = await sanity.fetch(labPageQuery)
-  } catch {
-    // Sanity not configured or fetch failed
-  }
-  return { title: labData?.title ?? 'Lab' }
-}
-
 export default async function LabPage() {
   const { isEnabled: draft } = await draftMode()
   const sanity = getClient(draft)
-  let labData: {
-    title?: string | null
-    description?: string | null
-    hero?: {
-      productName?: string | null
-      headline?: string | null
-      subheadline?: string | null
-      ctaText?: string | null
-      ctaLink?: string | null
-      cta2Text?: string | null
-      cta2Link?: string | null
-      image?: string | null
-      imagePosition?: 'left' | 'right'
-    } | null
-  } | null = null
-
+  let overview: { sections?: unknown[] } | null = null
   try {
-    labData = await sanity.fetch(labPageQuery)
+    overview = await sanity.fetch(labOverviewQuery)
   } catch {
-    // Sanity not configured or fetch failed
+    // No Sanity project or fetch failed
   }
 
-  const heroData = labData?.hero
-  const hero = heroData
-    ? {
-        productName: heroData.productName ?? null,
-        headline: heroData.headline ?? null,
-        subheadline: heroData.subheadline ?? null,
-        ctaText: heroData.ctaText ?? null,
-        ctaLink: heroData.ctaLink ?? null,
-        cta2Text: heroData.cta2Text ?? null,
-        cta2Link: heroData.cta2Link ?? null,
-        image: heroData.image ?? null,
-        imagePosition: (heroData.imagePosition ?? 'right') as 'left' | 'right',
-      }
-    : null
-
-  return (
-    <LabPageClient
-      title={labData?.title ?? 'Lab'}
-      description={labData?.description ?? null}
-      hero={hero}
-    />
-  )
+  return <LabPageClient sections={overview?.sections ?? []} />
 }

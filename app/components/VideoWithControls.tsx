@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
+import { createTransition } from '@marcelinodzn/ds-tokens'
 
 const IcVolumeOff = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
@@ -47,15 +48,31 @@ export function VideoWithControls({
   poster,
   prefersReducedMotion,
   style,
+  paused: pausedProp,
+  inView = true,
 }: {
   src: string
   poster?: string | null
   prefersReducedMotion: boolean
   style?: React.CSSProperties
+  /** When true, video is paused (e.g. card out of view in carousel). */
+  paused?: boolean
+  /** When false, controls fade out (carousel: card leaving viewport). */
+  inView?: boolean
 }) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isMuted, setIsMuted] = useState(true)
   const [playState, setPlayState] = useState<'playing' | 'paused' | 'ended'>('playing')
+
+  useEffect(() => {
+    const v = videoRef.current
+    if (!v) return
+    if (pausedProp) {
+      v.pause()
+    } else if (playState !== 'ended') {
+      v.play().catch(() => {})
+    }
+  }, [pausedProp, playState])
 
   useEffect(() => {
     const v = videoRef.current
@@ -113,6 +130,10 @@ export function VideoWithControls({
     )
   }
 
+  const controlsOpacity = inView ? 1 : 0
+  const controlsTransition = prefersReducedMotion ? undefined : createTransition('opacity', 'xl', 'transition', 'moderate')
+  const controlsTransitionDelay = prefersReducedMotion ? undefined : inView ? '150ms' : '0ms'
+
   return (
     <>
       <video
@@ -142,6 +163,9 @@ export function VideoWithControls({
           justifyContent: 'space-between',
           padding: 'var(--ds-spacing-s)',
           pointerEvents: 'none',
+          opacity: controlsOpacity,
+          transition: controlsTransition,
+          transitionDelay: controlsTransitionDelay,
         }}
       >
         <div style={{ pointerEvents: 'auto' }}>

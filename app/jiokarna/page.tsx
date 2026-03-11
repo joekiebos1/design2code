@@ -1,10 +1,18 @@
-import type { Metadata } from 'next'
-import { JioKarnaPage } from './JioKarnaPage'
+'use client'
 
-export const metadata: Metadata = {
-  title: 'JioKarna',
-}
+import { useRouter } from 'next/navigation'
+import { IntentScreen } from './screens/IntentScreen'
+import { useJioKarna } from './JioKarnaContext'
 
-export default function JioKarnaRoute() {
-  return <JioKarnaPage />
+export default function JioKarnaIntentPage() {
+  const router = useRouter()
+  const { intentData, setIntentData } = useJioKarna()
+
+  return (
+    <IntentScreen
+      data={intentData}
+      onChange={setIntentData}
+      onSubmit={() => router.push('/jiokarna/interview')}
+    />
+  )
 }

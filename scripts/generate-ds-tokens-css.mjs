@@ -99,10 +99,16 @@ const neutralSubtle = colors.appearance('Neutral', 'Background/Subtle', ctx)
 if (neutralBold != null) vars.push(`  --ds-color-neutral-bold: ${neutralBold};`)
 if (neutralSubtle != null) vars.push(`  --ds-color-neutral-subtle: ${neutralSubtle};`)
 if (strokeSubtle != null) vars.push(`  --ds-color-stroke-subtle: ${strokeSubtle};`)
+// Block backgrounds: CarouselBlock, MediaTextBlock, ProofPointsBlock use useBlockBackgroundColor (runtime DS).
+// HeroBlock, TextOnColourCard, MediaCardContained still use these CSS vars:
 const blockBgSubtle = colors.appearance('Primary', 'Background/Subtle', ctx)
 const blockBgBold = colors.appearance('Primary', 'Background/Bold', ctx)
 if (blockBgSubtle != null) vars.push(`  --ds-color-block-background-subtle: ${blockBgSubtle};`)
 if (blockBgBold != null) vars.push(`  --ds-color-block-background-bold: ${blockBgBold};`)
+// Lab GridBlockCard: tertiary (teal) – from theme if available, else fallback for card backgrounds
+const tertiaryBold = getVariableByName('Tertiary/Background/Bold', ctx) ?? getVariableByName('Primary/Background/Subtle', ctx)
+if (tertiaryBold != null) vars.push(`  --ds-color-card-tertiary: ${tertiaryBold};`)
+else vars.push(`  --ds-color-card-tertiary: var(--ds-color-block-background-subtle);`)
 // Thin divider for white surfaces (visible on light backgrounds)
 vars.push(`  --ds-color-stroke-divider: rgba(0, 0, 0, 0.08);`)
 

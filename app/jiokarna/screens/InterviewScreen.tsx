@@ -6,7 +6,7 @@ import { Headline, Text, SurfaceProvider, Card, Button } from '@marcelinodzn/ds-
 type Message = { role: 'user' | 'assistant'; content: string }
 
 type InterviewScreenProps = {
-  intentData: { pageName: string; pageType: string; intent: string; briefContent?: string }
+  intentData: { product: string; pageType: string; audience?: string; intent: string; briefContent?: string }
   messages: Message[]
   isThinking: boolean
   onSendMessage: (content: string) => Promise<void>
@@ -50,7 +50,7 @@ export function InterviewScreen({
           appearance="secondary"
           style={{ marginBottom: 'var(--ds-spacing-l)', fontSize: 'var(--ds-typography-body-xs)' }}
         >
-          {intentData.pageName} - {intentData.pageType}
+          {intentData.product} - {intentData.pageType}
         </Text>
 
         <Card surface="minimal" style={{ marginBottom: 'var(--ds-spacing-l)' }}>

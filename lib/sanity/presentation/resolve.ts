@@ -15,11 +15,12 @@ export const resolve = {
         ],
       }),
     }),
-    labPage: defineLocations({
-      select: { title: 'title' },
+    labBlockPage: defineLocations({
+      select: { title: 'title', slug: 'slug' },
       resolve: (doc) => ({
         locations: [
-          { title: doc?.title || 'Lab', href: '/lab' },
+          { title: doc?.title || 'Block page', href: doc?.slug ? `/lab/${doc.slug}` : '/lab' },
+          { title: 'All blocks', href: '/lab' },
         ],
       }),
     }),

@@ -1,45 +1,92 @@
 import {
   HeroBlock,
   MediaTextBlock,
+  MediaText5050Block,
   CardGridBlock,
   CarouselBlock,
   ProofPointsBlock,
+  IconGridBlock,
+  ListBlock,
   BlockContainer,
 } from '../blocks'
-import type { MediaTextBlockProps } from '../blocks'
+import type { MediaTextBlockProps, MediaText5050BlockProps } from '../blocks'
+import type { ImageSlotState } from '../hooks/useImageStream'
+
+type BlockSpacingValue = 'none' | 'medium' | 'large'
 
 type Block = {
   _type: string
   _key?: string
-  spacing?: 'small' | 'medium' | 'large'
-  spacingTop?: 'small' | 'medium' | 'large'
-  spacingBottom?: 'small' | 'medium' | 'large'
+  spacing?: BlockSpacingValue | string
+  spacingTop?: BlockSpacingValue | string
+  spacingBottom?: BlockSpacingValue | string
   [key: string]: unknown
+}
+
+/** Normalize spacing: none, medium, large. Backwards compat: small -> none. */
+function normalizeSpacing(v: unknown): BlockSpacingValue {
+  const s = (v as string)?.toLowerCase?.()
+  if (s === 'small') return 'none'
+  if (s === 'none' || s === 'medium' || s === 'large') return s
+  return 'large'
 }
 
 function isEmpty(v: unknown): boolean {
   return v === undefined || v === null || (typeof v === 'string' && v.trim() === '')
 }
 
-function mapMediaTextBlock(block: Block): MediaTextBlockProps {
-  const template = (isEmpty(block.template) ? 'SideBySide' : block.template) as string
-  const rawImagePosition = (isEmpty(block.imagePosition) ? 'right' : block.imagePosition) as string
-  const imagePosition = (rawImagePosition?.toLowerCase() === 'left' ? 'left' : 'right') as 'left' | 'right'
-  const mediaSize = (block.mediaSize as string) ?? (block.stackedMediaWidth as string) ?? 'default'
-  const imageAspectRatio = template === 'SideBySide'
-    ? (isEmpty(block.imageAspectRatio) ? '4:3' : block.imageAspectRatio) as string
-    : template === 'Stacked'
-      ? '2:1'
-      : '16:9'
+/** Map mediaText5050 block to items array. Supports new structure (items) and legacy (singleParagraph, accordionItems, paragraphItems). */
+function mapMediaText5050Items(block: Block): { subtitle?: string; body?: string }[] {
+  const items = Array.isArray(block.items)
+    ? (block.items as { subtitle?: string; body?: string }[]).map((i) => ({
+        subtitle: (i.subtitle as string) ?? '',
+        body: (i.body as string) ?? '',
+      }))
+    : []
+  if (items.length > 0) return items
+  // Legacy: singleParagraph
+  const headline = block.headline as string | undefined
+  const body = block.body as string | undefined
+  if (block.variant === 'singleParagraph' && (headline || body)) {
+    return [{ subtitle: headline ?? '', body: body ?? '' }]
+  }
+  // Legacy: accordionItems (title → subtitle)
+  const accordionItems = Array.isArray(block.accordionItems)
+    ? (block.accordionItems as { title?: string; body?: string }[]).map((i) => ({
+        subtitle: (i.title as string) ?? '',
+        body: (i.body as string) ?? '',
+      }))
+    : []
+  if (accordionItems.length > 0) return accordionItems
+  // Legacy: paragraphItems (headline → subtitle)
+  const paragraphItems = Array.isArray(block.paragraphItems)
+    ? (block.paragraphItems as { headline?: string; body?: string }[]).map((i) => ({
+        subtitle: (i.headline as string) ?? '',
+        body: (i.body as string) ?? '',
+      }))
+    : []
+  return paragraphItems
+}
 
-  const sideBySide = imagePosition === 'left' ? 'media-left' : 'media-right'
+function mapMediaTextBlock(block: Block): MediaTextBlockProps {
+  const rawTemplate = block.template as string
+  /** Legacy: SideBySide is now mediaText5050; treat as Stacked. */
+  const template = (rawTemplate === 'SideBySide' || rawTemplate === 'sideBySide') ? 'Stacked' : (rawTemplate ?? 'Stacked')
+  const mediaSize = block.mediaSize as string
+  const imageAspectRatio =
+    template === 'Stacked'
+      ? '2:1'
+      : template === 'HeroOverlay'
+        ? '16:9'
+        : '16:9'
+
   const variantMap: Record<string, MediaTextBlockProps['variant']> = {
-    SideBySide: sideBySide,
     HeroOverlay: 'full-bleed',
     Stacked: 'centered-media-below',
     TextOnly: 'text-only',
   }
-  const variant = variantMap[template] ?? sideBySide
+  /** Legacy: SideBySide is now mediaText5050; fall back to Stacked. */
+  const variant = variantMap[template] ?? 'centered-media-below'
 
   const aspectRatioMap: Record<string, NonNullable<MediaTextBlockProps['media']>['aspectRatio']> = {
     '16:7': '16:9',
@@ -50,7 +97,7 @@ function mapMediaTextBlock(block: Block): MediaTextBlockProps {
     '1:1': '1:1',
     '2:1': '2:1' as const,
   }
-  const aspectRatio = aspectRatioMap[imageAspectRatio] ?? '16:9'
+  const aspectRatio = aspectRatioMap[imageAspectRatio]
 
   const imageUrl = block.image as string | undefined
   const videoUrl = block.video as string | undefined
@@ -67,22 +114,20 @@ function mapMediaTextBlock(block: Block): MediaTextBlockProps {
   const bulletListFiltered = Array.isArray(bulletList) ? bulletList.filter((b): b is string => typeof b === 'string').slice(0, 6) : undefined
 
   const rawAlign = (() => {
+    if (template === 'TextOnly') return block.textOnlyAlignment as string
     if (template === 'Stacked') {
       if (mediaSize === 'edgeToEdge') return 'center'
-      return (isEmpty(block.stackAlignment) ? 'left' : block.stackAlignment) as string
+      return block.stackAlignment as string
     }
-    if (template === 'HeroOverlay') return (isEmpty(block.overlayAlignment) ? 'left' : block.overlayAlignment) as string
-    if (!isEmpty(block.align)) return block.align as string
-    return 'left'
+    if (template === 'HeroOverlay') return block.overlayAlignment as string
+    return block.align as string
   })()
   const alignSource =
-    template === 'SideBySide'
-      ? 'left'
-      : rawAlign?.toLowerCase() === 'center'
-        ? 'center'
-        : rawAlign?.toLowerCase() === 'left'
-          ? 'left'
-          : undefined
+    rawAlign?.toLowerCase() === 'center'
+      ? 'center'
+      : rawAlign?.toLowerCase() === 'left'
+        ? 'left'
+        : undefined
 
   const width =
     (template === 'Stacked' || template === 'HeroOverlay') && mediaSize === 'edgeToEdge'
@@ -90,11 +135,12 @@ function mapMediaTextBlock(block: Block): MediaTextBlockProps {
       : 'Default'
 
   return {
+    size: 'feature',
     headline: (block.title as string) ?? '',
     eyebrow: block.eyebrow as string | undefined,
     subhead: block.subhead as string | undefined,
     body: block.body as string | undefined,
-    bulletList: bulletListFiltered?.length ? bulletListFiltered : undefined,
+    bulletList: bulletListFiltered ?? [],
     cta:
       block.ctaText && block.ctaLink
         ? { label: block.ctaText as string, href: block.ctaLink as string }
@@ -105,43 +151,53 @@ function mapMediaTextBlock(block: Block): MediaTextBlockProps {
         : undefined,
     media,
     variant,
-    imagePosition: template === 'SideBySide' ? imagePosition : undefined,
-    blockBackground: (() => {
-      const bg = (block.blockBackground as string)?.toLowerCase?.()
-      return !isEmpty(bg) && ['ghost', 'minimal', 'subtle', 'bold', 'none'].includes(bg) ? bg as MediaTextBlockProps['blockBackground'] : 'ghost'
-    })(),
-    blockAccent: (() => {
-      const acc = (block.blockAccent as string)?.toLowerCase?.()
-      return !isEmpty(acc) && ['primary', 'secondary', 'neutral'].includes(acc) ? acc as MediaTextBlockProps['blockAccent'] : 'primary'
-    })(),
-    spacing: (isEmpty(block.spacing) ? 'large' : block.spacing) as MediaTextBlockProps['spacing'],
-    spacingTop: (isEmpty(block.spacingTop) ? undefined : block.spacingTop) as MediaTextBlockProps['spacingTop'] | undefined,
-    spacingBottom: (isEmpty(block.spacingBottom) ? undefined : block.spacingBottom) as MediaTextBlockProps['spacingBottom'] | undefined,
+    blockBackground: block.blockBackground as MediaTextBlockProps['blockBackground'],
+    minimalBackgroundStyle: block.minimalBackgroundStyle as 'block' | 'gradient' | undefined,
+    blockAccent: block.blockAccent as MediaTextBlockProps['blockAccent'] | undefined,
+    spacing: normalizeSpacing(block.spacing) as MediaTextBlockProps['spacing'],
+    spacingTop: block.spacingTop ? normalizeSpacing(block.spacingTop) as MediaTextBlockProps['spacingTop'] : undefined,
+    spacingBottom: block.spacingBottom ? normalizeSpacing(block.spacingBottom) as MediaTextBlockProps['spacingBottom'] : undefined,
     width,
     align: alignSource === 'center' || alignSource === 'left' ? alignSource : undefined,
+    mediaStyle: 'contained',
+    stackImagePosition: (block.stackImagePosition as 'top' | 'bottom') ?? 'top',
   }
 }
 
 type BlockRendererProps = {
   blocks: Block[] | unknown[] | null | undefined
+  /** When provided (JioKarna preview), blocks use StreamImage for progressive loading. */
+  images?: Record<string, ImageSlotState>
 }
 
-export function BlockRenderer({ blocks }: BlockRendererProps) {
+export function BlockRenderer({ blocks, images }: BlockRendererProps) {
   if (!blocks?.length) return null
 
   const blocks_ = blocks as Block[]
   return (
     <div className="block-stack">
       {blocks_.map((block) => {
+        const spacingTop =
+          block._type === 'hero'
+            ? undefined
+            : (block.spacingTop ? normalizeSpacing(block.spacingTop) : block.spacing ? normalizeSpacing(block.spacing) : undefined) as BlockSpacingValue | undefined
+        const spacingBottom = (block.spacingBottom ? normalizeSpacing(block.spacingBottom) : block.spacing ? normalizeSpacing(block.spacing) : undefined) as BlockSpacingValue | undefined
+
         let content: React.ReactNode = null
         switch (block._type) {
           case 'hero': {
-            const v = (block.variant as string)?.toLowerCase?.()
-            const heroVariant = !isEmpty(v) && ['category', 'product', 'ghost', 'fullscreen'].includes(v) ? v : 'category'
+            const contentLayout = block.contentLayout as 'stacked' | 'sideBySide' | 'mediaOverlay' | 'textOnly' | 'fullscreen' | undefined
+            const overlayHeight = block.overlayHeight as 'band' | 'fullscreen' | undefined
+            const blockSurface = block.blockSurface as 'ghost' | 'minimal' | 'subtle' | 'bold' | undefined
+            const blockAccent = block.blockAccent as 'primary' | 'secondary' | 'neutral' | undefined
+            const containerLayout = block.containerLayout as 'edgeToEdge' | 'contained' | undefined
+            const imageAnchor = block.imageAnchor as 'center' | 'bottom' | undefined
+            const textAlign = block.textAlign as 'left' | 'center' | undefined
+            const imageSlot = block.imageSlot as string | undefined
+            const imageState = imageSlot && images?.[imageSlot] ? images[imageSlot] : undefined
             content = (
               <HeroBlock
                 key={block._key || block._type}
-                variant={heroVariant as 'category' | 'product' | 'ghost' | 'fullscreen'}
                 productName={block.productName as string}
                 headline={block.headline as string}
                 subheadline={block.subheadline as string}
@@ -151,78 +207,171 @@ export function BlockRenderer({ blocks }: BlockRendererProps) {
                 cta2Link={block.cta2Link as string}
                 image={block.image as string}
                 videoUrl={block.videoUrl as string}
+                imageSlot={imageSlot}
+                imageState={imageState}
+                contentLayout={contentLayout}
+                overlayHeight={overlayHeight}
+                containerLayout={containerLayout}
+                imageAnchor={imageAnchor}
+                textAlign={textAlign}
+                blockSurface={blockSurface}
+                blockAccent={blockAccent}
               />
             )
           }
             break
-          case 'mediaTextBlock':
+          case 'mediaText5050': {
+            const imageUrl = block.image as string | undefined
+            const videoUrl = block.video as string | undefined
+            const hasVideo = videoUrl && typeof videoUrl === 'string' && videoUrl.trim() !== ''
+            const hasImage = imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== ''
+            const aspectRatio = (block.imageAspectRatio as string) || '4:3'
+            const media =
+              hasVideo
+                ? { type: 'video' as const, src: videoUrl!, poster: hasImage ? imageUrl : undefined, alt: '', aspectRatio: aspectRatio as '16:9' | '4:3' | '1:1' | '3:4' | '2:1' | 'auto' }
+                : hasImage
+                  ? { type: 'image' as const, src: imageUrl!, alt: '', aspectRatio: aspectRatio as '16:9' | '4:3' | '1:1' | '3:4' | '2:1' | 'auto' }
+                  : undefined
+            const items = mapMediaText5050Items(block)
+            const imageSlot = block.imageSlot as string | undefined
+            const imageState = imageSlot && images?.[imageSlot] ? images[imageSlot] : undefined
+            const rawVariant = block.variant as string
+            const variant: MediaText5050BlockProps['variant'] =
+              rawVariant === 'accordion' ? 'accordion' : 'paragraphs'
+            const props: MediaText5050BlockProps = {
+              variant,
+              imagePosition: (block.imagePosition as 'left' | 'right') ?? 'right',
+              blockBackground: block.blockBackground as MediaText5050BlockProps['blockBackground'],
+              minimalBackgroundStyle: (block.minimalBackgroundStyle as 'block' | 'gradient') ?? 'block',
+              blockAccent: block.blockAccent as MediaText5050BlockProps['blockAccent'],
+              spacingTop: block.spacingTop ? normalizeSpacing(block.spacingTop) as MediaText5050BlockProps['spacingTop'] : undefined,
+              spacingBottom: block.spacingBottom ? normalizeSpacing(block.spacingBottom) as MediaText5050BlockProps['spacingBottom'] : undefined,
+              headline: block.headline as string | undefined,
+              items,
+              media,
+              imageSlot,
+              imageState,
+            }
             content = (
-              <MediaTextBlock key={block._key || block._type} {...mapMediaTextBlock(block)} />
+              <MediaText5050Block
+                key={block._key || block._type}
+                {...props}
+              />
             )
+          }
+            break
+          case 'mediaTextBlock': {
+            const mapped = mapMediaTextBlock(block)
+            const imageSlot = block.imageSlot as string | undefined
+            const imageState = imageSlot && images?.[imageSlot] ? images[imageSlot] : undefined
+            content = (
+              <MediaTextBlock
+                key={block._key || block._type}
+                {...mapped}
+                imageSlot={imageSlot}
+                imageState={imageState}
+              />
+            )
+          }
             break
           case 'cardGrid': {
-            const surf = (block.surface as string)?.toLowerCase?.()
-            const acc = (block.blockAccent as string)?.toLowerCase?.()
-            const cardSurf = !isEmpty(surf) && ['ghost', 'minimal', 'subtle', 'bold'].includes(surf) ? surf : 'ghost'
-            const cardAcc = !isEmpty(acc) && ['primary', 'secondary', 'neutral'].includes(acc) ? acc : 'primary'
             const cols = block.columns as string
             content = (
               <CardGridBlock
                 key={block._key || block._type}
-                columns={(parseInt(isEmpty(cols) ? '3' : cols, 10) || 3) as 2 | 3 | 4}
+                columns={parseInt(cols, 10) as 2 | 3 | 4}
                 title={block.title as string}
-                blockSurface={cardSurf as 'ghost' | 'minimal' | 'subtle' | 'bold'}
-                blockAccent={cardAcc as 'primary' | 'secondary' | 'neutral'}
-                items={(block.items as { cardStyle?: string; title?: string; description?: string; image?: string; video?: string; ctaText?: string; ctaLink?: string; surface?: string }[])?.map((i) => ({
-                  cardStyle: (isEmpty(i.cardStyle) ? 'image-above' : i.cardStyle) as 'image-above' | 'text-on-colour' | 'text-on-image',
-                  title: i.title ?? '',
-                  description: i.description,
-                  image: i.image,
-                  video: i.video,
-                  ctaText: i.ctaText,
-                  ctaLink: i.ctaLink,
-                  surface: (() => {
-                    const s = (i.surface as string)?.toLowerCase?.()
-                    return !isEmpty(s) && ['subtle', 'bold'].includes(s) ? s as 'subtle' | 'bold' : 'bold'
-                  })(),
-                }))}
+                blockSurface={block.surface as 'ghost' | 'minimal' | 'subtle' | 'bold'}
+                minimalBackgroundStyle={(block.minimalBackgroundStyle as string)?.toLowerCase?.() === 'gradient' ? 'gradient' : 'block'}
+                blockAccent={block.blockAccent as 'primary' | 'secondary' | 'neutral'}
+                items={((block.items as Record<string, unknown>[]) ?? []).map((i) => ({
+                  ...i,
+                  _type: (i._type as 'cardGridItem' | 'textOnColourCardItem') ?? 'cardGridItem',
+                  title: (i.title as string) ?? '',
+                  cardStyle: (i.cardStyle as string),
+                  surface: (i.surface as string),
+                })) as import('../blocks/CardGridBlock/CardGridBlock.types').CardGridBlockItem[]}
+                images={images}
               />
             )
           }
             break
           case 'carousel': {
-            const cardSize =
-              (block.cardSize as string) === 'large' ? 'large'
-              : (block.cardSize as string) === 'medium' ? 'medium'
-              : 'compact'
-            const carSurf = !isEmpty(block.surface) && ['ghost', 'minimal', 'subtle', 'bold'].includes((block.surface as string)?.toLowerCase?.()) ? (block.surface as string).toLowerCase() : 'ghost'
-            const carAcc = !isEmpty(block.blockAccent) && ['primary', 'secondary', 'neutral'].includes((block.blockAccent as string)?.toLowerCase?.()) ? (block.blockAccent as string).toLowerCase() : 'primary'
             content = (
               <CarouselBlock
                 key={block._key || block._type}
                 title={block.title as string}
-                cardSize={cardSize as 'compact' | 'medium' | 'large'}
-                surface={carSurf as 'ghost' | 'minimal' | 'subtle' | 'bold'}
-                blockAccent={carAcc as 'primary' | 'secondary' | 'neutral'}
-                items={((block.items ?? []) as { cardType?: string; title?: string; description?: string; image?: string; video?: string; link?: string; ctaText?: string; aspectRatio?: '4:5' | '8:5' | '2:1' }[]).map((it) => ({
+                cardSize={block.cardSize as 'compact' | 'medium' | 'large'}
+                surface={block.surface as 'ghost' | 'minimal' | 'subtle' | 'bold'}
+                minimalBackgroundStyle={(block.minimalBackgroundStyle as string)?.toLowerCase?.() === 'gradient' ? 'gradient' : 'block'}
+                blockAccent={block.blockAccent as 'primary' | 'secondary' | 'neutral'}
+                items={((block.items ?? []) as { cardType?: string; title?: string; description?: string; image?: string; video?: string; link?: string; ctaText?: string; aspectRatio?: '4:5' | '8:5' | '2:1'; imageSlot?: string }[]).map((it) => ({
                   ...it,
-                  cardType: (isEmpty(it.cardType) ? 'media' : it.cardType) as 'media' | 'text-on-colour',
-                  aspectRatio: (isEmpty(it.aspectRatio) ? '4:5' : it.aspectRatio) as '4:5' | '8:5' | '2:1',
+                  cardType: it.cardType as 'media' | 'text-on-colour',
+                  aspectRatio: it.aspectRatio as '4:5' | '8:5' | '2:1',
                 }))}
+                images={images}
               />
             )
           }
             break
           case 'proofPoints': {
-            const ppSurf = !isEmpty(block.surface) && ['ghost', 'minimal', 'subtle', 'bold'].includes((block.surface as string)?.toLowerCase?.()) ? (block.surface as string).toLowerCase() : 'ghost'
-            const ppAcc = !isEmpty(block.blockAccent) && ['primary', 'secondary', 'neutral'].includes((block.blockAccent as string)?.toLowerCase?.()) ? (block.blockAccent as string).toLowerCase() : 'primary'
             content = (
               <ProofPointsBlock
                 key={block._key || block._type}
                 title={block.title as string}
-                blockSurface={ppSurf as 'ghost' | 'minimal' | 'subtle' | 'bold'}
-                blockAccent={ppAcc as 'primary' | 'secondary' | 'neutral'}
+                variant={block.variant as 'icon' | 'stat'}
+                blockSurface={block.surface as 'ghost' | 'minimal' | 'subtle' | 'bold'}
+                minimalBackgroundStyle={(block.minimalBackgroundStyle as string)?.toLowerCase?.() === 'gradient' ? 'gradient' : 'block'}
+                blockAccent={block.blockAccent as 'primary' | 'secondary' | 'neutral'}
                 items={block.items as { title?: string; description?: string; icon?: string }[]}
+              />
+            )
+          }
+            break
+          case 'iconGrid': {
+            const SPECTRUMS = ['indigo', 'sky', 'pink', 'gold', 'red', 'purple', 'mint', 'violet', 'marigold', 'green', 'crimson', 'orange'] as const
+            const items = Array.isArray(block.items)
+              ? (block.items as { title?: string; body?: string; icon?: string; accentColor?: string; spectrum?: string }[]).map((i) => ({
+                  title: (i.title as string) ?? '',
+                  body: i.body as string | undefined,
+                  icon: i.icon as string,
+                  accentColor: i.accentColor as 'primary' | 'secondary' | 'tertiary' | 'positive' | 'neutral',
+                  spectrum: i.spectrum && SPECTRUMS.includes(i.spectrum as (typeof SPECTRUMS)[number]) ? (i.spectrum as (typeof SPECTRUMS)[number]) : undefined,
+                }))
+              : []
+            content = (
+              <IconGridBlock
+                key={block._key || block._type}
+                items={items}
+                columns={block.columns as 3 | 4 | 5 | 6 | undefined}
+                blockSurface={block.blockSurface as 'ghost' | 'minimal' | 'subtle' | 'bold'}
+                minimalBackgroundStyle={(block.minimalBackgroundStyle as string)?.toLowerCase?.() === 'gradient' ? 'gradient' : 'block'}
+                blockAccent={block.blockAccent as 'primary' | 'secondary' | 'neutral'}
+              />
+            )
+          }
+            break
+          case 'list': {
+            const listItems = Array.isArray(block.items)
+              ? (block.items as { title?: string; body?: string; linkText?: string; linkUrl?: string; subtitle?: string }[]).map((i) => ({
+                  title: i.title as string | undefined,
+                  body: i.body as string | undefined,
+                  linkText: i.linkText as string | undefined,
+                  linkUrl: i.linkUrl as string | undefined,
+                  subtitle: i.subtitle as string | undefined,
+                }))
+              : []
+            content = (
+              <ListBlock
+                key={block._key || block._type}
+                blockTitle={block.blockTitle as string}
+                listVariant={(block.listVariant as 'textList' | 'faq' | 'links') ?? 'textList'}
+                items={listItems}
+                size={(block.size as 'hero' | 'feature' | 'editorial') ?? 'feature'}
+                blockSurface={block.blockSurface as 'ghost' | 'minimal' | 'subtle' | 'bold'}
+                minimalBackgroundStyle={(block.minimalBackgroundStyle as string)?.toLowerCase?.() === 'gradient' ? 'gradient' : 'block'}
+                blockAccent={block.blockAccent as 'primary' | 'secondary' | 'neutral'}
               />
             )
           }
@@ -231,17 +380,11 @@ export function BlockRenderer({ blocks }: BlockRendererProps) {
             return null
         }
         if (!content) return null
-        const fallbackSpacing = (isEmpty(block.spacing) ? 'large' : block.spacing) as 'small' | 'medium' | 'large'
-        const spacingTop =
-          block._type === 'hero'
-            ? undefined
-            : (isEmpty(block.spacingTop) ? fallbackSpacing : block.spacingTop) as 'small' | 'medium' | 'large'
-        const spacingBottom = (isEmpty(block.spacingBottom) ? fallbackSpacing : block.spacingBottom) as 'small' | 'medium' | 'large'
         const blockBg = (block.blockBackground as string)?.toLowerCase?.()
         const blockSurf = ((block.surface ?? block.blockSurface) as string)?.toLowerCase?.()
         const hasColouredBackground = Boolean(
-          (block._type === 'mediaTextBlock' && blockBg && !['ghost', 'none'].includes(blockBg)) ||
-          (['carousel', 'cardGrid', 'proofPoints'].includes(block._type) && blockSurf && blockSurf !== 'ghost')
+          ((block._type === 'mediaTextBlock' || block._type === 'mediaText5050') && blockBg && !['ghost', 'none'].includes(blockBg)) ||
+          (['carousel', 'cardGrid', 'proofPoints', 'iconGrid', 'list'].includes(block._type) && blockSurf && blockSurf !== 'ghost')
         )
         const isOverflow =
           block._type === 'mediaTextBlock' && block.mediaStyle === 'overflow'

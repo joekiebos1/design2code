@@ -21,7 +21,7 @@ export function StickyNav({ pageTitle }: StickyNavProps) {
         position: 'sticky',
         top: 0,
         zIndex: 10,
-        background: 'var(--ds-color-background-ghost)',
+        background: '#fff',
         borderBottom: '1px solid var(--ds-color-stroke-divider)',
       }}
     >
@@ -32,8 +32,8 @@ export function StickyNav({ pageTitle }: StickyNavProps) {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          gap: 'var(--ds-spacing-xl)',
-          paddingBlock: 'var(--ds-spacing-m)',
+          gap: 'var(--ds-spacing-l)',
+          paddingBlock: 'var(--ds-spacing-s)',
           paddingInline: 'var(--ds-grid-margin)',
         }}
       >
@@ -41,17 +41,17 @@ export function StickyNav({ pageTitle }: StickyNavProps) {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 'var(--ds-spacing-xl)',
+            gap: 'var(--ds-spacing-l)',
           }}
         >
-          <Text size="M" weight="medium" as="span" color="high">
+          <Text size="S" weight="medium" as="span" color="high">
             {pageTitle}
           </Text>
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 'var(--ds-spacing-m)',
+              gap: 'var(--ds-spacing-s)',
             }}
           >
             {SECONDARY_LINKS.map(({ label, href }) => (
@@ -61,7 +61,7 @@ export function StickyNav({ pageTitle }: StickyNavProps) {
                 style={{
                   color: 'var(--ds-color-text-medium)',
                   textDecoration: 'none',
-                  fontSize: 'var(--ds-typography-label-m)',
+                  fontSize: 'var(--ds-typography-label-s)',
                   fontWeight: 'var(--ds-typography-weight-low)',
                 }}
               >
@@ -70,7 +70,7 @@ export function StickyNav({ pageTitle }: StickyNavProps) {
             ))}
           </div>
         </div>
-        <Button appearance="primary" attention="high" size="M">
+        <Button appearance="primary" attention="high" size="XS">
           Shop now
         </Button>
       </BlockContainer>

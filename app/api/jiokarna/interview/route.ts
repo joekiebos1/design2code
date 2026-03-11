@@ -26,8 +26,12 @@ export async function POST(req: NextRequest) {
 
     const anthropic = new Anthropic({ apiKey })
 
-    const context = `Page: ${intentData.pageName || 'Untitled'}
+    const context = `Product: ${intentData.product || 'Untitled'}
 Type: ${intentData.pageType || 'other'}
+Audience: ${intentData.audience || 'Not specified'}
+Primary action: ${intentData.primaryAction || 'Not specified'}
+Key message: ${intentData.keyMessage || 'Not specified'}
+Page path: ${intentData.pagePath || 'Not specified'}
 Intent: ${intentData.intent || 'Not specified'}
 ${intentData.briefContent ? `Additional context: ${intentData.briefContent}` : ''}`
 

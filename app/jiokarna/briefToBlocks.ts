@@ -9,6 +9,146 @@ import type { PageBrief, Section } from './types'
 /** Grey placeholder for preview (local asset, no external URLs). */
 const PLACEHOLDER_IMAGE = '/placeholder-preview.svg'
 
+/** Art Director block — JioKarna → Art Director (n8n webhook) contract. */
+export type ArtDirectorBlock = {
+  slot: string
+  section: string
+  blockType: string
+  headline: string
+  imageBrief: string
+  intent: string
+  mediaStyle?: string
+}
+
+/** Art Director payload — full request to image service. */
+export type ArtDirectorPayload = {
+  jobId: string
+  product: string
+  audience: string
+  blocks: ArtDirectorBlock[]
+}
+
+/** Build Art Director payload from brief. Slot naming: hero-{i}-image, mediaTextBlock-{i}-media, cardGrid-{i}-item-{j}-image, carousel-{i}-item-{j}-image */
+export function extractArtDirectorPayload(brief: PageBrief, jobId: string): ArtDirectorPayload {
+  const blocks: ArtDirectorBlock[] = []
+  const sections = [...brief.sections].sort((a, b) => a.order - b.order)
+  const meta = brief.meta
+
+  sections.forEach((section, i) => {
+    const s = section.contentSlots
+    const opts = section.blockOptions ?? {}
+    const sectionLabel = section.narrativeRole || 'engage'
+    const headline = s.headline || section.sectionName || ''
+    const imageBrief = section.imageBrief || headline || `${meta.pageName} — ${section.sectionName}`
+    const intent = section.imageIntent || 'lifestyle'
+    const mediaStyle = (opts.mediaStyle as string) || 'contained'
+
+    switch (section.component) {
+      case 'hero':
+        blocks.push({
+          slot: `hero-${i}-image`,
+          section: sectionLabel,
+          blockType: 'hero',
+          headline,
+          imageBrief,
+          intent,
+        })
+        break
+      case 'mediaTextBlock':
+        if (s.mediaType === 'image') {
+          blocks.push({
+            slot: `mediaTextBlock-${i}-media`,
+            section: sectionLabel,
+            blockType: 'mediaTextBlock',
+            headline,
+            imageBrief,
+            intent,
+            mediaStyle,
+          })
+        }
+        break
+      case 'cardGrid': {
+        const items = Array.isArray(s.items) ? s.items : []
+        const count = items.length === 0 ? 3 : items.length
+        for (let j = 0; j < count; j++) {
+          const item = items[j] as Record<string, unknown> | undefined
+          const itemHeadline = (item?.title as string) || (item?.headline as string) || `Card ${j + 1}`
+          const itemBrief = (item?.description as string) || imageBrief
+          blocks.push({
+            slot: `cardGrid-${i}-item-${j}-image`,
+            section: sectionLabel,
+            blockType: 'cardGrid',
+            headline: itemHeadline,
+            imageBrief: itemBrief,
+            intent,
+          })
+        }
+        break
+      }
+      case 'carousel': {
+        const items = Array.isArray(s.items) ? s.items : []
+        const count = items.length === 0 ? 2 : items.length
+        for (let j = 0; j < count; j++) {
+          const item = items[j] as Record<string, unknown> | undefined
+          const itemHeadline = (item?.title as string) || (item?.headline as string) || `Item ${j + 1}`
+          const itemBrief = (item?.description as string) || imageBrief
+          blocks.push({
+            slot: `carousel-${i}-item-${j}-image`,
+            section: sectionLabel,
+            blockType: 'carousel',
+            headline: itemHeadline,
+            imageBrief: itemBrief,
+            intent,
+          })
+        }
+        break
+      }
+      default:
+        break
+    }
+  })
+
+  return {
+    jobId,
+    product: meta.pageName || 'Untitled',
+    audience: meta.audience || 'General audience',
+    blocks,
+  }
+}
+
+/** Slot format: {blockType}-{sectionIndex}-image|media|item-{itemIndex}-image */
+export function extractImageSlots(brief: PageBrief): { slot: string }[] {
+  const slots: { slot: string }[] = []
+  const sections = [...brief.sections].sort((a, b) => a.order - b.order)
+
+  sections.forEach((section, i) => {
+    const s = section.contentSlots
+    switch (section.component) {
+      case 'hero':
+        slots.push({ slot: `hero-${i}-image` })
+        break
+      case 'mediaTextBlock':
+        if (s.mediaType === 'image') slots.push({ slot: `mediaTextBlock-${i}-media` })
+        break
+      case 'cardGrid': {
+        const items = Array.isArray(s.items) ? s.items : []
+        const count = items.length === 0 ? 3 : items.length
+        for (let j = 0; j < count; j++) slots.push({ slot: `cardGrid-${i}-item-${j}-image` })
+        break
+      }
+      case 'carousel': {
+        const items = Array.isArray(s.items) ? s.items : []
+        const count = items.length === 0 ? 2 : items.length
+        for (let j = 0; j < count; j++) slots.push({ slot: `carousel-${i}-item-${j}-image` })
+        break
+      }
+      default:
+        break
+    }
+  })
+  return slots
+}
+
 /** Returns true if string is a valid image URL (http, https, or absolute path). */
 function isValidImageUrl(s: string | null | undefined): boolean {
   if (!s || typeof s !== 'string' || !s.trim()) return false
@@ -30,8 +170,8 @@ function resolveImage(
 type Block = {
   _type: string
   _key: string
-  spacingTop?: 'small' | 'medium' | 'large'
-  spacingBottom?: 'small' | 'medium' | 'large'
+  spacingTop?: 'none' | 'medium' | 'large'
+  spacingBottom?: 'none' | 'medium' | 'large'
   [key: string]: unknown
 }
 
@@ -46,6 +186,7 @@ function getCtaFromSlot(cta: Section['contentSlots']['cta']): { label?: string; 
 function normalizeItems(
   items: unknown[] | null | undefined,
   component: string,
+  sectionIndex: number,
   sanityImageUrls: string[],
   itemOffset: number
 ): Record<string, unknown>[] {
@@ -68,6 +209,7 @@ function normalizeItems(
           ctaText: o.ctaText,
           ctaLink: o.ctaLink ?? (o.link as string),
           surface: (o.surface as string) ?? 'bold',
+          imageSlot: `cardGrid-${sectionIndex}-item-${i}-image`,
         }
       case 'carousel':
         return {
@@ -79,6 +221,7 @@ function normalizeItems(
           link: o.link,
           ctaText: o.ctaText,
           aspectRatio: (o.aspectRatio as string) ?? '4:5',
+          imageSlot: `carousel-${sectionIndex}-item-${i}-image`,
         }
       case 'proofPoints':
         return {
@@ -120,22 +263,22 @@ export function briefToBlocks(brief: PageBrief, sanityImageUrls: string[] = []):
           cta2Text: undefined,
           cta2Link: undefined,
           image: resolveImage(undefined, sanityImageUrls, 0),
+          imageSlot: `hero-${i}-image`,
         }
       }
 
       case 'mediaTextBlock': {
-        const template = opts.template ?? 'SideBySide'
+        const template = opts.template ?? 'Stacked'
         const hasMedia = slots.mediaType === 'image' || slots.mediaType === 'video'
         return {
           ...base,
           template: hasMedia ? template : 'TextOnly',
           size: opts.size ?? 'feature',
-          imagePosition: (opts.imagePosition as 'left' | 'right') ?? 'right',
+          stackImagePosition: (opts.stackImagePosition as 'top' | 'bottom') ?? 'top',
           blockAccent: opts.blockAccent ?? 'primary',
           blockBackground: opts.blockSurface ?? 'ghost',
           contentWidth: 'Default',
           mediaStyle: opts.mediaStyle ?? 'contained',
-          imageAspectRatio: opts.imageAspectRatio ?? '4:3',
           title: slots.headline ?? s.sectionName,
           subhead: slots.subhead,
           body: slots.body,
@@ -146,17 +289,18 @@ export function briefToBlocks(brief: PageBrief, sanityImageUrls: string[] = []):
           cta2Link: undefined,
           image: hasMedia ? resolveImage(undefined, sanityImageUrls, i) : undefined,
           video: undefined,
+          imageSlot: hasMedia ? `mediaTextBlock-${i}-media` : undefined,
         }
       }
 
       case 'cardGrid': {
-        const items = normalizeItems(slots.items, 'cardGrid', sanityImageUrls, itemOffset)
+        const items = normalizeItems(slots.items, 'cardGrid', i, sanityImageUrls, itemOffset)
         itemOffset += items.length
         if (items.length === 0) {
           items.push(
-            { cardStyle: 'image-above', title: 'Card 1', description: slots.body ?? '', image: resolveImage(undefined, sanityImageUrls, itemOffset) },
-            { cardStyle: 'image-above', title: 'Card 2', description: '', image: resolveImage(undefined, sanityImageUrls, itemOffset + 1) },
-            { cardStyle: 'image-above', title: 'Card 3', description: '', image: resolveImage(undefined, sanityImageUrls, itemOffset + 2) }
+            { cardStyle: 'image-above', title: 'Card 1', description: slots.body ?? '', image: resolveImage(undefined, sanityImageUrls, itemOffset), imageSlot: `cardGrid-${i}-item-0-image` },
+            { cardStyle: 'image-above', title: 'Card 2', description: '', image: resolveImage(undefined, sanityImageUrls, itemOffset + 1), imageSlot: `cardGrid-${i}-item-1-image` },
+            { cardStyle: 'image-above', title: 'Card 3', description: '', image: resolveImage(undefined, sanityImageUrls, itemOffset + 2), imageSlot: `cardGrid-${i}-item-2-image` }
           )
           itemOffset += 3
         }
@@ -172,12 +316,12 @@ export function briefToBlocks(brief: PageBrief, sanityImageUrls: string[] = []):
 
       case 'carousel': {
         const carouselCardSize = opts.cardSize ?? 'compact'
-        let items = normalizeItems(slots.items, 'carousel', sanityImageUrls, itemOffset)
+        let items = normalizeItems(slots.items, 'carousel', i, sanityImageUrls, itemOffset)
         itemOffset += items.length
         if (items.length === 0) {
           items = [
-            { cardType: 'media', title: 'Item 1', description: slots.body ?? '', image: resolveImage(undefined, sanityImageUrls, itemOffset), ...(carouselCardSize === 'compact' && { aspectRatio: '4:5' }) },
-            { cardType: 'media', title: 'Item 2', description: '', image: resolveImage(undefined, sanityImageUrls, itemOffset + 1), ...(carouselCardSize === 'compact' && { aspectRatio: '4:5' }) },
+            { cardType: 'media', title: 'Item 1', description: slots.body ?? '', image: resolveImage(undefined, sanityImageUrls, itemOffset), imageSlot: `carousel-${i}-item-0-image`, ...(carouselCardSize === 'compact' && { aspectRatio: '4:5' }) },
+            { cardType: 'media', title: 'Item 2', description: '', image: resolveImage(undefined, sanityImageUrls, itemOffset + 1), imageSlot: `carousel-${i}-item-1-image`, ...(carouselCardSize === 'compact' && { aspectRatio: '4:5' }) },
           ]
           itemOffset += 2
         } else if (carouselCardSize === 'large' || carouselCardSize === 'medium') {
@@ -194,7 +338,7 @@ export function briefToBlocks(brief: PageBrief, sanityImageUrls: string[] = []):
       }
 
       case 'proofPoints': {
-        const items = normalizeItems(slots.items, 'proofPoints', sanityImageUrls, itemOffset)
+        const items = normalizeItems(slots.items, 'proofPoints', i, sanityImageUrls, itemOffset)
         itemOffset += items.length
         if (items.length === 0) {
           items.push(

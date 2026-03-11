@@ -16,12 +16,12 @@ type BlockContainerElement = 'div' | 'section' | 'article' | 'main'
  */
 export type ContentWidth = 'XS' | 'S' | 'M' | 'Default' | 'Wide' | 'edgeToEdge' | 'full'
 
-/** Spacing values from DS block-gap tokens. Controls padding-top on block wrapper. */
-export type BlockSpacing = 'small' | 'medium' | 'large'
+/** Spacing values from DS tokens. none=0, medium=3xl, large=4xl (largest). */
+export type BlockSpacing = 'none' | 'medium' | 'large'
 
-/** Block spacing – DS tokens (same load order as background colours) */
+/** Block spacing – DS tokens at runtime (--ds-spacing-* from generated CSS) */
 export const SPACING_VAR: Record<BlockSpacing, string> = {
-  small: 'var(--ds-spacing-2xl)',
+  none: '0',
   medium: 'var(--ds-spacing-3xl)',
   large: 'var(--ds-spacing-4xl)',
 }
@@ -58,9 +58,9 @@ export function BlockContainer({
   spacingOnlyOnContent = false,
   ...props
 }: BlockContainerProps) {
-  const fallback = spacing ? (SPACING_VAR[spacing] ?? SPACING_VAR.large) : undefined
-  const topValue = spacingTop ? (SPACING_VAR[spacingTop] ?? SPACING_VAR.large) : fallback
-  const bottomValue = spacingBottom ? (SPACING_VAR[spacingBottom] ?? SPACING_VAR.large) : fallback
+  const fallback = spacing ? (SPACING_VAR[spacing as BlockSpacing] ?? SPACING_VAR.large) : undefined
+  const topValue = spacingTop ? (SPACING_VAR[spacingTop as BlockSpacing] ?? SPACING_VAR.large) : fallback
+  const bottomValue = spacingBottom ? (SPACING_VAR[spacingBottom as BlockSpacing] ?? SPACING_VAR.large) : fallback
   /** spacingOnlyOnContent (overflow): block handles top internally; BlockContainer adds paddingBlockEnd like other blocks. */
   const paddingBlockStart = spacingOnlyOnContent ? undefined : topValue
   const paddingBlockEnd = bottomValue
@@ -75,8 +75,8 @@ export function BlockContainer({
   } = useGridBreakpoint()
 
   const paddingStyle = {
-    ...(paddingBlockStart && { paddingBlockStart }),
-    ...(paddingBlockEnd && { paddingBlockEnd }),
+    ...(paddingBlockStart !== undefined && paddingBlockStart !== '0' && { paddingBlockStart }),
+    ...(paddingBlockEnd !== undefined && paddingBlockEnd !== '0' && { paddingBlockEnd }),
   }
 
   if (contentWidth === 'edgeToEdge') {

@@ -31,6 +31,7 @@
   --ds-color-stroke-subtle: rgba(255, 255, 255, 0.01);
   --ds-color-block-background-subtle: rgb(232, 232, 255);
   --ds-color-block-background-bold: rgb(56, 0, 173);
+  --ds-color-card-tertiary: rgb(232, 232, 255);
   --ds-color-stroke-divider: rgba(0, 0, 0, 0.08);
   --ds-typography-label-s: 16px;
   --ds-typography-label-m: 19px;
