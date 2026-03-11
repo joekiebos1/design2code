@@ -132,7 +132,14 @@ export async function POST(request: NextRequest) {
           })
         }
         for (const ev of responseEvents) {
-          pushCallback(jobId, ev)
+          pushCallback(jobId, {
+            jobId: ev.jobId,
+            slot: ev.slot,
+            url: ev.url,
+            alt: ev.alt ?? '',
+            source: ev.source ?? 'database',
+            ready: ev.ready ?? false,
+          })
         }
       },
     })
