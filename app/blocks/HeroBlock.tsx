@@ -77,7 +77,7 @@ export function HeroBlock({
   blockAccent = 'primary',
 }: HeroBlockProps) {
   const router = useRouter()
-  const { columns, contentMaxM, contentMaxS, contentMaxXS, contentMaxWide, marginPx, gridMaxWidth } = useGridBreakpoint()
+  const { columns, contentMaxS, contentMaxXS, marginPx, gridMaxWidth } = useGridBreakpoint()
   const cell = useGridCell('Wide')
   const { ref: revealRef, getRevealStyle, prefersReducedMotion } = useHeroStaggeredReveal(4)
   const categorySectionRef = useRef<HTMLElement>(null)
