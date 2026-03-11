@@ -650,7 +650,7 @@ export function MediaTextBlock({
     <BlockReveal>
       <SurfaceProvider {...surfaceProps}>
         <GridBlock as="section">
-          <div style={{ ...cellMedia, display: 'flex', flexDirection: 'column', alignItems: derivedCentered ? 'center' : 'stretch', gap: 'var(--ds-spacing-l)' }}>
+          <div style={{ ...cellMedia, display: 'flex', flexDirection: 'column', alignItems: align === 'center' ? 'center' : align === 'left' ? 'flex-start' : 'center', gap: 'var(--ds-spacing-l)' }}>
             {titleContent}
             {bodyContent}
           </div>
