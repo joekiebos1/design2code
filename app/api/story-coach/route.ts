@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import type { StoryCoachInput, StoryCoachResult } from '../../components/story-coach/types'
 
-const SYSTEM_PROMPT = `You are the JioKarna Story Coach — a brand storytelling strategist for Jio, India's largest digital services company.
+const SYSTEM_PROMPT = `You are the JioKarna Storytelling Coach — a brand storytelling strategist for Jio, India's largest digital services company.
 
 Your job is to read a structured product brief and produce a narrative arc and block structure for a Jio product or category page. Your output feeds directly into a design production pipeline — it must be specific, opinionated, and immediately usable.
 
@@ -146,6 +146,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'productName required' }, { status: 400 })
     }
 
+    if (input.outputType !== 'product-page') {
+      return NextResponse.json({ error: 'Only product page is supported for now' }, { status: 400 })
+    }
+
     const anthropic = new Anthropic({ apiKey })
 
     const response = await anthropic.messages.create({
@@ -171,7 +175,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(data)
   } catch (err) {
-    console.error('Story Coach API error:', err)
+    console.error('Storytelling Coach API error:', err)
     const message = err instanceof Error ? err.message : 'Unknown error'
     return NextResponse.json({ error: message }, { status: 500 })
   }

@@ -41,7 +41,7 @@ export default function StudioLayout({ children }: { children: React.ReactNode }
                 fontSize: 'var(--ds-typography-label-s)',
               }}
             >
-              Story Coach
+              Storytelling Coach
             </Link>
             <Link
               href="/jiokarna"

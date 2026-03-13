@@ -1,4 +1,7 @@
+export type OutputType = 'banner' | 'product-page' | 'campaign-page'
+
 export type StoryCoachInput = {
+  outputType: OutputType
   productName: string
   whatItDoes: string
   whatIsInIt: string

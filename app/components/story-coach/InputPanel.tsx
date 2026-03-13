@@ -31,7 +31,10 @@ const grey = {
   label: 'rgba(0, 0, 0, 0.65)',
   secondary: 'rgba(0, 0, 0, 0.48)',
   tertiary: 'rgba(0, 0, 0, 0.36)',
+  checklist: 'rgba(0, 0, 0, 0.52)',
 }
+
+const CHUNK_GAP = 'var(--ds-spacing-xl)'
 
 const inputStyles: React.CSSProperties = {
   width: '100%',
@@ -42,6 +45,11 @@ const inputStyles: React.CSSProperties = {
   color: 'var(--ds-color-text-high)',
   background: 'transparent',
   boxSizing: 'border-box',
+}
+
+const selectStyles: React.CSSProperties = {
+  ...inputStyles,
+  cursor: 'pointer',
 }
 
 const textareaStyles: React.CSSProperties = {
@@ -75,8 +83,15 @@ const initialChecks: ChecklistState = {
   builtFor: { devices: false, network: false, india: false },
 }
 
+const OUTPUT_OPTIONS: { value: StoryCoachInput['outputType']; label: string }[] = [
+  { value: 'banner', label: 'A banner (doesn\'t work yet)' },
+  { value: 'product-page', label: 'A product page' },
+  { value: 'campaign-page', label: 'A campaign page (doesn\'t work yet)' },
+]
+
 export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
   const formRef = useRef<HTMLFormElement>(null)
+  const [outputType, setOutputType] = useState<StoryCoachInput['outputType']>('product-page')
   const [productName, setProductName] = useState('')
   const [whatItDoes, setWhatItDoes] = useState('')
   const [whatIsInIt, setWhatIsInIt] = useState('')
@@ -110,10 +125,11 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit({ productName, whatItDoes, whatIsInIt, builtFor })
+    onSubmit({ outputType, productName, whatItDoes, whatIsInIt, builtFor })
   }
 
-  const canSubmit = productName.trim().length > 0 && !isLoading
+  const outputTypeWorks = outputType === 'product-page'
+  const canSubmit = productName.trim().length > 0 && !isLoading && outputTypeWorks
 
   return (
     <SurfaceProvider level={0}>
@@ -126,12 +142,12 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
             padding: 'var(--ds-spacing-2xl)',
           }}
         >
-          <Headline level={2} style={{ marginBottom: 'var(--ds-spacing-s)', fontWeight: 'var(--ds-typography-weight-medium)', color: 'var(--ds-color-text-high)', letterSpacing: '-0.02em' }}>
-            Story Coach
+          <Headline level={2} style={{ marginBottom: CHUNK_GAP, fontWeight: 'var(--ds-typography-weight-medium)', color: 'var(--ds-color-text-high)', letterSpacing: '-0.02em' }}>
+            Storytelling Coach
           </Headline>
           <Text
             style={{
-              marginBottom: 'var(--ds-spacing-2xs)',
+              marginBottom: CHUNK_GAP,
               fontSize: 'var(--ds-typography-label-s)',
               fontWeight: 'var(--ds-typography-weight-medium)',
               color: grey.label,
@@ -142,7 +158,7 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
           </Text>
           <Text
             style={{
-              marginBottom: 'var(--ds-spacing-xl)',
+              marginBottom: CHUNK_GAP,
               fontSize: 'var(--ds-typography-body-xs)',
               fontWeight: 'var(--ds-typography-weight-low)',
               color: grey.secondary,
@@ -152,7 +168,25 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
             Fill in as much detail as possible to create a rich story that is uniquely Jio.
           </Text>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-l)', flex: 1 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: CHUNK_GAP, flex: 1 }}>
+            <div>
+              <label htmlFor="outputType" style={labelStyles}>
+                What do you want to make?
+              </label>
+              <select
+                id="outputType"
+                value={outputType}
+                onChange={(e) => setOutputType(e.target.value as StoryCoachInput['outputType'])}
+                style={selectStyles}
+              >
+                {OUTPUT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div>
               <label htmlFor="productName" style={labelStyles}>
                 Product name <span style={{ color: grey.tertiary }}>*</span>
@@ -182,29 +216,27 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
                 rows={6}
                 style={textareaStyles}
               />
-              <div
-                style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: 'var(--ds-spacing-s)',
-                  marginTop: 'var(--ds-spacing-s)',
-                  marginBottom: 'var(--ds-spacing-xl)',
-                }}
-              >
-                {CHECKLIST.whatItDoes.map((item) => (
-                  <div
-                    key={item.id}
-                    style={{
-                      padding: 'var(--ds-spacing-xs) var(--ds-spacing-s)',
-                      border: `1px solid ${grey.border}`,
-                      fontSize: '12px',
-                      fontWeight: 'var(--ds-typography-weight-low)',
-                      color: checks.whatItDoes[item.id]
-                        ? 'var(--ds-color-positive)'
-                        : grey.tertiary,
-                    }}
-                  >
-                    {checks.whatItDoes[item.id] ? '✓' : '✗'} {item.label}
+              <div style={{ marginTop: 'var(--ds-spacing-s)', width: '100%' }}>
+                {CHECKLIST.whatItDoes.map((item, i) => (
+                  <div key={item.id}>
+                    {i > 0 && (
+                      <div style={{ borderTop: `1px solid ${grey.border}` }} />
+                    )}
+                    <div
+                      style={{
+                        padding: 'var(--ds-spacing-s) 0',
+                        fontSize: '12px',
+                        fontWeight: 'var(--ds-typography-weight-low)',
+                        color: checks.whatItDoes[item.id]
+                          ? 'var(--ds-color-positive)'
+                          : grey.checklist,
+                        display: 'flex',
+                        gap: 'var(--ds-spacing-m)',
+                      }}
+                    >
+                      <span>{checks.whatItDoes[item.id] ? '✓' : '✗'}</span>
+                      <span>{item.label}</span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -224,29 +256,27 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
                 rows={4}
                 style={textareaStyles}
               />
-              <div
-                style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: 'var(--ds-spacing-s)',
-                  marginTop: 'var(--ds-spacing-s)',
-                  marginBottom: 'var(--ds-spacing-xl)',
-                }}
-              >
-                {CHECKLIST.whatIsInIt.map((item) => (
-                  <div
-                    key={item.id}
-                    style={{
-                      padding: 'var(--ds-spacing-xs) var(--ds-spacing-s)',
-                      border: `1px solid ${grey.border}`,
-                      fontSize: '12px',
-                      fontWeight: 'var(--ds-typography-weight-low)',
-                      color: checks.whatIsInIt[item.id]
-                        ? 'var(--ds-color-positive)'
-                        : grey.tertiary,
-                    }}
-                  >
-                    {checks.whatIsInIt[item.id] ? '✓' : '✗'} {item.label}
+              <div style={{ marginTop: 'var(--ds-spacing-s)', width: '100%' }}>
+                {CHECKLIST.whatIsInIt.map((item, i) => (
+                  <div key={item.id}>
+                    {i > 0 && (
+                      <div style={{ borderTop: `1px solid ${grey.border}` }} />
+                    )}
+                    <div
+                      style={{
+                        padding: 'var(--ds-spacing-s) 0',
+                        fontSize: '12px',
+                        fontWeight: 'var(--ds-typography-weight-low)',
+                        color: checks.whatIsInIt[item.id]
+                          ? 'var(--ds-color-positive)'
+                          : grey.checklist,
+                        display: 'flex',
+                        gap: 'var(--ds-spacing-m)',
+                      }}
+                    >
+                      <span>{checks.whatIsInIt[item.id] ? '✓' : '✗'}</span>
+                      <span>{item.label}</span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -266,29 +296,27 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
                 rows={4}
                 style={textareaStyles}
               />
-              <div
-                style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: 'var(--ds-spacing-s)',
-                  marginTop: 'var(--ds-spacing-s)',
-                  marginBottom: 'var(--ds-spacing-xl)',
-                }}
-              >
-                {CHECKLIST.builtFor.map((item) => (
-                  <div
-                    key={item.id}
-                    style={{
-                      padding: 'var(--ds-spacing-xs) var(--ds-spacing-s)',
-                      border: `1px solid ${grey.border}`,
-                      fontSize: '12px',
-                      fontWeight: 'var(--ds-typography-weight-low)',
-                      color: checks.builtFor[item.id]
-                        ? 'var(--ds-color-positive)'
-                        : grey.tertiary,
-                    }}
-                  >
-                    {checks.builtFor[item.id] ? '✓' : '✗'} {item.label}
+              <div style={{ marginTop: 'var(--ds-spacing-s)', width: '100%' }}>
+                {CHECKLIST.builtFor.map((item, i) => (
+                  <div key={item.id}>
+                    {i > 0 && (
+                      <div style={{ borderTop: `1px solid ${grey.border}` }} />
+                    )}
+                    <div
+                      style={{
+                        padding: 'var(--ds-spacing-s) 0',
+                        fontSize: '12px',
+                        fontWeight: 'var(--ds-typography-weight-low)',
+                        color: checks.builtFor[item.id]
+                          ? 'var(--ds-color-positive)'
+                          : grey.checklist,
+                        display: 'flex',
+                        gap: 'var(--ds-spacing-m)',
+                      }}
+                    >
+                      <span>{checks.builtFor[item.id] ? '✓' : '✗'}</span>
+                      <span>{item.label}</span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -301,7 +329,7 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
             appearance="neutral"
             size="M"
             attention="high"
-            style={{ marginTop: 'var(--ds-spacing-xl)', alignSelf: 'flex-start' }}
+            style={{ marginTop: CHUNK_GAP, alignSelf: 'flex-start' }}
           >
             {isLoading ? 'Generating...' : 'Generate'}
           </Button>
