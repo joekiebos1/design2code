@@ -1,5 +1,5 @@
 import { defineArrayMember, defineType } from 'sanity'
-import { BlockWithAIAssist } from '../components/BlockWithAIAssist'
+import { BlockWithAIAssist } from '../components/sanity/BlockWithAIAssist'
 
 export const pageBuilderType = defineType({
   name: 'pageBuilder',

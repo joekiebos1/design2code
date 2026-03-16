@@ -4,7 +4,7 @@ import {
   MediaCard,
   TextOnColourCardGrid,
   TextOnImageCard,
-} from '../../components/Cards'
+} from '../../components/blocks/Cards'
 import type { CardGridBlockItem } from './CardGridBlock.types'
 import type { ImageSlotState } from '../../hooks/useImageStream'
 

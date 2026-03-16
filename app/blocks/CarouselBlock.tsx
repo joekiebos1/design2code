@@ -11,13 +11,12 @@ import { useRef, useState, useEffect } from 'react'
 import type { CSSProperties } from 'react'
 import { createTransition } from '@marcelinodzn/ds-tokens'
 import { Headline, Button, Icon, IcChevronLeft, IcChevronRight } from '@marcelinodzn/ds-react'
-import { getHeadlineSize, normalizeHeadingLevel, TYPOGRAPHY } from '../lib/semantic-headline'
-import { BlockSurfaceProvider } from '../lib/block-surface'
-import { GridBlock, useGridCell } from '../components/GridBlock'
-import { useGridBreakpoint } from '../lib/use-grid-breakpoint'
-import { BlockContainer } from './BlockContainer'
-import { useCarouselReveal } from '../lib/use-carousel-reveal'
-import { MediaCard, TextOnColourCard } from '../components/Cards'
+import { getHeadlineSize, normalizeHeadingLevel, TYPOGRAPHY } from '../../lib/utils/semantic-headline'
+import { Grid, useCell } from '../components/blocks/Grid'
+import { useGridBreakpoint } from '../../lib/utils/use-grid-breakpoint'
+import { WidthCap } from './WidthCap'
+import { useCarouselReveal } from '../../lib/utils/use-carousel-reveal'
+import { MediaCard, TextOnColourCard } from '../components/blocks/Cards'
 
 type CarouselItem = {
   cardType?: 'media' | 'text-on-colour' | null
@@ -50,7 +49,7 @@ type CarouselBlockProps = {
 
 const GAP = 'var(--ds-spacing-l)'
 
-/** Faded opacity for cards outside Default span (DS: no opacity token; use semantic value) */
+/** Faded opacity for cards outside viewport. DS has no opacity token for this; checked 7. Transparency collection. */
 const CAROUSEL_FADED_OPACITY = 0.25
 
 const CARD_SIZE_CONFIG = {
@@ -126,14 +125,12 @@ export function CarouselBlock({
   title,
   cardSize,
   emphasis,
-  minimalBackgroundStyle,
-  surfaceColour,
   items,
   images,
 }: CarouselBlockProps) {
   const level = normalizeHeadingLevel('h2')
   const { contentMaxDefault } = useGridBreakpoint()
-  const cellContainer = useGridCell('Wide')
+  const cellContainer = useCell('Wide')
   const config = cardSize && cardSize in CARD_SIZE_CONFIG ? CARD_SIZE_CONFIG[cardSize] : undefined
   if (!config) return null
   const viewportRef = useRef<HTMLDivElement>(null)
@@ -296,6 +293,7 @@ export function CarouselBlock({
     }
   }
 
+  /** Vertically center nav buttons on media: marginTop = half media height − half button height. Large: 2:1 media → height = contentMax/2. Medium/Compact: 4:5 cards → half height = cardWidth × 5/8; cardWidth = (contentMax − gaps) / cols. */
   const halfBtn = 'var(--ds-spacing-l)'
   const buttonMediaCenterOffset =
     cardSize === 'large'
@@ -305,8 +303,7 @@ export function CarouselBlock({
         : `calc((${contentMaxDefault} - 2 * var(--ds-spacing-l)) * 5 / 24 - ${halfBtn})`
 
   return (
-    <BlockSurfaceProvider emphasis={emphasis} surfaceColour={surfaceColour} minimalBackgroundStyle={minimalBackgroundStyle ?? 'block'} fullWidth>
-      <GridBlock as="section">
+    <Grid as="section">
         <div
           ref={revealRef}
           style={{
@@ -318,7 +315,7 @@ export function CarouselBlock({
           }}
         >
           {title && (
-            <BlockContainer contentWidth="Default" style={{ width: '100%' }}>
+            <WidthCap contentWidth="Default">
               <Headline
                 size={getHeadlineSize(level)}
                 weight="high"
@@ -335,9 +332,9 @@ export function CarouselBlock({
               >
                 {title}
               </Headline>
-            </BlockContainer>
+            </WidthCap>
           )}
-          <BlockContainer contentWidth="Wide" className="card-block-carousel" style={{ width: '100%', overflow: 'visible' }}>
+          <WidthCap contentWidth="Wide" className="card-block-carousel" style={{ overflow: 'visible' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-l)' }}>
               <div
                 style={{
@@ -383,7 +380,8 @@ export function CarouselBlock({
                       maxWidth: '100%',
                       minWidth: 0,
                       containerType: 'inline-size',
-                      overflow: 'visible',
+                      overflowX: 'hidden',
+                      overflowY: 'visible',
                       marginInline: 'auto',
                     }}
                   >
@@ -500,9 +498,8 @@ export function CarouselBlock({
                 </div>
               </div>
             </div>
-          </BlockContainer>
+          </WidthCap>
         </div>
-      </GridBlock>
-    </BlockSurfaceProvider>
+      </Grid>
   )
 }

@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * Unified Hero block – merges production HeroBlock and Lab HeroColour.
+ * Unified Hero block.
  *
  * contentLayout: stacked | sideBySide | category | mediaOverlay | textOnly
  * - stacked: text above, image below (centered). No Bold.
@@ -17,14 +17,14 @@
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { Display, Headline, Text, Button, SurfaceProvider } from '@marcelinodzn/ds-react'
-import { GridBlock, useGridCell } from '../components/GridBlock'
-import { BlockContainer } from './BlockContainer'
-import { useHeroStaggeredReveal } from '../lib/use-hero-staggered-reveal'
-import { StreamImage } from '../components/StreamImage'
-import { BlockSurfaceProvider, getSurfaceProviderProps, useBlockBackgroundColor } from '../lib/block-surface'
-import { useGridBreakpoint } from '../lib/use-grid-breakpoint'
-import { EDGE_TO_EDGE_BREAKOUT, EDGE_TO_EDGE_CAPPED_RADIUS, useEdgeToEdgeMediaStyles } from '../lib/edge-to-edge'
-import { TYPOGRAPHY, HERO_BODY_STYLE } from '../lib/semantic-headline'
+import { Grid, useCell } from '../components/blocks/Grid'
+import { WidthCap } from './WidthCap'
+import { useHeroStaggeredReveal } from '../../lib/utils/use-hero-staggered-reveal'
+import { StreamImage } from '../components/blocks/StreamImage'
+import { getSurfaceProviderProps, useBlockBackgroundColor } from '../../lib/utils/block-surface'
+import { useGridBreakpoint } from '../../lib/utils/use-grid-breakpoint'
+import { EDGE_TO_EDGE_BREAKOUT, EDGE_TO_EDGE_CAPPED_RADIUS, useEdgeToEdgeMediaStyles } from '../../lib/utils/edge-to-edge'
+import { TYPOGRAPHY, HERO_BODY_STYLE } from '../../lib/utils/semantic-headline'
 import type { ImageSlotState } from '../hooks/useImageStream'
 
 /** Side-by-side (non–top-to-bottom) on large screens. Stacked/category use 2:1. */
@@ -78,8 +78,8 @@ export function HeroBlock({
   surfaceColour,
 }: HeroBlockProps) {
   const router = useRouter()
-  const { columns, contentMaxS, contentMaxXS, marginPx, gridMaxWidth } = useGridBreakpoint()
-  const cell = useGridCell('Wide')
+  const { columns, isMobile, isTablet, isStacked, isDesktop } = useGridBreakpoint()
+  const cell = useCell('Wide')
   const edgeStyles = useEdgeToEdgeMediaStyles()
   const { ref: revealRef, getRevealStyle, prefersReducedMotion } = useHeroStaggeredReveal(4)
   const categorySectionRef = useRef<HTMLElement>(null)
@@ -149,9 +149,7 @@ export function HeroBlock({
   const isStackedLayout = contentLayout === 'stacked'
   const isTextOnly = contentLayout === 'textOnly'
   const isMediaOverlay = contentLayout === 'mediaOverlay' || contentLayout === 'fullscreen'
-  const isSideBySide = contentLayout === 'sideBySide'
   const isCategory = contentLayout === 'category'
-  const isStacked = columns < 8
   const isEdgeToEdge = isCategory ? false : containerLayout === 'edgeToEdge'
   const isContained = isCategory ? true : containerLayout === 'contained'
 
@@ -168,31 +166,32 @@ export function HeroBlock({
 
   const headlineMarginBottom = subheadline ? 'var(--ds-spacing-s)' : (ctaText || cta2Text) ? 'var(--ds-spacing-xl)' : 0
   const subheadlineMarginBottom = (ctaText || cta2Text) ? 'var(--ds-spacing-xl)' : 0
+  const headlineFontSizeCentered = isMobile ? TYPOGRAPHY.h3 : isTablet ? TYPOGRAPHY.h2 : TYPOGRAPHY.h1
   const textContentCentered = (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
       <div style={getRevealStyle(0)}>
-        <BlockContainer contentWidth="Default">
+        <WidthCap contentWidth="Default">
           <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column' }}>
-            {productName && <Text size="L" weight="high" align="center" as="span" style={{ marginBottom: 'var(--ds-spacing-m)' }}>{productName}</Text>}
-            {headline && <Display size="L" as="h1" align="center" style={{ lineHeight: 1.1, whiteSpace: 'pre-line', marginBottom: headlineMarginBottom }}>{headline}</Display>}
+            {productName && <Text size="L" weight="high" align="center" as="span" style={{ marginBottom: 'var(--ds-spacing-m)', fontSize: isMobile ? 'var(--ds-typography-label-s)' : HERO_BODY_STYLE.fontSize, lineHeight: HERO_BODY_STYLE.lineHeight }}>{productName}</Text>}
+            {headline && <Display size="L" as="h1" align="center" style={{ lineHeight: 1.1, whiteSpace: 'pre-line', marginBottom: headlineMarginBottom, fontSize: headlineFontSizeCentered }}>{headline}</Display>}
           </div>
-        </BlockContainer>
+        </WidthCap>
       </div>
       {subheadline && (
         <div style={getRevealStyle(1)}>
-          <BlockContainer contentWidth="XS">
-            <Text align="center" as="p" style={{ margin: 0, marginBottom: subheadlineMarginBottom, textAlign: 'center', whiteSpace: 'pre-line', ...HERO_BODY_STYLE }}>{subheadline}</Text>
-          </BlockContainer>
+          <WidthCap contentWidth="XS">
+            <Text align="center" as="p" style={{ margin: 0, marginBottom: subheadlineMarginBottom, textAlign: 'center', whiteSpace: 'pre-line', fontSize: isMobile ? 'var(--ds-typography-label-s)' : HERO_BODY_STYLE.fontSize, fontWeight: HERO_BODY_STYLE.fontWeight, lineHeight: HERO_BODY_STYLE.lineHeight }}>{subheadline}</Text>
+          </WidthCap>
         </div>
       )}
       {(ctaText || cta2Text) && (
         <div style={getRevealStyle(2)}>
-          <BlockContainer contentWidth="Default">
+          <WidthCap contentWidth="Default">
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--ds-spacing-m)', justifyContent: 'center' }}>
               {ctaText && ctaLink && <Button appearance="primary" size="M" attention="high" onPress={() => handleCtaPress(ctaLink)}>{ctaText}</Button>}
               {cta2Text && cta2Link && <Button appearance="primary" size="M" attention="medium" onPress={() => handleCtaPress(cta2Link)}>{cta2Text}</Button>}
             </div>
-          </BlockContainer>
+          </WidthCap>
         </div>
       )}
     </div>
@@ -210,12 +209,12 @@ export function HeroBlock({
       }}
     >
       <div style={getRevealStyle(0)}>
-        {productName && <Text size="L" weight="high" align={textAlignProp(align)} as="span" style={{ marginBottom: 'var(--ds-spacing-m)' }}>{productName}</Text>}
-        {headline && <Headline size="L" weight="high" align={textAlignProp(align)} as="h1" style={{ lineHeight: 1.1, fontSize: TYPOGRAPHY.h1, whiteSpace: 'pre-line', marginBottom: headlineMarginBottom }}>{headline}</Headline>}
+        {productName && <Text size="L" weight="high" align={textAlignProp(align)} as="span" style={{ marginBottom: 'var(--ds-spacing-m)', fontSize: isMobile ? 'var(--ds-typography-label-s)' : HERO_BODY_STYLE.fontSize, lineHeight: HERO_BODY_STYLE.lineHeight }}>{productName}</Text>}
+        {headline && <Headline size="L" weight="high" align={textAlignProp(align)} as="h1" style={{ lineHeight: 1.1, fontSize: headlineFontSizeCentered, whiteSpace: 'pre-line', marginBottom: headlineMarginBottom }}>{headline}</Headline>}
       </div>
       {subheadline && (
         <div style={getRevealStyle(1)}>
-          <Text align={textAlignProp(align)} as="p" weight="low" style={{ margin: 0, marginBottom: subheadlineMarginBottom, opacity: 0.95, whiteSpace: 'pre-line', ...HERO_BODY_STYLE }}>
+          <Text align={textAlignProp(align)} as="p" weight="low" style={{ margin: 0, marginBottom: subheadlineMarginBottom, opacity: 0.95, whiteSpace: 'pre-line', fontSize: isMobile ? 'var(--ds-typography-label-s)' : HERO_BODY_STYLE.fontSize, fontWeight: HERO_BODY_STYLE.fontWeight, lineHeight: HERO_BODY_STYLE.lineHeight }}>
             {subheadline}
           </Text>
         </div>
@@ -244,12 +243,12 @@ export function HeroBlock({
       }}
     >
       <div style={getRevealStyle(0)}>
-        {productName && <Text size="L" weight="high" as="span" style={{ marginBottom: 'var(--ds-spacing-m)' }}>{productName}</Text>}
-        {headline && <Headline size="L" weight="high" as="h1" style={{ lineHeight: 1.1, fontSize: isContained ? TYPOGRAPHY.h2 : TYPOGRAPHY.h1, marginBottom: 'var(--ds-spacing-s)' }}>{headline}</Headline>}
+        {productName && <Text size="L" weight="high" as="span" style={{ marginBottom: 'var(--ds-spacing-m)', fontSize: isMobile ? 'var(--ds-typography-label-s)' : HERO_BODY_STYLE.fontSize, lineHeight: HERO_BODY_STYLE.lineHeight }}>{productName}</Text>}
+        {headline && <Headline size="L" weight="high" as="h1" style={{ lineHeight: 1.1, fontSize: isMobile ? TYPOGRAPHY.h3 : (isContained || isTablet) ? TYPOGRAPHY.h2 : TYPOGRAPHY.h1, marginBottom: 'var(--ds-spacing-s)' }}>{headline}</Headline>}
       </div>
       {subheadline && (
         <div style={getRevealStyle(1)}>
-          <Text as="p" weight="low" style={{ margin: 0, marginBottom: 'var(--ds-spacing-xl)', opacity: 0.95, whiteSpace: 'pre-line', ...HERO_BODY_STYLE }}>
+          <Text as="p" weight="low" style={{ margin: 0, marginBottom: 'var(--ds-spacing-xl)', opacity: 0.95, whiteSpace: 'pre-line', fontSize: isMobile ? 'var(--ds-typography-label-s)' : HERO_BODY_STYLE.fontSize, fontWeight: HERO_BODY_STYLE.fontWeight, lineHeight: HERO_BODY_STYLE.lineHeight }}>
             {subheadline}
           </Text>
         </div>
@@ -280,15 +279,13 @@ export function HeroBlock({
 
   if (isTextOnly) {
     return (
-      <BlockSurfaceProvider emphasis={effectiveSurface} surfaceColour={effectiveAccent} fullWidth>
-        <section ref={revealRef} style={{ width: '100%' }}>
-          <GridBlock as="div">
-            <div style={{ ...cell, display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-m)' }}>
-              {(productName || headline) && textContentCentered}
-            </div>
-          </GridBlock>
-        </section>
-      </BlockSurfaceProvider>
+      <section ref={revealRef}>
+        <Grid as="div">
+          <div style={{ ...cell, display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-m)' }}>
+            {(productName || headline) && textContentCentered}
+          </div>
+        </Grid>
+      </section>
     )
   }
 
@@ -324,21 +321,21 @@ export function HeroBlock({
           />
           <SurfaceProvider level={1} hasBoldBackground={true}>
             <div style={{ position: 'relative', zIndex: 1, paddingBlock: 'var(--ds-spacing-4xl)' }}>
-              <GridBlock as="section">
+              <Grid as="section">
                 <div style={{ ...cell, display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-m)' }}>
                   {(productName || headline) && textContentCentered}
                   <div style={getRevealStyle(3)}>
-                    <BlockContainer contentWidth="Default" style={{ marginTop: 'var(--ds-spacing-xl)' }}>
+                    <WidthCap contentWidth="Default" style={{ marginTop: 'var(--ds-spacing-xl)' }}>
                       <div
                         ref={categoryMediaRef}
                         style={{ aspectRatio: '2 / 1', overflow: 'hidden', borderRadius: 'var(--ds-radius-card-m)' }}
                       >
                         {mediaElement}
                       </div>
-                    </BlockContainer>
+                    </WidthCap>
                   </div>
                 </div>
-              </GridBlock>
+              </Grid>
             </div>
           </SurfaceProvider>
         </div>
@@ -348,31 +345,30 @@ export function HeroBlock({
 
   if (isStackedLayout) {
     return (
-      <BlockSurfaceProvider emphasis={effectiveSurface} surfaceColour={effectiveAccent} fullWidth>
-        <section ref={revealRef} style={{ width: '100%' }}>
-          <GridBlock as="div">
-            <div style={{ ...cell, display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-m)' }}>
-              {(productName || headline) && textContentCentered}
-              <div style={getRevealStyle(3)}>
-                <BlockContainer contentWidth="Wide" style={{ marginTop: 'var(--ds-spacing-xl)' }}>
-                  <div style={{ aspectRatio: '2 / 1', overflow: 'hidden', borderRadius: 'var(--ds-radius-card-m)' }}>
-                    {mediaElement}
-                  </div>
-                </BlockContainer>
-              </div>
+      <section ref={revealRef}>
+        <Grid as="div">
+          <div style={{ ...cell, display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-m)' }}>
+            {(productName || headline) && textContentCentered}
+            <div style={getRevealStyle(3)}>
+              <WidthCap contentWidth="Wide" style={{ marginTop: 'var(--ds-spacing-xl)' }}>
+                <div style={{ aspectRatio: isMobile ? '4 / 5' : '2 / 1', overflow: 'hidden', borderRadius: 'var(--ds-radius-card-m)' }}>
+                  {mediaElement}
+                </div>
+              </WidthCap>
             </div>
-          </GridBlock>
-        </section>
-      </BlockSurfaceProvider>
+          </div>
+        </Grid>
+      </section>
     )
   }
 
   if (isMediaOverlay) {
     const align = textAlign ?? 'left'
     const isCenter = align === 'center'
-    /** Left-aligned: align to left edge of Wide grid + ample padding. Grid is centered; left edge = (100vw - gridMaxWidth)/2 + marginPx. */
-    const leftPaddingInline =
-      isCenter ? 0 : gridMaxWidth ? `calc((100vw - ${gridMaxWidth}) / 2 + ${marginPx} + var(--ds-spacing-3xl))` : `calc(${marginPx} + var(--ds-spacing-3xl))`
+    /** Overlay content aligned to grid. Span 6 on 12-col, 4 on 8-col, full on 4-col. */
+    const span = columns >= 12 ? 6 : columns >= 8 ? 4 : 4
+    const start = isCenter && columns >= 8 ? Math.floor((columns - span) / 2) + 1 : 1
+    const overlayCell = { gridColumn: `${start} / span ${span}` as const }
     return (
       <div style={EDGE_TO_EDGE_BREAKOUT}>
         <div style={edgeStyles.inner}>
@@ -380,12 +376,8 @@ export function HeroBlock({
             ref={revealRef}
             style={{
               position: 'relative',
-              width: '100%',
               aspectRatio: MEDIA_OVERLAY_ASPECT_RATIO,
               minHeight: 320,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: isCenter ? 'center' : 'flex-start',
               overflow: 'hidden',
             }}
           >
@@ -394,23 +386,30 @@ export function HeroBlock({
             </div>
             {gradientOverlay}
             <SurfaceProvider level={0} hasBoldBackground={true}>
-              <div
+              <Grid
+                as="div"
                 style={{
-                  position: 'relative',
+                  position: 'absolute',
+                  inset: 0,
                   zIndex: 2,
-                  width: isCenter ? undefined : '100%',
-                  maxWidth: isCenter ? 'min(100%, 42rem)' : columns >= 12 ? contentMaxS : contentMaxXS,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: isCenter ? 'center' : 'flex-start',
-                  justifyContent: 'center',
+                  alignContent: 'center',
                   paddingBlock: 'var(--ds-spacing-3xl)',
-                  paddingInline: isCenter ? 0 : `${leftPaddingInline} 0`,
-                  marginInline: isCenter ? 'auto' : 0,
                 }}
               >
-                {textContentOverlay(align)}
-              </div>
+                <div
+                  style={{
+                    ...overlayCell,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: isCenter ? 'center' : 'flex-start',
+                    justifyContent: 'center',
+                    paddingInlineStart: isCenter ? 0 : 'var(--ds-spacing-3xl)',
+                    paddingInlineEnd: isCenter ? 0 : 'var(--ds-spacing-3xl)',
+                  }}
+                >
+                  {textContentOverlay(align)}
+                </div>
+              </Grid>
             </SurfaceProvider>
           </section>
         </div>
@@ -420,7 +419,6 @@ export function HeroBlock({
 
   const imageAspect = isStacked ? '2 / 1' : IMAGE_ASPECT_RATIO_SIDE_BY_SIDE
   const isTopToBottom = imageAnchor === 'bottom' && !isStacked
-  const isDesktop = columns >= 12
 
   const imageWrapperStyle: React.CSSProperties = {
     display: 'flex',
@@ -504,7 +502,7 @@ export function HeroBlock({
     const useBoldHalfHeight = effectiveSurface === 'bold'
     const content = (
       <div ref={revealRef} style={{ position: 'relative', zIndex: 1 }}>
-        <GridBlock as="section">{gridContent}</GridBlock>
+        <Grid as="section">{gridContent}</Grid>
       </div>
     )
     if (useBoldHalfHeight) {
@@ -530,21 +528,7 @@ export function HeroBlock({
       )
     }
     /** Top-to-bottom = no padding. Contained = has padding. Edge-to-edge + center = has padding. */
-    const flushEdges =
-      isSideBySide &&
-      isTopToBottom &&
-      (effectiveSurface === 'minimal' || effectiveSurface === 'subtle')
-    return (
-        <BlockSurfaceProvider
-          emphasis={effectiveSurface}
-          surfaceColour={effectiveAccent}
-          fullWidth
-          flushTop={flushEdges}
-          flushBottom={flushEdges}
-        >
-          {content}
-        </BlockSurfaceProvider>
-    )
+    return content
   }
 
   const useBoldHalfHeight = effectiveSurface === 'bold' && resolvedBoldColor
@@ -563,11 +547,11 @@ export function HeroBlock({
         }}
       />
       <div style={{ position: 'relative', zIndex: 1 }}>
-        <GridBlock as="section">{gridContent}</GridBlock>
+        <Grid as="section">{gridContent}</Grid>
       </div>
     </div>
   ) : (
-    <GridBlock as="section">{gridContent}</GridBlock>
+    <Grid as="section">{gridContent}</Grid>
   )
 
   return (

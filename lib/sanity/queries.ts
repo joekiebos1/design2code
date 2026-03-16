@@ -1,3 +1,170 @@
+/** Shared section projections — compose PAGE and LAB from these. */
+const S_MEDIA_TEXT_BLOCK = `{
+    spacingTop,
+    spacingBottom,
+    spacing,
+    eyebrow,
+    subhead,
+    title,
+    body,
+    ctaText,
+    ctaLink,
+    cta2Text,
+    cta2Link,
+    "image": coalesce(imageUrl, image.asset->url),
+    "video": coalesce(videoUrl, video.asset->url),
+    template,
+    imagePosition,
+    alignment,
+    overlayAlignment,
+    textOnlyAlignment,
+    stackAlignment,
+    mediaSize,
+    descriptionTitle,
+    descriptionBody,
+    stackedMediaWidth,
+    imageAspectRatio,
+    emphasis,
+    minimalBackgroundStyle,
+    surfaceColour
+  }`
+const S_MEDIA_TEXT_STACKED = `{
+    spacingTop,
+    spacingBottom,
+    spacing,
+    eyebrow,
+    subhead,
+    title,
+    body,
+    ctaText,
+    ctaLink,
+    cta2Text,
+    cta2Link,
+    "image": coalesce(imageUrl, image.asset->url),
+    "video": coalesce(videoUrl, video.asset->url),
+    template,
+    imagePosition,
+    alignment,
+    overlayAlignment,
+    textOnlyAlignment,
+    stackAlignment,
+    mediaSize,
+    descriptionTitle,
+    descriptionBody,
+    stackedMediaWidth,
+    imageAspectRatio,
+    emphasis,
+    minimalBackgroundStyle,
+    surfaceColour
+  }`
+const S_MEDIA_TEXT_5050 = `{
+    spacingTop,
+    spacingBottom,
+    headline,
+    variant,
+    imagePosition,
+    items[]{
+      subtitle,
+      body
+    },
+    "image": coalesce(imageUrl, image.asset->url),
+    "video": coalesce(videoUrl, video.asset->url),
+    imageAspectRatio,
+    emphasis,
+    minimalBackgroundStyle,
+    surfaceColour
+  }`
+const S_CARD_GRID_ITEMS = `{
+      _type,
+      _key,
+      cardType,
+      cardStyle,
+      title,
+      description,
+      "image": coalesce(imageUrl, image.asset->url),
+      "video": coalesce(videoUrl, video.asset->url),
+      ctaText,
+      ctaLink,
+      size,
+      icon,
+      "iconImage": iconImage.asset->url,
+      callToActionButtons[]{
+        _key,
+        label,
+        link,
+        style
+      },
+      features,
+      backgroundColor
+    }`
+const S_CAROUSEL = `{
+    spacingTop,
+    spacingBottom,
+    spacing,
+    title,
+    cardSize,
+    emphasis,
+    minimalBackgroundStyle,
+    surfaceColour,
+    items[]{
+      cardType,
+      title,
+      description,
+      "image": coalesce(imageUrl, image.asset->url),
+      "video": coalesce(videoUrl, video.asset->url),
+      link,
+      ctaText,
+      aspectRatio
+    }
+  }`
+const S_PROOF_POINTS = `{
+    spacingTop,
+    spacingBottom,
+    spacing,
+    title,
+    variant,
+    emphasis,
+    minimalBackgroundStyle,
+    surfaceColour,
+    items[]{
+      title,
+      description,
+      icon
+    }
+  }`
+const S_ICON_GRID = `{
+    spacingTop,
+    spacingBottom,
+    spacing,
+    emphasis,
+    surfaceColour,
+    minimalBackgroundStyle,
+    columns,
+    items[]{
+      title,
+      body,
+      icon,
+      accentColor,
+      spectrum
+    }
+  }`
+const S_LIST = `{
+    spacingTop,
+    spacingBottom,
+    blockTitle,
+    listVariant,
+    emphasis,
+    minimalBackgroundStyle,
+    surfaceColour,
+    items[]{
+      title,
+      body,
+      linkText,
+      linkUrl,
+      subtitle
+    }
+  }`
+
 /** Canonical page sections projection. Use for both slug and id queries. */
 const PAGE_SECTIONS_PROJECTION = `{
   _type,
@@ -31,172 +198,15 @@ const PAGE_SECTIONS_PROJECTION = `{
     emphasis,
     minimalBackgroundStyle,
     surfaceColour,
-    items[]{
-      _type,
-      _key,
-      cardType,
-      cardStyle,
-      title,
-      description,
-      "image": coalesce(imageUrl, image.asset->url),
-      "video": coalesce(videoUrl, video.asset->url),
-      ctaText,
-      ctaLink,
-      size,
-      icon,
-      "iconImage": iconImage.asset->url,
-      callToActionButtons[]{
-        _key,
-        label,
-        link,
-        style
-      },
-      features,
-      backgroundColor
-    }
+    items[]${S_CARD_GRID_ITEMS}
   },
-  _type == "mediaText5050" => {
-    spacingTop,
-    spacingBottom,
-    headline,
-    variant,
-    imagePosition,
-    items[]{
-      subtitle,
-      body
-    },
-    "image": coalesce(imageUrl, image.asset->url),
-    "video": coalesce(videoUrl, video.asset->url),
-    imageAspectRatio,
-    emphasis,
-    minimalBackgroundStyle,
-    surfaceColour
-  },
-  _type == "mediaTextStacked" => {
-    spacingTop,
-    spacingBottom,
-    spacing,
-    eyebrow,
-    subhead,
-    title,
-    body,
-    ctaText,
-    ctaLink,
-    cta2Text,
-    cta2Link,
-    "image": coalesce(imageUrl, image.asset->url),
-    "video": coalesce(videoUrl, video.asset->url),
-    template,
-    imagePosition,
-    alignment,
-    overlayAlignment,
-    textOnlyAlignment,
-    stackAlignment,
-    mediaSize,
-    descriptionTitle,
-    descriptionBody,
-    stackedMediaWidth,
-    imageAspectRatio,
-    emphasis,
-    minimalBackgroundStyle,
-    surfaceColour
-  },
-  _type == "mediaTextBlock" => {
-    spacingTop,
-    spacingBottom,
-    spacing,
-    eyebrow,
-    subhead,
-    title,
-    body,
-    ctaText,
-    ctaLink,
-    cta2Text,
-    cta2Link,
-    "image": coalesce(imageUrl, image.asset->url),
-    "video": coalesce(videoUrl, video.asset->url),
-    template,
-    imagePosition,
-    alignment,
-    overlayAlignment,
-    textOnlyAlignment,
-    stackAlignment,
-    mediaSize,
-    descriptionTitle,
-    descriptionBody,
-    stackedMediaWidth,
-    imageAspectRatio,
-    emphasis,
-    minimalBackgroundStyle,
-    surfaceColour
-  },
-  _type == "carousel" => {
-    spacingTop,
-    spacingBottom,
-    spacing,
-    title,
-    cardSize,
-    emphasis,
-    minimalBackgroundStyle,
-    surfaceColour,
-    items[]{
-      cardType,
-      title,
-      description,
-      "image": coalesce(imageUrl, image.asset->url),
-      "video": coalesce(videoUrl, video.asset->url),
-      link,
-      ctaText,
-      aspectRatio
-    }
-  },
-  _type == "proofPoints" => {
-    spacingTop,
-    spacingBottom,
-    spacing,
-    title,
-    variant,
-    emphasis,
-    minimalBackgroundStyle,
-    surfaceColour,
-    items[]{
-      title,
-      description,
-      icon
-    }
-  },
-  _type == "iconGrid" => {
-    spacingTop,
-    spacingBottom,
-    spacing,
-    emphasis,
-    surfaceColour,
-    minimalBackgroundStyle,
-    columns,
-    items[]{
-      title,
-      body,
-      icon,
-      accentColor,
-      spectrum
-    }
-  },
-  _type == "list" => {
-    spacingTop,
-    spacingBottom,
-    blockTitle,
-    listVariant,
-    emphasis,
-    minimalBackgroundStyle,
-    surfaceColour,
-    items[]{
-      title,
-      body,
-      linkText,
-      linkUrl,
-      subtitle
-    }
-  }
+  _type == "mediaText5050" => ${S_MEDIA_TEXT_5050},
+  _type == "mediaTextStacked" => ${S_MEDIA_TEXT_STACKED},
+  _type == "mediaTextBlock" => ${S_MEDIA_TEXT_BLOCK},
+  _type == "carousel" => ${S_CAROUSEL},
+  _type == "proofPoints" => ${S_PROOF_POINTS},
+  _type == "iconGrid" => ${S_ICON_GRID},
+  _type == "list" => ${S_LIST}
 }`
 
 export const pageBySlugQuery = `*[_type == "page" && slug.current == $slug][0]{
@@ -222,81 +232,9 @@ export const allPagesQuery = `*[_type == "page"]{
 const LAB_SECTIONS_PROJECTION = `{
   _type,
   _key,
-  _type == "mediaTextStacked" => {
-    spacingTop,
-    spacingBottom,
-    spacing,
-    eyebrow,
-    subhead,
-    title,
-    body,
-    ctaText,
-    ctaLink,
-    cta2Text,
-    cta2Link,
-    "image": coalesce(imageUrl, image.asset->url),
-    "video": coalesce(videoUrl, video.asset->url),
-    template,
-    imagePosition,
-    alignment,
-    overlayAlignment,
-    textOnlyAlignment,
-    stackAlignment,
-    mediaSize,
-    descriptionTitle,
-    descriptionBody,
-    stackedMediaWidth,
-    imageAspectRatio,
-    emphasis,
-    minimalBackgroundStyle,
-    surfaceColour
-  },
-  _type == "mediaTextBlock" => {
-    spacingTop,
-    spacingBottom,
-    spacing,
-    eyebrow,
-    subhead,
-    title,
-    body,
-    ctaText,
-    ctaLink,
-    cta2Text,
-    cta2Link,
-    "image": coalesce(imageUrl, image.asset->url),
-    "video": coalesce(videoUrl, video.asset->url),
-    template,
-    imagePosition,
-    alignment,
-    overlayAlignment,
-    textOnlyAlignment,
-    stackAlignment,
-    mediaSize,
-    descriptionTitle,
-    descriptionBody,
-    stackedMediaWidth,
-    imageAspectRatio,
-    emphasis,
-    minimalBackgroundStyle,
-    surfaceColour
-  },
-  _type == "mediaText5050" => {
-    spacingTop,
-    spacingBottom,
-    headline,
-    variant,
-    imagePosition,
-    items[]{
-      subtitle,
-      body
-    },
-    "image": coalesce(imageUrl, image.asset->url),
-    "video": coalesce(videoUrl, video.asset->url),
-    imageAspectRatio,
-    emphasis,
-    minimalBackgroundStyle,
-    surfaceColour
-  },
+  _type == "mediaTextStacked" => ${S_MEDIA_TEXT_STACKED},
+  _type == "mediaTextBlock" => ${S_MEDIA_TEXT_BLOCK},
+  _type == "mediaText5050" => ${S_MEDIA_TEXT_5050},
   _type == "cardGrid" => {
     spacingTop,
     spacingBottom,
@@ -306,29 +244,7 @@ const LAB_SECTIONS_PROJECTION = `{
     emphasis,
     minimalBackgroundStyle,
     surfaceColour,
-    items[]{
-      _type,
-      _key,
-      cardType,
-      cardStyle,
-      title,
-      description,
-      "image": coalesce(imageUrl, image.asset->url),
-      "video": coalesce(videoUrl, video.asset->url),
-      ctaText,
-      ctaLink,
-      size,
-      icon,
-      "iconImage": iconImage.asset->url,
-      callToActionButtons[]{
-        _key,
-        label,
-        link,
-        style
-      },
-      features,
-      backgroundColor
-    }
+    items[]${S_CARD_GRID_ITEMS}
   },
   _type == "labCardGrid" => {
     spacingTop,
@@ -339,50 +255,9 @@ const LAB_SECTIONS_PROJECTION = `{
     emphasis,
     minimalBackgroundStyle,
     surfaceColour,
-    items[]{
-      _type,
-      _key,
-      cardType,
-      cardStyle,
-      title,
-      description,
-      "image": coalesce(imageUrl, image.asset->url),
-      "video": coalesce(videoUrl, video.asset->url),
-      ctaText,
-      ctaLink,
-      size,
-      icon,
-      "iconImage": iconImage.asset->url,
-      callToActionButtons[]{
-        _key,
-        label,
-        link,
-        style
-      },
-      features,
-      backgroundColor
-    }
+    items[]${S_CARD_GRID_ITEMS}
   },
-  _type == "carousel" => {
-    spacingTop,
-    spacingBottom,
-    spacing,
-    title,
-    cardSize,
-    emphasis,
-    minimalBackgroundStyle,
-    surfaceColour,
-    items[]{
-      cardType,
-      title,
-      description,
-      "image": coalesce(imageUrl, image.asset->url),
-      "video": coalesce(videoUrl, video.asset->url),
-      link,
-      ctaText,
-      aspectRatio
-    }
-  },
+  _type == "carousel" => ${S_CAROUSEL},
   _type == "hero" => {
     productName,
     headline,
@@ -427,47 +302,9 @@ const LAB_SECTIONS_PROJECTION = `{
     videoUrl,
     alt
   },
-  _type == "iconGrid" => {
-    items[]{
-      title,
-      body,
-      icon,
-      accentColor,
-      spectrum
-    },
-    emphasis,
-    surfaceColour,
-    minimalBackgroundStyle,
-    columns
-  },
-  _type == "proofPoints" => {
-    title,
-    variant,
-    emphasis,
-    minimalBackgroundStyle,
-    surfaceColour,
-    items[]{
-      title,
-      description,
-      icon
-    }
-  },
-  _type == "list" => {
-    spacingTop,
-    spacingBottom,
-    blockTitle,
-    listVariant,
-    emphasis,
-    minimalBackgroundStyle,
-    surfaceColour,
-    items[]{
-      title,
-      body,
-      linkText,
-      linkUrl,
-      subtitle
-    }
-  }
+  _type == "iconGrid" => ${S_ICON_GRID},
+  _type == "proofPoints" => ${S_PROOF_POINTS},
+  _type == "list" => ${S_LIST}
 }`
 
 export const labOverviewQuery = `*[_type == "labOverview" && _id == "labOverview"][0]{

@@ -16,26 +16,31 @@ import {
   ListBlock,
 } from '../../blocks'
 import {
-  FullBleedVerticalCarousel,
-  RotatingMediaBlock,
-  MediaZoomOutOnScroll,
-  TopNavBlock,
+  LabFullBleedVerticalCarousel,
+  LabRotatingMediaBlock,
+  LabMediaZoomOutOnScroll,
+  LabTopNavBlock,
 } from '../../lab/blocks'
 import { SurfaceProvider } from '@marcelinodzn/ds-react'
 
 const PLACEHOLDER = '/placeholder-preview.svg'
+
+export type BlockCategory = 'Page titles' | 'Section titles' | 'Content blocks' | 'Carousels' | 'Navigation'
 
 export type BlockCatalogueEntry = {
   id: string
   name: string
   description: string
   creativeUses: string[]
+  category: BlockCategory
   /** Production or Lab */
   tier: 'production' | 'lab'
-  /** Lab page slug for /lab/[slug]. top-nav uses dedicated /lab/top-nav. */
+  /** Lab page slug for /lab/[slug]. */
   labSlug: string
-  /** Renders a small preview of the block */
+  /** Renders a small preview of the block (for list thumbnails) */
   Preview: React.ComponentType
+  /** Renders a full-size preview of the block (for the main preview area) */
+  PreviewFull: React.ComponentType
 }
 
 const PREVIEW_SCALE = 0.18
@@ -75,6 +80,7 @@ export const BLOCK_CATALOGUE: BlockCatalogueEntry[] = [
     id: 'hero',
     name: 'Hero',
     description: 'Full-width hero section with headline, subheadline, media and CTAs. Supports stacked, side-by-side, category, media overlay and text-only layouts.',
+    category: 'Page titles',
     tier: 'production',
     labSlug: 'hero',
     creativeUses: [
@@ -95,11 +101,22 @@ export const BLOCK_CATALOGUE: BlockCatalogueEntry[] = [
         />
       </PreviewFrame>
     ),
+    PreviewFull: () => (
+      <HeroBlock
+        headline="Designed for the way you live"
+        subheadline="Clean lines. Thoughtful details."
+        ctaText="Shop now"
+        image={PLACEHOLDER}
+        contentLayout="stacked"
+        emphasis="ghost"
+      />
+    ),
   },
   {
     id: 'mediaText',
     name: 'Media + Text (Stacked)',
     description: 'Stacked or overlay layout with media above or behind text. Supports contained and edge-to-edge media.',
+    category: 'Content blocks',
     tier: 'production',
     labSlug: 'media-text',
     creativeUses: [
@@ -118,11 +135,21 @@ export const BLOCK_CATALOGUE: BlockCatalogueEntry[] = [
         />
       </PreviewFrame>
     ),
+    PreviewFull: () => (
+      <MediaTextBlock
+        headline="Feature highlight"
+        subhead="Supporting copy for the visual."
+        media={{ type: 'image', src: PLACEHOLDER, aspectRatio: '2:1' }}
+        variant="centered-media-below"
+        emphasis="ghost"
+      />
+    ),
   },
   {
     id: 'mediaText5050',
     name: 'Media + Text (50/50)',
     description: 'Side-by-side layout with paragraphs or accordion. Image position left or right.',
+    category: 'Content blocks',
     tier: 'production',
     labSlug: 'media-text-5050',
     creativeUses: [
@@ -141,11 +168,21 @@ export const BLOCK_CATALOGUE: BlockCatalogueEntry[] = [
         />
       </PreviewFrame>
     ),
+    PreviewFull: () => (
+      <MediaText5050Block
+        items={[{ subtitle: 'Feature', body: 'Supporting copy.' }]}
+        media={{ type: 'image', src: PLACEHOLDER }}
+        imagePosition="right"
+        variant="paragraphs"
+        emphasis="ghost"
+      />
+    ),
   },
   {
     id: 'cardGrid',
     name: 'Card Grid',
     description: 'Responsive grid of cards. Supports media cards, text-on-colour and text-on-image variants.',
+    category: 'Content blocks',
     tier: 'production',
     labSlug: 'card-grid',
     creativeUses: [
@@ -166,11 +203,23 @@ export const BLOCK_CATALOGUE: BlockCatalogueEntry[] = [
         />
       </PreviewFrame>
     ),
+    PreviewFull: () => (
+      <CardGridBlock
+        columns={3}
+        items={[
+          { title: 'Card 1', description: 'Desc', image: PLACEHOLDER, cardType: 'media-description-below' },
+          { title: 'Card 2', description: 'Desc', image: PLACEHOLDER, cardType: 'media-description-below' },
+          { title: 'Card 3', description: 'Desc', image: PLACEHOLDER, cardType: 'media-description-below' },
+        ]}
+        emphasis="ghost"
+      />
+    ),
   },
   {
     id: 'carousel',
     name: 'Carousel',
     description: 'Horizontal carousel of cards. Compact, medium or large card sizes. Responsive column counts.',
+    category: 'Carousels',
     tier: 'production',
     labSlug: 'carousel',
     creativeUses: [
@@ -190,11 +239,22 @@ export const BLOCK_CATALOGUE: BlockCatalogueEntry[] = [
         />
       </PreviewFrame>
     ),
+    PreviewFull: () => (
+      <CarouselBlock
+        items={[
+          { title: 'Card 1', description: 'Desc', image: PLACEHOLDER, cardType: 'media', aspectRatio: '4:5' },
+          { title: 'Card 2', description: 'Desc', image: PLACEHOLDER, cardType: 'media', aspectRatio: '4:5' },
+        ]}
+        cardSize="medium"
+        emphasis="ghost"
+      />
+    ),
   },
   {
     id: 'proofPoints',
     name: 'Proof Points',
     description: 'Icon or stat variant. Highlights key benefits or metrics.',
+    category: 'Section titles',
     tier: 'production',
     labSlug: 'proof-points',
     creativeUses: [
@@ -216,11 +276,24 @@ export const BLOCK_CATALOGUE: BlockCatalogueEntry[] = [
         />
       </PreviewFrame>
     ),
+    PreviewFull: () => (
+      <ProofPointsBlock
+        title="Why choose us"
+        variant="icon"
+        items={[
+          { title: 'Fast', icon: 'IcCheckboxOn' },
+          { title: 'Reliable', icon: 'IcCheckboxOn' },
+          { title: 'Secure', icon: 'IcCheckboxOn' },
+        ]}
+        emphasis="ghost"
+      />
+    ),
   },
   {
     id: 'iconGrid',
     name: 'Icon Grid',
     description: 'Grid of icons with titles. Supports spectrum colours and accent colours.',
+    category: 'Section titles',
     tier: 'production',
     labSlug: 'icon-grid',
     creativeUses: [
@@ -241,11 +314,23 @@ export const BLOCK_CATALOGUE: BlockCatalogueEntry[] = [
         />
       </PreviewFrame>
     ),
+    PreviewFull: () => (
+      <IconGridBlock
+        items={[
+          { icon: 'IcStar', title: 'Feature 1', accentColor: 'primary' },
+          { icon: 'IcStar', title: 'Feature 2', accentColor: 'primary' },
+          { icon: 'IcStar', title: 'Feature 3', accentColor: 'primary' },
+        ]}
+        columns={3}
+        emphasis="ghost"
+      />
+    ),
   },
   {
     id: 'list',
     name: 'List',
     description: 'Text list, FAQ or links variant. Collapsible FAQ items.',
+    category: 'Content blocks',
     tier: 'production',
     labSlug: 'list',
     creativeUses: [
@@ -266,11 +351,23 @@ export const BLOCK_CATALOGUE: BlockCatalogueEntry[] = [
         />
       </PreviewFrame>
     ),
+    PreviewFull: () => (
+      <ListBlock
+        blockTitle="FAQ"
+        listVariant="faq"
+        items={[
+          { title: 'Question 1?', body: 'Answer.' },
+          { title: 'Question 2?', body: 'Answer.' },
+        ]}
+        emphasis="ghost"
+      />
+    ),
   },
   {
     id: 'fullBleedVerticalCarousel',
     name: 'Full Bleed Vertical Carousel',
     description: 'Full-viewport vertical carousel. Each item has full-bleed media and scrolling text overlay.',
+    category: 'Carousels',
     tier: 'lab',
     labSlug: 'full-bleed-vertical-carousel',
     creativeUses: [
@@ -281,7 +378,7 @@ export const BLOCK_CATALOGUE: BlockCatalogueEntry[] = [
     Preview: () => (
       <PreviewFrame>
         <SurfaceProvider level={0}>
-          <FullBleedVerticalCarousel
+          <LabFullBleedVerticalCarousel
             emphasis="ghost"
             items={[
               { title: 'Story 1', description: 'Description.', image: PLACEHOLDER },
@@ -291,11 +388,23 @@ export const BLOCK_CATALOGUE: BlockCatalogueEntry[] = [
         </SurfaceProvider>
       </PreviewFrame>
     ),
+    PreviewFull: () => (
+      <SurfaceProvider level={0}>
+        <LabFullBleedVerticalCarousel
+          emphasis="ghost"
+          items={[
+            { title: 'Story 1', description: 'Description.', image: PLACEHOLDER },
+            { title: 'Story 2', description: 'Description.', image: PLACEHOLDER },
+          ]}
+        />
+      </SurfaceProvider>
+    ),
   },
   {
     id: 'rotatingMedia',
     name: 'Rotating Media',
     description: 'Rotating carousel of media cards. Small, large or combined variants.',
+    category: 'Carousels',
     tier: 'lab',
     labSlug: 'rotating-media',
     creativeUses: [
@@ -306,7 +415,7 @@ export const BLOCK_CATALOGUE: BlockCatalogueEntry[] = [
     Preview: () => (
       <PreviewFrame>
         <SurfaceProvider level={0}>
-          <RotatingMediaBlock
+          <LabRotatingMediaBlock
             variant="small"
             emphasis="ghost"
             items={[
@@ -317,11 +426,24 @@ export const BLOCK_CATALOGUE: BlockCatalogueEntry[] = [
         </SurfaceProvider>
       </PreviewFrame>
     ),
+    PreviewFull: () => (
+      <SurfaceProvider level={0}>
+        <LabRotatingMediaBlock
+          variant="small"
+          emphasis="ghost"
+          items={[
+            { image: PLACEHOLDER, title: 'Card 1', label: 'Label' },
+            { image: PLACEHOLDER, title: 'Card 2', label: 'Label' },
+          ]}
+        />
+      </SurfaceProvider>
+    ),
   },
   {
     id: 'mediaZoomOutOnScroll',
     name: 'Media Zoom Out on Scroll',
     description: 'Media that zooms out as you scroll. Image or video.',
+    category: 'Content blocks',
     tier: 'lab',
     labSlug: 'media-zoom-out-on-scroll',
     creativeUses: [
@@ -332,15 +454,21 @@ export const BLOCK_CATALOGUE: BlockCatalogueEntry[] = [
     Preview: () => (
       <PreviewFrame>
         <SurfaceProvider level={0}>
-          <MediaZoomOutOnScroll image={PLACEHOLDER} alt="Preview" />
+          <LabMediaZoomOutOnScroll image={PLACEHOLDER} alt="Preview" />
         </SurfaceProvider>
       </PreviewFrame>
+    ),
+    PreviewFull: () => (
+      <SurfaceProvider level={0}>
+        <LabMediaZoomOutOnScroll image={PLACEHOLDER} alt="Preview" />
+      </SurfaceProvider>
     ),
   },
   {
     id: 'topNav',
     name: 'Top Nav (Mega Menu)',
     description: 'Mega menu navigation. Supports dropdowns and links.',
+    category: 'Navigation',
     tier: 'lab',
     labSlug: 'top-nav',
     creativeUses: [
@@ -351,9 +479,14 @@ export const BLOCK_CATALOGUE: BlockCatalogueEntry[] = [
     Preview: () => (
       <PreviewFrame>
         <SurfaceProvider level={0}>
-          <TopNavBlock />
+          <LabTopNavBlock />
         </SurfaceProvider>
       </PreviewFrame>
+    ),
+    PreviewFull: () => (
+      <SurfaceProvider level={0}>
+        <LabTopNavBlock />
+      </SurfaceProvider>
     ),
   },
 ]

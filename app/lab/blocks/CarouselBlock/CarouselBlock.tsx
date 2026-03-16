@@ -1,21 +1,20 @@
 'use client'
 
 /**
- * CarouselBlock — Lab carousel. All cards overflow (visible).
+ * LabCarouselBlock — Lab carousel. All cards overflow (visible).
  *
- * Per CAROUSEL_LAYOUT.md. BlockContainer only. Cards overflow the viewport.
+ * Per lib/blocks/layout-rules.md (Carousel section). WidthCap only. Cards overflow the viewport.
  */
 
 import { useRef, useState, useEffect } from 'react'
 import type { CSSProperties } from 'react'
 import { createTransition } from '@marcelinodzn/ds-tokens'
 import { Headline, Button, Icon, IcChevronLeft, IcChevronRight } from '@marcelinodzn/ds-react'
-import { getHeadlineSize, normalizeHeadingLevel, TYPOGRAPHY } from '../../../lib/semantic-headline'
-import { BlockSurfaceProvider } from '../../../lib/block-surface'
-import { useGridBreakpoint } from '../../../lib/use-grid-breakpoint'
-import { BlockContainer } from '../../../blocks/BlockContainer'
-import { useCarouselReveal } from '../../../lib/use-carousel-reveal'
-import { MediaCard, TextOnColourCard } from '../../../components/Cards'
+import { getHeadlineSize, normalizeHeadingLevel, TYPOGRAPHY } from '../../../../lib/utils/semantic-headline'
+import { useGridBreakpoint, getBreakpointName } from '../../../../lib/utils/use-grid-breakpoint'
+import { WidthCap } from '../../../blocks/WidthCap'
+import { useCarouselReveal } from '../../../../lib/utils/use-carousel-reveal'
+import { MediaCard, TextOnColourCard } from '../../../components/blocks/Cards'
 
 type CarouselItem = {
   cardType?: 'media' | 'text-on-colour' | null
@@ -35,7 +34,7 @@ type CarouselEmphasis = 'ghost' | 'minimal' | 'subtle' | 'bold'
 
 type CarouselSurfaceColour = 'primary' | 'secondary' | 'sparkle' | 'neutral'
 
-export type CarouselBlockProps = {
+export type LabCarouselBlockProps = {
   title?: string | null
   cardSize?: CarouselCardSize
   emphasis?: CarouselEmphasis
@@ -47,7 +46,13 @@ export type CarouselBlockProps = {
 
 const GAP_MOBILE = 'var(--ds-spacing-m)'
 const GAP_DESKTOP = 'var(--ds-spacing-l)'
+/** Faded opacity for cards outside viewport. DS has no opacity token for this. */
 const CAROUSEL_FADED_OPACITY = 0.25
+
+/** Fixed card widths (px) when useFixedCardWidth: mobile/tablet breakpoints. */
+const CARD_WIDTH_MOBILE_PX = 280
+const CARD_WIDTH_COMPACT_TABLET_PX = 360
+const CARD_WIDTH_MEDIUM_TABLET_PX = 550
 
 type Breakpoint = 'mobile' | 'tablet' | 'desktop'
 
@@ -70,12 +75,12 @@ function getCarouselConfig(
   columns: number,
   gridValues: { columnWidth: number; gutter: number }
 ): CarouselConfig {
-  const breakpoint: Breakpoint = columns <= 4 ? 'mobile' : columns < 12 ? 'tablet' : 'desktop'
+  const breakpoint: Breakpoint = getBreakpointName(columns)
   const spanDefault = columns === 12 ? 10 : columns === 8 ? 6 : 4
   const defaultPx = spanDefault * gridValues.columnWidth + (spanDefault - 1) * gridValues.gutter
 
   if (breakpoint === 'mobile') {
-    const cardPx = 280
+    const cardPx = CARD_WIDTH_MOBILE_PX
     const g = gridValues.gutter
     return {
       breakpoint: 'mobile',
@@ -92,8 +97,8 @@ function getCarouselConfig(
   }
 
   if (breakpoint === 'tablet') {
-    const compactPx = 360
-    const mediumPx = 550
+    const compactPx = CARD_WIDTH_COMPACT_TABLET_PX
+    const mediumPx = CARD_WIDTH_MEDIUM_TABLET_PX
     const largePx = defaultPx
     const cardPx = cardSize === 'compact' ? compactPx : cardSize === 'medium' ? mediumPx : largePx
     const cols = cardSize === 'large' ? 1 : 2
@@ -174,17 +179,15 @@ function NavButton({
   )
 }
 
-export function CarouselBlock({
+export function LabCarouselBlock({
   title,
   cardSize = 'medium',
   emphasis = 'ghost',
-  minimalBackgroundStyle = 'block',
-  surfaceColour = 'primary',
   items,
   images,
-}: CarouselBlockProps) {
+}: LabCarouselBlockProps) {
   const level = normalizeHeadingLevel('h2')
-  const { columns, contentMaxDefault, columnWidth, gutter } = useGridBreakpoint()
+  const { columns, contentMaxDefault, columnWidth, gutter, isMobile, isTablet, isDesktop } = useGridBreakpoint()
 
   const config = cardSize ? getCarouselConfig(cardSize, columns, { columnWidth, gutter }) : undefined
   if (!config || !cardSize) return null
@@ -230,7 +233,6 @@ export function CarouselBlock({
 
   // Compact/Medium: stop when last card is in view. Desktop medium only: use n - cols (cards align with grid, in view sooner).
   // Compact and tablet/mobile: n - cols + 1 to avoid skipping a card.
-  const isDesktop = columns >= 12
   const isMediumDesktop = isDesktop && config.cols === 2
   const maxPage = isMediumDesktop
     ? Math.max(0, items_.length - config.cols)
@@ -353,6 +355,7 @@ export function CarouselBlock({
     ? undefined
     : createTransition('opacity', 'xl', 'transition', motionLevel)
 
+  /** Vertically center nav buttons on media: marginTop = half media height − gap. Large (2:1): height = contentMax/2. Medium/Compact (4:5): half height = cardWidth × 5/8; cardWidth = (contentMax − gaps) / cols. */
   const buttonMediaCenterOffset =
     config.cols === 1
       ? `calc(${contentMaxDefault} / 4 - ${config.gap})`
@@ -360,8 +363,6 @@ export function CarouselBlock({
         ? `calc((${contentMaxDefault} - ${config.gap}) * 5 / 16 - ${config.gap})`
         : `calc((${contentMaxDefault} - 2 * ${config.gap}) * 5 / 24 - ${config.gap})`
 
-  const isMobile = columns <= 4
-  const isTablet = columns >= 8 && columns < 12
   const noFade = isMobile || isTablet
   const titleCarouselGap =
     isMobile || config.breakpoint === 'tablet' ? 'var(--ds-spacing-2xl)' : 'var(--ds-spacing-3xl)'
@@ -401,11 +402,10 @@ export function CarouselBlock({
   }
 
   return (
-    <BlockSurfaceProvider emphasis={emphasis} surfaceColour={surfaceColour} minimalBackgroundStyle={minimalBackgroundStyle ?? 'block'} fullWidth>
-      <BlockContainer
+    <WidthCap
           as="section"
           contentWidth={config.outerContentWidth}
-          style={{ width: '100%', overflow: 'visible', gridColumn: '1 / -1' }}
+          style={{ overflow: 'visible' }}
         >
         <div
           ref={revealRef}
@@ -418,7 +418,7 @@ export function CarouselBlock({
           }}
         >
           {title && (
-            <BlockContainer contentWidth="Default" style={{ width: '100%' }}>
+            <WidthCap contentWidth="Default">
               <Headline
                 size={getHeadlineSize(level)}
                 weight="high"
@@ -435,7 +435,7 @@ export function CarouselBlock({
               >
                 {title}
               </Headline>
-            </BlockContainer>
+            </WidthCap>
           )}
 
           <div
@@ -554,7 +554,7 @@ export function CarouselBlock({
                       const textCardAspectRatio =
                         effectiveAspectRatio === '8:5' || effectiveAspectRatio === '2:1' ? '8:5' : '4:5'
                       const inGrid = noFade || isCardInView(i)
-                      const useFadeTransition = columns >= 12
+                      const useFadeTransition = isDesktop
 
                       return (
                         <div
@@ -661,7 +661,6 @@ export function CarouselBlock({
             </div>
           </div>
         </div>
-      </BlockContainer>
-    </BlockSurfaceProvider>
+      </WidthCap>
   )
 }

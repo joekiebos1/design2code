@@ -9,7 +9,7 @@ import { PAGE_BRIEF_SCHEMA } from '../structure-schema'
 
 /** Page Architect rules — product page structure principles. Sent when proposing structure. */
 const ARCHITECT_RULES = readFileSync(
-  join(process.cwd(), 'app', 'jiokarna', 'architect-rules-product-page.md'),
+  join(process.cwd(), 'lib', 'jiokarna', 'architect-rules-product-page.md'),
   'utf-8'
 )
 

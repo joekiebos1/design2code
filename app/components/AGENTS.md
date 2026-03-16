@@ -1,8 +1,14 @@
-# Shared components
+# Components by project
 
-This directory is split by agent:
+```
+app/components/
+├── blocks/     → blocks-agent (Grid, VideoWithControls, StreamImage, Cards)
+├── content/    → content-agent (BlockRenderer — Sanity → block props mapping)
+├── studio/     → studio-agent (storytelling-inspiration)
+└── shared/     → app-level (Providers, StickyNav)
 
-- **BlockRenderer.tsx** → content-agent (mapping Sanity → block props; only for props blocks already support)
-- **GridBlock.tsx**, **VideoWithControls.tsx**, **Cards/** → blocks-agent (block layout, media, and card library)
+src/components/
+└── sanity/     → content-agent (Sanity inputs: ColorPickerInput, IconPickerInput, etc.)
+```
 
-Invoke `/content-agent` or `/blocks-agent` accordingly.
+Invoke `/content-agent`, `/blocks-agent`, or `/studio-agent` accordingly.

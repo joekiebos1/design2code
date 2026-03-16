@@ -13,13 +13,13 @@ import {
 } from '@marcelinodzn/ds-react'
 import { createTransition } from '@marcelinodzn/ds-tokens'
 import { Collapsible } from '@base-ui/react/collapsible'
-import { GridBlock, useGridCell } from '../../components/GridBlock'
-import { useGridBreakpoint } from '../../lib/use-grid-breakpoint'
-import { VideoWithControls } from '../../components/VideoWithControls'
-import { StreamImage } from '../../components/StreamImage'
-import { getSurfaceProviderProps, useBlockBackgroundColor } from '../../lib/block-surface'
-import { EDGE_TO_EDGE_BREAKOUT, useEdgeToEdgeMediaStyles } from '../../lib/edge-to-edge'
-import { MEDIA_TEXT_SUBTITLE_BODY_STYLE, TYPOGRAPHY } from '../../lib/semantic-headline'
+import { Grid, useCell } from '../../components/blocks/Grid'
+import { useGridBreakpoint } from '../../../lib/utils/use-grid-breakpoint'
+import { VideoWithControls } from '../../components/blocks/VideoWithControls'
+import { StreamImage } from '../../components/blocks/StreamImage'
+import { getSurfaceProviderProps, useBlockBackgroundColor } from '../../../lib/utils/block-surface'
+import { EDGE_TO_EDGE_BREAKOUT, useEdgeToEdgeMediaStyles } from '../../../lib/utils/edge-to-edge'
+import { MEDIA_TEXT_SUBTITLE_BODY_STYLE, TYPOGRAPHY } from '../../../lib/utils/semantic-headline'
 import type { MediaText5050BlockProps, MediaText5050Item } from './MediaText5050Block.types'
 
 const ASPECT_RATIOS: Record<string, string> = {
@@ -182,9 +182,8 @@ export function MediaText5050Block({
   const hasMedia = media?.src && media.src.trim() !== ''
   const mediaFirst = imagePosition === 'left'
   const surfaceProps = getSurfaceProviderProps(emphasis)
-  const cell = useGridCell('Default')
-  const { columns } = useGridBreakpoint()
-  const isStacked = columns < 8
+  const cell = useCell('Default')
+  const { isStacked } = useGridBreakpoint()
 
   const aspectRatio = media?.aspectRatio ? ASPECT_RATIOS[media.aspectRatio] : undefined
   const isVideo = media?.type === 'video'
@@ -445,7 +444,7 @@ export function MediaText5050Block({
   )
 
   const gridContent = (
-    <GridBlock as="section">
+    <Grid as="section">
       <div style={{ ...cell, position: 'relative' }}>
         <div style={gridStyle}>
           {mediaFirst ? (
@@ -461,16 +460,16 @@ export function MediaText5050Block({
           )}
         </div>
       </div>
-    </GridBlock>
+    </Grid>
   )
 
   /** Stacked: when no media, show text only (e.g. accordion-only preview) */
   const stackedContent = !hasMedia ? (
-    <GridBlock as="section">
+    <Grid as="section">
       <div style={{ ...cell, ...textColumnStyle }}>
         {textContent}
       </div>
-    </GridBlock>
+    </Grid>
   ) : (
     gridContent
   )

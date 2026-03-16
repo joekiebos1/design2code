@@ -1,7 +1,7 @@
 'use client'
 
 import { createTransition } from '@marcelinodzn/ds-tokens'
-import { useBlockReveal } from '../lib/use-block-reveal'
+import { useBlockReveal } from '../../lib/utils/use-block-reveal'
 
 type BlockRevealProps = {
   children: React.ReactNode

@@ -3,7 +3,7 @@
  */
 
 import { draftMode } from 'next/headers'
-import { LabPageClient } from './LabPageClient'
+import { LabOverviewClient } from './LabOverviewClient'
 import { getClient } from '../../lib/sanity/client'
 import { labOverviewQuery } from '../../lib/sanity/queries'
 
@@ -20,5 +20,5 @@ export default async function LabPage() {
     // No Sanity project or fetch failed
   }
 
-  return <LabPageClient sections={overview?.sections ?? []} />
+  return <LabOverviewClient sections={overview?.sections ?? []} />
 }

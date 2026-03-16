@@ -13,12 +13,14 @@ import {
 } from '@marcelinodzn/ds-react'
 import { createTransition } from '@marcelinodzn/ds-tokens'
 import { Collapsible } from '@base-ui/react/collapsible'
-import { GridBlock, useGridCell } from '../../../components/GridBlock'
-import { useGridBreakpoint } from '../../../lib/use-grid-breakpoint'
-import { VideoWithControls } from '../../../components/VideoWithControls'
-import { StreamImage } from '../../../components/StreamImage'
-import { getSurfaceProviderProps, useBlockBackgroundColor } from '../../../lib/block-surface'
-import { MEDIA_TEXT_SUBTITLE_BODY_STYLE, TYPOGRAPHY } from '../../../lib/semantic-headline'
+import { Grid, useCell } from '../../../components/blocks/Grid'
+import { WidthCap } from '../../../blocks/WidthCap'
+import { useGridBreakpoint } from '../../../../lib/utils/use-grid-breakpoint'
+import { VideoWithControls } from '../../../components/blocks/VideoWithControls'
+import { StreamImage } from '../../../components/blocks/StreamImage'
+import { getSurfaceProviderProps, useBlockBackgroundColor } from '../../../../lib/utils/block-surface'
+import { EDGE_TO_EDGE_BREAKOUT } from '../../../../lib/utils/edge-to-edge'
+import { MEDIA_TEXT_SUBTITLE_BODY_STYLE, TYPOGRAPHY } from '../../../../lib/utils/semantic-headline'
 import type { MediaText5050BlockProps, MediaText5050Item } from '../../../blocks/MediaText5050Block/MediaText5050Block.types'
 
 const ASPECT_RATIOS: Record<string, string> = {
@@ -153,7 +155,7 @@ function AccordionItem({
   )
 }
 
-export function MediaText5050Block({
+export function LabMediaText5050Block({
   variant,
   imagePosition = 'right',
   emphasis,
@@ -181,9 +183,7 @@ export function MediaText5050Block({
   const hasMedia = media?.src && media.src.trim() !== ''
   const mediaFirst = imagePosition === 'left'
   const surfaceProps = getSurfaceProviderProps(emphasis)
-  const cell = useGridCell('Default')
-  const { columns } = useGridBreakpoint()
-  const isStacked = columns < 8
+  const { columns, isStacked } = useGridBreakpoint()
 
   const aspectRatio = media?.aspectRatio ? ASPECT_RATIOS[media.aspectRatio] : undefined
   const isVideo = media?.type === 'video'
@@ -254,18 +254,6 @@ export function MediaText5050Block({
       )
     })()
 
-  /** 50/50 grid: 10 cols, 5 each side. Stack on mobile. */
-  const SIDE_BY_SIDE_COLS = 10
-  const HALF_COLS = 5
-  const COL_GAP = 'var(--ds-spacing-2xl)'
-
-  const gridStyle: React.CSSProperties = {
-    display: 'grid',
-    gridTemplateColumns: isStacked ? '1fr' : `repeat(${SIDE_BY_SIDE_COLS}, 1fr)`,
-    gap: isStacked ? 'var(--ds-spacing-3xl)' : COL_GAP,
-    alignItems: 'stretch',
-  }
-
   const textColumnStyle: React.CSSProperties = {
     display: 'flex',
     flexDirection: 'column',
@@ -290,12 +278,8 @@ export function MediaText5050Block({
     background ? (
       <div
         style={{
-          width: '100vw',
-          maxWidth: '100vw',
-          marginLeft: 'calc(50% - 50vw)',
-          marginRight: 'calc(50% - 50vw)',
+          ...EDGE_TO_EDGE_BREAKOUT,
           background,
-          boxSizing: 'border-box',
           paddingBlockStart: 'var(--ds-spacing-4xl)',
           paddingBlockEnd: 'var(--ds-spacing-4xl)',
           minHeight: 1,
@@ -420,56 +404,54 @@ export function MediaText5050Block({
 
   const textContent = textContentByVariant[variant]
 
-  const textColumnWrapperStyle: React.CSSProperties = {
-    ...textColumnStyle,
-    ...(!isStacked && {
-      gridColumn: mediaFirst ? `${HALF_COLS + 1} / span ${HALF_COLS}` : `1 / span ${HALF_COLS}`,
-      alignSelf: 'stretch',
-      justifyContent: 'center',
-    }),
-  }
+  /** Two cells: text 6 cols, media 6 cols (12-col); or 4 cols each (8-col). */
+  const halfSpan = columns >= 12 ? 6 : 4
+  const textCellStyle = { gridColumn: `1 / span ${halfSpan}` as const }
+  const mediaCellStyle = { gridColumn: `${halfSpan + 1} / span ${halfSpan}` as const }
 
-  const mediaColumn = (
-    <div
-      style={{
-        position: 'relative',
-        minWidth: 0,
-        ...(!isStacked && { gridColumn: `span ${HALF_COLS}` }),
-      }}
-    >
-      {mediaContent}
-    </div>
-  )
+  const textOnlyCell = useCell('Default')
 
-  const gridContent = (
-    <GridBlock as="section">
-      <div style={{ ...cell, position: 'relative' }}>
-        <div style={gridStyle}>
-          {mediaFirst ? (
-            <>
-              {mediaColumn}
-              <div style={textColumnWrapperStyle}>{textContent}</div>
-            </>
-          ) : (
-            <>
-              <div style={textColumnWrapperStyle}>{textContent}</div>
-              {mediaColumn}
-            </>
-          )}
-        </div>
-      </div>
-    </GridBlock>
-  )
-
-  /** Stacked: when no media, show text only (e.g. accordion-only preview) */
+  /** Stacked: WidthCap only. Side-by-side: Grid + two Cells. */
   const stackedContent = !hasMedia ? (
-    <GridBlock as="section">
-      <div style={{ ...cell, ...textColumnStyle }}>
-        {textContent}
-      </div>
-    </GridBlock>
+    <Grid as="section">
+      <div style={{ ...textOnlyCell, ...textColumnStyle }}>{textContent}</div>
+    </Grid>
+  ) : isStacked ? (
+    <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-3xl)' }}>
+      {mediaFirst ? (
+        <>
+          <WidthCap contentWidth="Wide">
+            <div style={{ position: 'relative', minWidth: 0 }}>{mediaContent}</div>
+          </WidthCap>
+          <WidthCap contentWidth="Default">
+            <div style={textColumnStyle}>{textContent}</div>
+          </WidthCap>
+        </>
+      ) : (
+        <>
+          <WidthCap contentWidth="Default">
+            <div style={textColumnStyle}>{textContent}</div>
+          </WidthCap>
+          <WidthCap contentWidth="Wide">
+            <div style={{ position: 'relative', minWidth: 0 }}>{mediaContent}</div>
+          </WidthCap>
+        </>
+      )}
+    </section>
   ) : (
-    gridContent
+    <Grid as="section" style={{ alignItems: 'stretch' }}>
+      {mediaFirst ? (
+        <>
+          <div style={{ ...mediaCellStyle, position: 'relative', minWidth: 0, paddingInlineEnd: 'var(--ds-spacing-2xl)' }}>{mediaContent}</div>
+          <div style={{ ...textCellStyle, ...textColumnStyle, alignSelf: 'stretch', justifyContent: 'center' }}>{textContent}</div>
+        </>
+      ) : (
+        <>
+          <div style={{ ...textCellStyle, ...textColumnStyle, alignSelf: 'stretch', justifyContent: 'center' }}>{textContent}</div>
+          <div style={{ ...mediaCellStyle, position: 'relative', minWidth: 0, paddingInlineStart: 'var(--ds-spacing-2xl)' }}>{mediaContent}</div>
+        </>
+      )}
+    </Grid>
   )
 
   return blockBgWrapper(

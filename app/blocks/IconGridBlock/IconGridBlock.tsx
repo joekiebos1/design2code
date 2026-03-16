@@ -1,16 +1,15 @@
 'use client'
 
 /**
- * IconGridBlock – Production block.
+ * IconGrid – Production block.
  * Grid of icons with title and optional body. Icons from DS.
  * Supports block surface (ghost, minimal, subtle, bold) for dark/coloured backgrounds.
  */
 
 import { Headline, Text, Icon } from '@marcelinodzn/ds-react'
-import { BlockContainer } from '../BlockContainer'
-import { BlockSurfaceProvider } from '../../lib/block-surface'
-import { useGridBreakpoint } from '../../lib/use-grid-breakpoint'
-import { getPrimaryColor } from '../../../lib/jio-colors'
+import { Grid, useCell } from '../../components/blocks/Grid'
+import { useGridBreakpoint } from '../../../lib/utils/use-grid-breakpoint'
+import { getPrimaryColor } from '../../../lib/colors/jio-colors'
 import { getIconGridIcon } from './icon-grid-icons'
 import type { IconGridItem, IconGridAccentColor, IconGridBlockProps } from './IconGridBlock.types'
 
@@ -118,12 +117,9 @@ function IconGridCard({ item }: { item: IconGridItem }) {
   )
 }
 
-export function IconGridBlock({
+export function IconGrid({
   items,
   columns,
-  emphasis,
-  minimalBackgroundStyle,
-  surfaceColour,
 }: IconGridBlockProps) {
   const { columns: gridColumns } = useGridBreakpoint()
   const items_ = (items ?? []).filter((i) => i?.title).slice(0, 20)
@@ -135,10 +131,13 @@ export function IconGridBlock({
 
   if (items_.length === 0) return null
 
-  const gridContent = (
-    <BlockContainer as="section" contentWidth="Wide" style={{ width: '100%' }}>
+  const cell = useCell('Wide')
+
+  return (
+    <Grid as="section">
       <div
         style={{
+          ...cell,
           display: 'grid',
           gridTemplateColumns,
           gap: 'var(--ds-spacing-2xl)',
@@ -149,21 +148,8 @@ export function IconGridBlock({
           <IconGridCard key={i} item={item} />
         ))}
       </div>
-    </BlockContainer>
+    </Grid>
   )
-
-  if (emphasis && emphasis !== 'ghost') {
-    return (
-      <BlockSurfaceProvider
-        emphasis={emphasis}
-        surfaceColour={surfaceColour}
-        minimalBackgroundStyle={minimalBackgroundStyle}
-        fullWidth
-      >
-        {gridContent}
-      </BlockSurfaceProvider>
-    )
-  }
-
-  return gridContent
 }
+
+export { IconGrid as IconGridBlock }

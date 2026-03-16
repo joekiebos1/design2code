@@ -9,16 +9,15 @@ import {
   IcChevronUp,
 } from '@marcelinodzn/ds-react'
 import { Collapsible } from '@base-ui/react/collapsible'
-import { GridBlock, useGridCell } from '../../components/GridBlock'
-import { BlockSurfaceProvider } from '../../lib/block-surface'
-import { useGridBreakpoint } from '../../lib/use-grid-breakpoint'
+import { Grid, useCell } from '../../components/blocks/Grid'
+import { useGridBreakpoint } from '../../../lib/utils/use-grid-breakpoint'
 import {
   getHeadlineSize,
   getChildLevel,
   normalizeHeadingLevel,
   TYPOGRAPHY,
   type HeadingLevel,
-} from '../../lib/semantic-headline'
+} from '../../../lib/utils/semantic-headline'
 import type {
   ListBlockProps,
   ListBlockTextItem,
@@ -221,16 +220,13 @@ export function ListBlock({
   listVariant = 'textList',
   items,
   size: _size = 'feature',
-  emphasis,
-  minimalBackgroundStyle,
-  surfaceColour,
   openLinksInNewTab,
 }: ListBlockProps) {
   const router = useRouter()
   const level = normalizeHeadingLevel('h2')
   const itemLevel = getChildLevel(level)
   const headlineSize = getHeadlineSize(level)
-  const cell = useGridCell('Wide')
+  const cell = useCell('Wide')
   const items_ = (items ?? []).filter((i) => i != null) as (ListBlockTextItem | ListBlockFaqItem | ListBlockLinkItem)[]
 
   if (items_.length === 0 && !blockTitle) return null
@@ -279,8 +275,7 @@ export function ListBlock({
     </div>
   )
 
-  const { columns } = useGridBreakpoint()
-  const isStacked = columns < 8
+  const { isStacked } = useGridBreakpoint()
 
   const gridStyle: React.CSSProperties = {
     display: 'grid',
@@ -290,20 +285,13 @@ export function ListBlock({
   }
 
   return (
-    <BlockSurfaceProvider
-      emphasis={emphasis}
-      surfaceColour={surfaceColour}
-      minimalBackgroundStyle={minimalBackgroundStyle ?? 'block'}
-      fullWidth
-    >
-      <GridBlock as="section">
-        <div style={{ ...cell, minWidth: 0 }}>
-          <div style={gridStyle}>
-            <div style={{ minWidth: 0 }}>{titleContent}</div>
-            <div style={{ minWidth: 0 }}>{listContent}</div>
-          </div>
+    <Grid as="section">
+      <div style={{ ...cell, minWidth: 0 }}>
+        <div style={gridStyle}>
+          <div style={{ minWidth: 0 }}>{titleContent}</div>
+          <div style={{ minWidth: 0 }}>{listContent}</div>
         </div>
-      </GridBlock>
-    </BlockSurfaceProvider>
+      </div>
+    </Grid>
   )
 }

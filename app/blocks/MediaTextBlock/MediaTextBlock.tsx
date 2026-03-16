@@ -12,14 +12,14 @@ import {
   Button,
   SurfaceProvider,
 } from '@marcelinodzn/ds-react'
-import { GridBlock, useGridCell } from '../../components/GridBlock'
-import { BlockContainer, SPACING_VAR } from '../BlockContainer'
+import { Grid, useCell } from '../../components/blocks/Grid'
+import { WidthCap, SPACING_VAR } from '../WidthCap'
 import { BlockReveal } from '../BlockReveal'
-import { VideoWithControls } from '../../components/VideoWithControls'
-import { StreamImage } from '../../components/StreamImage'
-import { MEDIA_TEXT_SUBTITLE_BODY_STYLE, TYPOGRAPHY } from '../../lib/semantic-headline'
-import { getSurfaceProviderProps, useBlockBackgroundColor } from '../../lib/block-surface'
-import { EDGE_TO_EDGE_BREAKOUT, useEdgeToEdgeMediaStyles } from '../../lib/edge-to-edge'
+import { VideoWithControls } from '../../components/blocks/VideoWithControls'
+import { StreamImage } from '../../components/blocks/StreamImage'
+import { MEDIA_TEXT_SUBTITLE_BODY_STYLE, TYPOGRAPHY } from '../../../lib/utils/semantic-headline'
+import { getSurfaceProviderProps, useBlockBackgroundColor } from '../../../lib/utils/block-surface'
+import { EDGE_TO_EDGE_BREAKOUT, useEdgeToEdgeMediaStyles } from '../../../lib/utils/edge-to-edge'
 import type { MediaTextBlockProps } from './MediaTextBlock.types'
 
 const ASPECT_RATIOS: Record<string, string> = {
@@ -107,12 +107,12 @@ export function MediaTextBlock({
       ? (variant === 'text-only' ? 'S' : 'Default')
       : 'XS'
 
-  /** Text-only left: BlockContainers align to start of Default grid (no center margin). */
+  /** Text-only left: WidthCaps align to start of Default grid (no center margin). */
   const textOnlyLeftContainerStyle =
     variant === 'text-only' && align === 'left' ? { marginInline: 0 as const } : undefined
 
   const titleContent = (
-    <BlockContainer contentWidth={titleContentWidth} style={{ width: '100%', ...textOnlyLeftContainerStyle }}>
+    <WidthCap contentWidth={titleContentWidth} style={textOnlyLeftContainerStyle}>
       <div
         style={{
           display: 'flex',
@@ -161,7 +161,7 @@ export function MediaTextBlock({
           </Title>
         )}
       </div>
-    </BlockContainer>
+    </WidthCap>
   )
 
   /** Stacked layout: optional text above image (eyebrow, title, subhead, body) + optional image description below (card-style). */
@@ -170,7 +170,7 @@ export function MediaTextBlock({
   const hasTextBelow = Boolean(descriptionTitle || descriptionBody)
   const stackedTitleContent =
     variant === 'centered-media-below' ? (
-      <BlockContainer contentWidth={titleContentWidth} style={{ width: '100%', ...stackedBlockStyle }}>
+      <WidthCap contentWidth={titleContentWidth} style={stackedBlockStyle}>
         <div
           style={{
             display: 'flex',
@@ -221,12 +221,12 @@ export function MediaTextBlock({
             </Title>
           )}
         </div>
-      </BlockContainer>
+      </WidthCap>
     ) : null
 
   const bodyContent =
     (size !== 'hero' && body) || (cta || ctaSecondary) ? (
-      <BlockContainer contentWidth={bodyContentWidth} style={{ width: '100%', ...(variant === 'centered-media-below' ? stackedBlockStyle : undefined), ...textOnlyLeftContainerStyle }}>
+        <WidthCap contentWidth={bodyContentWidth} style={{ ...(variant === 'centered-media-below' ? stackedBlockStyle : undefined), ...textOnlyLeftContainerStyle }}>
         <div
           style={{
             display: 'flex',
@@ -276,7 +276,7 @@ export function MediaTextBlock({
             </div>
           )}
         </div>
-      </BlockContainer>
+      </WidthCap>
     ) : null
 
   const textContent = (
@@ -343,8 +343,8 @@ export function MediaTextBlock({
 
   /** Internal vertical padding for background colour: always Large (4xl) per spec. */
   const internalPaddingLarge = SPACING_VAR.large
-  const cellMedia = useGridCell('Default')
-  const cellWide = useGridCell('Wide')
+  const cellMedia = useCell('Default')
+  const cellWide = useCell('Wide')
 
   const bgColor = useBlockBackgroundColor(emphasis, surfaceColour)
   const useGradient =
@@ -392,15 +392,15 @@ export function MediaTextBlock({
     return blockBgWrapper(
       <BlockReveal>
         <SurfaceProvider {...surfaceProps}>
-          <GridBlock as="section">
+          <Grid as="section">
             <div style={{ ...cellMedia, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--ds-spacing-2xl)' }}>
               {titleContent}
-              <BlockContainer contentWidth="Default" style={{ width: '100%' }}>
+              <WidthCap contentWidth="Default">
                 {mediaContent}
-              </BlockContainer>
+              </WidthCap>
               {bodyContent}
             </div>
-          </GridBlock>
+          </Grid>
         </SurfaceProvider>
       </BlockReveal>
     )
@@ -416,9 +416,9 @@ export function MediaTextBlock({
       return blockBgWrapper(
         <BlockReveal>
           <SurfaceProvider {...surfaceProps}>
-            <GridBlock as="section">
+            <Grid as="section">
               <div style={{ ...cellWide }}>
-                <BlockContainer contentWidth="Wide" style={{ width: '100%' }}>
+                <WidthCap contentWidth="Wide">
                   <div
                     style={{
                       position: 'relative',
@@ -462,9 +462,9 @@ export function MediaTextBlock({
                       )}
                     </div>
                   </div>
-                </BlockContainer>
+                </WidthCap>
               </div>
-            </GridBlock>
+            </Grid>
           </SurfaceProvider>
         </BlockReveal>
       )
@@ -474,7 +474,7 @@ export function MediaTextBlock({
       blockBgWrapper(
         <BlockReveal>
           <SurfaceProvider {...surfaceProps}>
-            <section style={{ position: 'relative', width: '100%', aspectRatio, overflow: 'hidden' }}>
+            <section style={{ position: 'relative', aspectRatio, overflow: 'hidden' }}>
               <div style={{ position: 'absolute', inset: 0 }}>
                 {isVideo ? (
                   <VideoWithControls
@@ -499,11 +499,11 @@ export function MediaTextBlock({
                 }}
               >
                 {align === 'left' ? (
-                  <GridBlock as="div">
+                  <Grid as="div">
                     <div style={{ ...cellMedia, display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-l)', alignItems: 'flex-start', paddingInlineStart: 'var(--ds-spacing-3xl)' }}>
                       {textContent}
                     </div>
-                  </GridBlock>
+                  </Grid>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-l)', alignItems: 'center', width: '100%' }}>
                     {textContent}
@@ -522,12 +522,12 @@ export function MediaTextBlock({
     return blockBgWrapper(
       <BlockReveal>
         <SurfaceProvider {...surfaceProps}>
-          <GridBlock as="section">
+          <Grid as="section">
             <div style={{ ...cellMedia, display: 'flex', flexDirection: 'column', alignItems: textOnlyAlignItems, gap: 'var(--ds-spacing-l)' }}>
               {titleContent}
               {bodyContent}
             </div>
-          </GridBlock>
+          </Grid>
         </SurfaceProvider>
       </BlockReveal>
     )
@@ -553,12 +553,11 @@ export function MediaTextBlock({
       </div>
     )
 
-    /** Image description below: card-style typography (h5 + label-s). Same width as 2:1 Card (BlockContainer S). */
+    /** Image description below: card-style typography (h5 + label-s). Same width as 2:1 Card (WidthCap S). */
     const stackedTextBelow = hasTextBelow ? (
-      <BlockContainer
+      <WidthCap
         contentWidth="S"
         style={{
-          alignSelf: stackedAlignItems === 'center' ? 'center' : 'flex-start',
           ...(stackedAlignItems === 'flex-start' ? { marginInline: 0 } : {}),
           textAlign: textAlignStacked,
         }}
@@ -584,11 +583,11 @@ export function MediaTextBlock({
             </p>
           ) : null}
         </div>
-      </BlockContainer>
+      </WidthCap>
     ) : null
 
     const stackedMediaBlock = stackedIsEdgeToEdge ? (
-      <div style={{ ...EDGE_TO_EDGE_BREAKOUT, alignSelf: 'flex-start' }}>
+      <div style={EDGE_TO_EDGE_BREAKOUT}>
         <div style={edgeStyles.inner}>
           {mediaContent}
         </div>
@@ -598,7 +597,7 @@ export function MediaTextBlock({
     )
 
     const gridWrappedSection = (children: React.ReactNode) => (
-      <GridBlock as="div">
+      <Grid as="div">
         <div
           style={{
             ...cellMedia,
@@ -610,7 +609,7 @@ export function MediaTextBlock({
         >
           {children}
         </div>
-      </GridBlock>
+      </Grid>
     )
 
     return blockBgWrapper(
@@ -634,9 +633,9 @@ export function MediaTextBlock({
                 {hasTextBelow && gridWrappedSection(stackedTextBelow)}
               </>
             ) : (
-              <GridBlock as="div">
+              <Grid as="div">
                 <div style={{ ...cellMedia }}>
-                  <BlockContainer contentWidth="Default" style={{ width: '100%' }}>
+                  <WidthCap contentWidth="Default">
                     <div
                       style={{
                         display: 'flex',
@@ -649,9 +648,9 @@ export function MediaTextBlock({
                       {stackedMediaBlock}
                       {stackedTextBelow}
                     </div>
-                  </BlockContainer>
+                  </WidthCap>
                 </div>
-              </GridBlock>
+              </Grid>
             )}
           </section>
         </SurfaceProvider>
@@ -662,12 +661,12 @@ export function MediaTextBlock({
   return blockBgWrapper(
     <BlockReveal>
       <SurfaceProvider {...surfaceProps}>
-        <GridBlock as="section">
+        <Grid as="section">
           <div style={{ ...cellMedia, display: 'flex', flexDirection: 'column', alignItems: align === 'center' ? 'center' : align === 'left' ? 'flex-start' : 'center', gap: 'var(--ds-spacing-l)' }}>
             {titleContent}
             {bodyContent}
           </div>
-        </GridBlock>
+        </Grid>
       </SurfaceProvider>
     </BlockReveal>
   )

@@ -4,8 +4,8 @@ import { draftMode } from 'next/headers'
 import type { Metadata } from 'next'
 import { getClient } from '../../lib/sanity/client'
 import { pageBySlugQuery, allPagesQuery } from '../../lib/sanity/queries'
-import { BlockRenderer } from '../components/BlockRenderer'
-import { StickyNav } from '../components/StickyNav'
+import { BlockRenderer } from '../components/content/BlockRenderer'
+import { StickyNav } from '../components/shared/StickyNav'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

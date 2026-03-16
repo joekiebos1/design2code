@@ -1,16 +1,16 @@
 'use client'
 
 /**
- * Lab: GridBlockCard – Section with centred heading and grid of coloured cards.
+ * Lab: GridCard – Section with centred heading and grid of coloured cards.
  *
  * Cards have icon, title, description, CTAs, and feature list with checkmarks.
- * Uses GridBlock for layout. Card backgrounds: primary (purple), secondary (orange), tertiary (teal).
+ * Uses Grid for layout. Card backgrounds: primary (purple), secondary (orange), tertiary (teal).
  */
 
 import { useRouter } from 'next/navigation'
 import { Headline, Text, Button, Icon } from '@marcelinodzn/ds-react'
-import { GridBlock, useGridCell } from '../../../components/GridBlock'
-import { BlockSurfaceProvider } from '../../../lib/block-surface'
+import { Grid, useCell } from '../../../components/blocks/Grid'
+import { BlockSurfaceProvider } from '../../../../lib/utils/block-surface'
 import { getProofPointIcon } from '@/lib/proof-point-icons'
 
 type CardBackgroundColor = 'primary' | 'secondary' | 'tertiary'
@@ -22,7 +22,7 @@ type CTAButton = {
   style?: 'filled' | 'outlined'
 }
 
-type GridBlockCardItem = {
+type GridCardItem = {
   _key?: string
   backgroundColor?: CardBackgroundColor | null
   icon?: string | null
@@ -33,11 +33,11 @@ type GridBlockCardItem = {
   features?: string[] | null
 }
 
-type GridBlockCardProps = {
+type GridCardProps = {
   sectionTitle?: string | null
   emphasis?: 'ghost' | 'minimal' | 'subtle' | 'bold'
   surfaceColour?: 'primary' | 'secondary' | 'sparkle' | 'neutral'
-  cards?: GridBlockCardItem[] | null
+  cards?: GridCardItem[] | null
 }
 
 const CARD_BG_MAP: Record<CardBackgroundColor, string> = {
@@ -48,7 +48,7 @@ const CARD_BG_MAP: Record<CardBackgroundColor, string> = {
 
 const CheckIcon = getProofPointIcon('IcCheckboxOn')
 
-function GridBlockCardItemCard({ card }: { card: GridBlockCardItem }) {
+function GridCardItemCard({ card }: { card: GridCardItem }) {
   const router = useRouter()
   const bg = (card.backgroundColor ?? 'primary') as CardBackgroundColor
   const bgColor = CARD_BG_MAP[bg] ?? CARD_BG_MAP.primary
@@ -158,20 +158,20 @@ function GridBlockCardItemCard({ card }: { card: GridBlockCardItem }) {
   )
 }
 
-export function GridBlockCard({
+export function GridCard({
   sectionTitle,
   emphasis = 'ghost',
   surfaceColour = 'primary',
   cards = [],
-}: GridBlockCardProps) {
-  const cell = useGridCell('Wide')
+}: GridCardProps) {
+  const cell = useCell('Wide')
   const cards_ = cards?.filter((c) => c?.title) ?? []
 
   if (cards_.length === 0) return null
 
   return (
     <BlockSurfaceProvider emphasis={emphasis} surfaceColour={surfaceColour} fullWidth>
-      <GridBlock as="section">
+      <Grid as="section">
         <div
           style={{
             ...cell,
@@ -194,11 +194,11 @@ export function GridBlockCard({
             }}
           >
             {cards_.map((card, i) => (
-              <GridBlockCardItemCard key={card._key ?? i} card={card} />
+              <GridCardItemCard key={card._key ?? i} card={card} />
             ))}
           </div>
         </div>
-      </GridBlock>
+      </Grid>
     </BlockSurfaceProvider>
   )
 }

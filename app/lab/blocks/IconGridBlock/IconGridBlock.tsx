@@ -1,15 +1,15 @@
 'use client'
 
 /**
- * IconGridBlock – Lab block.
+ * LabIconGrid – Lab block.
  * Grid of icons with title and optional body. Icons from DS.
  * Column count (3–6) derived from item count; responsive on smaller screens.
  */
 
 import { Headline, Text, Icon } from '@marcelinodzn/ds-react'
-import { BlockContainer } from '../../../blocks/BlockContainer'
-import { useGridBreakpoint } from '../../../lib/use-grid-breakpoint'
-import { getPrimaryColor } from '../../../../lib/jio-colors'
+import { Grid, useCell } from '../../../components/blocks/Grid'
+import { useGridBreakpoint } from '../../../../lib/utils/use-grid-breakpoint'
+import { getPrimaryColor } from '../../../../lib/colors/jio-colors'
 import { getIconGridIcon } from './icon-grid-icons'
 import type { IconGridItem, IconGridAccentColor, IconGridBlockProps } from './IconGridBlock.types'
 
@@ -117,7 +117,7 @@ function IconGridCard({ item }: { item: IconGridItem }) {
   )
 }
 
-export function IconGridBlock({ items, columns }: IconGridBlockProps) {
+export function LabIconGridBlock({ items, columns }: IconGridBlockProps) {
   const { columns: gridColumns } = useGridBreakpoint()
   const items_ = (items ?? []).filter((i) => i?.title).slice(0, 20)
   const cols = deriveColumns(items_.length, columns)
@@ -128,10 +128,13 @@ export function IconGridBlock({ items, columns }: IconGridBlockProps) {
 
   if (items_.length === 0) return null
 
+  const cell = useCell('Wide')
+
   return (
-    <BlockContainer as="section" contentWidth="Wide" style={{ width: '100%' }}>
+    <Grid as="section">
       <div
         style={{
+          ...cell,
           display: 'grid',
           gridTemplateColumns,
           gap: 'var(--ds-spacing-2xl)',
@@ -142,6 +145,6 @@ export function IconGridBlock({ items, columns }: IconGridBlockProps) {
           <IconGridCard key={i} item={item} />
         ))}
       </div>
-    </BlockContainer>
+    </Grid>
   )
 }

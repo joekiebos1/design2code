@@ -10,7 +10,7 @@ export const revalidate = 0
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { draftMode } from 'next/headers'
-import { LabBlockPageClient } from './LabBlockPageClient'
+import { LabBlockDetailClient } from './LabBlockDetailClient'
 import { getClient } from '../../../lib/sanity/client'
 import { labBlockPageBySlugQuery, allLabBlockPagesQuery } from '../../../lib/sanity/queries'
 
@@ -58,7 +58,7 @@ export default async function LabBlockPage({ params }: PageProps) {
   }
   const pageData: LabBlockPageData = page
   return (
-    <LabBlockPageClient
+    <LabBlockDetailClient
       title={pageData.title}
       blocks={pageData.sections ?? []}
     />

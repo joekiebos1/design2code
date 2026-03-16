@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function StudioLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--ds-color-background-ghost)' }}>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', overflowX: 'hidden', background: 'var(--ds-color-background-ghost)' }}>
       <header
         style={{
           position: 'sticky',
@@ -65,7 +65,7 @@ export default function StudioLayout({ children }: { children: React.ReactNode }
           </Link>
         </nav>
       </header>
-      <div style={{ flex: 1, minHeight: 0 }}>{children}</div>
+      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', overflowX: 'hidden' }}>{children}</div>
     </div>
   )
 }

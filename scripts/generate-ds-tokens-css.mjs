@@ -53,34 +53,77 @@ vars.push(`  --ds-breakpoint-tablet-landscape: ${bp.tabletLandscape ?? 1024}px;`
 vars.push(`  --ds-breakpoint-desktop: ${bp.desktop}px;`)
 vars.push(`  --ds-breakpoint-desktop-lg: ${bp.desktopLarge}px;`)
 
-// Grid tokens per breakpoint (from DS – single source of truth)
+// Platform-specific tokens (grid + typography) – DS single source of truth
 const gridPlatforms = [
   [PLATFORM_MODES.MOBILE_360, bp.mobile],
   [PLATFORM_MODES.TABLET_768, bp.tablet],
   [PLATFORM_MODES.DESKTOP_1440, bp.desktop],
   [PLATFORM_MODES.DESKTOP_1920, bp.desktopLarge],
 ]
-const gridMediaVars = []
-for (const [platform, minWidth] of gridPlatforms) {
-  const ctx = createTokenContext({
+
+function createPlatformContext(platform) {
+  return createTokenContext({
     [COLLECTION_NAMES.PLATFORM]: platform,
     [COLLECTION_NAMES.DENSITY]: DENSITY_MODES.DEFAULT,
+    [COLLECTION_NAMES.COLOR_MODE]: COLOR_MODE_MODES.LIGHT,
+    [COLLECTION_NAMES.THEME]: '↓Pack1',
+    [COLLECTION_NAMES.THEME_PACK1]: 'MyJio',
   })
-  const cols = getVariableByName('Grid/columns', ctx)
+}
+
+function getTypographyVars(platformCtx) {
+  const v = []
+  const labelS = typography.fontSize('Label', 'S', platformCtx)
+  const labelM = typography.fontSize('Label', 'M', platformCtx)
+  const bodyXs = typography.fontSize('Body', 'XS', platformCtx)
+  const displayL = typography.fontSize('Display', 'L', platformCtx)
+  const displayM = typography.fontSize('Display', 'M', platformCtx)
+  const headlineL = typography.fontSize('Headline', 'L', platformCtx)
+  const headlineM = typography.fontSize('Headline', 'M', platformCtx)
+  const headlineS = typography.fontSize('Headline', 'S', platformCtx)
+  if (labelS != null) v.push(`  --ds-typography-label-s: ${labelS}px;`)
+  if (labelM != null) v.push(`  --ds-typography-label-m: ${labelM}px;`)
+  if (bodyXs != null) v.push(`  --ds-typography-body-xs: ${bodyXs}px;`)
+  if (displayL != null) v.push(`  --ds-typography-h1: ${displayL}px;`)
+  if (displayM != null) v.push(`  --ds-typography-h2: ${displayM}px;`)
+  if (headlineL != null) v.push(`  --ds-typography-h3: ${headlineL}px;`)
+  if (headlineM != null) v.push(`  --ds-typography-h4: ${headlineM}px;`)
+  const headlineSPx = headlineS ?? (headlineM != null ? Math.round(Number(headlineM) * 0.85) : 22)
+  v.push(`  --ds-typography-h5: ${headlineSPx}px;`)
+  if (headlineM != null) v.push(`  --ds-typography-headline-m: ${headlineM}px;`)
+  v.push(`  --ds-typography-headline-s: ${headlineSPx}px;`)
+  const headlineXsPx = headlineM != null ? Math.round(Number(headlineM) * 0.7) : 18
+  v.push(`  --ds-typography-headline-xs: ${headlineXsPx}px;`)
+  if (displayL != null) v.push(`  --ds-typography-display-hero: ${displayL}px;`)
+  if (displayM != null) v.push(`  --ds-typography-display-2xl: ${displayM}px;`)
+  return v
+}
+
+const platformMediaVars = []
+for (const [platform, minWidth] of gridPlatforms) {
+  const platformCtx = createPlatformContext(platform)
+  const cols = getVariableByName('Grid/columns', platformCtx)
   const margin = getVariableByName(
     platform.includes('360') ? 'Grid/S (360)/margin' : platform.includes('768') ? 'Grid/M (768)/margin' : platform.includes('1440') ? 'Grid/L (1440)/margin' : 'Grid/XL (1920)/margin',
-    ctx
+    platformCtx
   )
   const gutter = getVariableByName(
     platform.includes('360') ? 'Grid/S (360)/gutter' : platform.includes('768') ? 'Grid/M (768)/gutter' : platform.includes('1440') ? 'Grid/L (1440)/gutter' : 'Grid/XL (1920)/gutter',
-    ctx
+    platformCtx
   )
-  gridMediaVars.push({ minWidth, cols: cols ?? 12, margin: margin ?? 47, gutter: gutter ?? 19 })
+  const gridVars = [
+    `  --ds-grid-columns: ${cols ?? 12};`,
+    `  --ds-grid-margin: ${margin ?? 47}px;`,
+    `  --ds-grid-gutter: ${gutter ?? 19}px;`,
+  ]
+  const typographyVars = getTypographyVars(platformCtx)
+  platformMediaVars.push({ minWidth, gridVars, typographyVars })
 }
 
 // Colors
 const bgSubtle = colors.background('Subtle', ctx)
 const bgGhost = colors.background('Ghost', ctx)
+const bgMinimal = colors.background('Minimal', ctx)
 const textHigh = colors.text('High', ctx)
 const textMedium = colors.text('Medium', ctx)
 const textLow = colors.text('Low', ctx)
@@ -89,6 +132,7 @@ const secondaryBold = getVariableByName('Secondary/Background/Bold', ctx)
 const strokeSubtle = colors.background('Ghost', ctx) ?? colors.background('Subtle', ctx)
 if (bgSubtle != null) vars.push(`  --ds-color-background-subtle: ${bgSubtle};`)
 if (bgGhost != null) vars.push(`  --ds-color-background-ghost: ${bgGhost};`)
+if (bgMinimal != null) vars.push(`  --ds-color-background-minimal: ${bgMinimal};`)
 if (textHigh != null) vars.push(`  --ds-color-text-high: ${textHigh};`)
 if (textMedium != null) vars.push(`  --ds-color-text-medium: ${textMedium};`)
 if (textLow != null) vars.push(`  --ds-color-text-low: ${textLow};`)
@@ -112,41 +156,15 @@ else vars.push(`  --ds-color-card-tertiary: var(--ds-color-block-background-subt
 // Thin divider for white surfaces (visible on light backgrounds)
 vars.push(`  --ds-color-stroke-divider: rgba(0, 0, 0, 0.08);`)
 
-// Typography - DS tokens only
-const labelS = typography.fontSize('Label', 'S', ctx)
-const labelM = typography.fontSize('Label', 'M', ctx)
-const bodyXs = typography.fontSize('Body', 'XS', ctx)
+// Typography – responsive per platform (mobile base in :root, overrides in media)
 const labelWeightHigh = typography.fontWeight('Label', 'High', ctx)
 const labelWeightLow = typography.fontWeight('Label', 'Low', ctx)
 const bodyWeightMedium = typography.fontWeight('Body', 'Medium', ctx)
-const displayL = typography.fontSize('Display', 'L', ctx)
-const displayM = typography.fontSize('Display', 'M', ctx)
-const headlineL = typography.fontSize('Headline', 'L', ctx)
-const headlineM = typography.fontSize('Headline', 'M', ctx)
-const headlineS = typography.fontSize('Headline', 'S', ctx)
-if (labelS != null) vars.push(`  --ds-typography-label-s: ${labelS}px;`)
-if (labelM != null) vars.push(`  --ds-typography-label-m: ${labelM}px;`)
-if (bodyXs != null) vars.push(`  --ds-typography-body-xs: ${bodyXs}px;`)
-// H1 (hero): Display/L - fairly large
-if (displayL != null) vars.push(`  --ds-typography-h1: ${displayL}px;`)
-// H2: Display/M - slightly smaller than H1
-if (displayM != null) vars.push(`  --ds-typography-h2: ${displayM}px;`)
-// H3: Headline/L, H4: Headline/M, H5: Headline/S
-if (headlineL != null) vars.push(`  --ds-typography-h3: ${headlineL}px;`)
-if (headlineM != null) vars.push(`  --ds-typography-h4: ${headlineM}px;`)
-const headlineSPx = headlineS ?? (headlineM != null ? Math.round(Number(headlineM) * 0.85) : 22)
-vars.push(`  --ds-typography-h5: ${headlineSPx}px;`)
-// Legacy aliases for semantic-headline
-if (headlineM != null) vars.push(`  --ds-typography-headline-m: ${headlineM}px;`)
-vars.push(`  --ds-typography-headline-s: ${headlineSPx}px;`)
-const headlineXsPx = headlineM != null ? Math.round(Number(headlineM) * 0.7) : 18
-vars.push(`  --ds-typography-headline-xs: ${headlineXsPx}px;`)
 if (labelWeightHigh != null) vars.push(`  --ds-typography-weight-high: ${labelWeightHigh};`)
 if (labelWeightLow != null) vars.push(`  --ds-typography-weight-low: ${labelWeightLow};`)
 if (bodyWeightMedium != null) vars.push(`  --ds-typography-weight-medium: ${bodyWeightMedium};`)
-// Aliases for hero/display (H1=display-hero, H2=display-2xl)
-if (displayL != null) vars.push(`  --ds-typography-display-hero: ${displayL}px;`)
-if (displayM != null) vars.push(`  --ds-typography-display-2xl: ${displayM}px;`)
+// Typography sizes: mobile (first platform) in :root
+vars.push(...getTypographyVars(createPlatformContext(PLATFORM_MODES.MOBILE_360)))
 
 // Derived tokens
 const spacing2xl = spacing.get('2XL', ctx)
@@ -173,21 +191,13 @@ vars.push(`  --ds-radius-card-m: ${radiusCardMPx};`)
 vars.push(`  --ds-radius-card-s: ${radiusCardSPx};`)
 vars.push(`  --ds-radius-full: ${radiusFullPx};`)
 
-// Grid media queries – DS grid per breakpoint
-let gridCss = ''
-for (let i = 0; i < gridMediaVars.length; i++) {
-  const { minWidth, cols, margin, gutter } = gridMediaVars[i]
-  const selector = i === 0 ? ':root' : `@media (min-width: ${minWidth}px) {\n  :root`
-  const gridVars = [
-    `  --ds-grid-columns: ${cols};`,
-    `  --ds-grid-margin: ${margin}px;`,
-    `  --ds-grid-gutter: ${gutter}px;`,
-  ]
-  if (i === 0) {
-    vars.push(...gridVars)
-  } else {
-    gridCss += `@media (min-width: ${minWidth}px) {\n  :root {\n${gridVars.join('\n')}\n  }\n}\n`
-  }
+// Grid + typography media queries – per breakpoint
+vars.push(...platformMediaVars[0].gridVars)
+let mediaCss = ''
+for (let i = 1; i < platformMediaVars.length; i++) {
+  const { minWidth, gridVars, typographyVars } = platformMediaVars[i]
+  const allVars = [...gridVars, ...typographyVars]
+  mediaCss += `@media (min-width: ${minWidth}px) {\n  :root {\n${allVars.join('\n')}\n  }\n}\n`
 }
 
 const css = `/**
@@ -197,7 +207,7 @@ const css = `/**
 :root {
 ${vars.join('\n')}
 }
-${gridCss}
+${mediaCss}
 `
 
 mkdirSync(dirname(outPath), { recursive: true })

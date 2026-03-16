@@ -3,7 +3,7 @@ import { draftMode } from 'next/headers'
 import { VisualEditing } from 'next-sanity/visual-editing'
 import type { Metadata } from 'next'
 import './globals.css'
-import { Providers } from './components/Providers'
+import { Providers } from './components/shared/Providers'
 
 export const metadata: Metadata = {
   title: {

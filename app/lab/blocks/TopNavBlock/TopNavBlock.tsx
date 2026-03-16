@@ -19,7 +19,7 @@ import {
   IcProfile,
 } from '@marcelinodzn/ds-react'
 import { createTransition } from '@marcelinodzn/ds-tokens'
-import { useGridBreakpoint } from '../../../lib/use-grid-breakpoint'
+import { useGridBreakpoint } from '../../../../lib/utils/use-grid-breakpoint'
 import {
   L1_CONFIG,
   L2_CONFIG,
@@ -79,14 +79,14 @@ function isL2MainItemObject(item: L2MainItem): item is { label: string; showArro
   return typeof item === 'object' && item !== null && 'label' in item
 }
 
-export function TopNavBlock() {
+export function LabTopNavBlock() {
   const [openL1, setOpenL1] = useState<string | null>(null)
   const [mobileExpandedL2, setMobileExpandedL2] = useState<string | null>(null)
   const [businessHoverL2, setBusinessHoverL2] = useState<string | null>(null)
   const [businessHoverL3, setBusinessHoverL3] = useState<string | null>(null)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
-  const { contentMaxDefault, columns } = useGridBreakpoint()
+  const { contentMaxDefault, isMobile, isTablet } = useGridBreakpoint()
 
   const navTransition = prefersReducedMotion ? undefined : createTransition('color', 's', 'transition', 'subtle')
   const navTextTransition = prefersReducedMotion ? undefined : createTransition(['color', 'transform'], 's', 'transition', 'subtle')
@@ -138,7 +138,6 @@ export function TopNavBlock() {
   const l2 = businessHoverL2 ? BUSINESS_L2.find((x) => x.id === businessHoverL2) : null
   const l3 = l2?.l3.find((x) => x.id === businessHoverL3)
 
-  const isMobile = columns <= 4
   const headerPadding = isMobile ? 'var(--ds-grid-margin)' : 'var(--ds-spacing-l)'
 
   return (
@@ -197,7 +196,7 @@ export function TopNavBlock() {
                   onClick={() => setOpenL1(openL1 === item.id ? null : item.id)}
                   style={{
                     ...(openL1 === item.id ? navLinkActiveStyle : navLinkStyle),
-                    ...(columns <= 4 ? { minHeight: 44, minWidth: 44, padding: 'var(--ds-spacing-s)' } : {}),
+                    ...(isMobile ? { minHeight: 44, minWidth: 44, padding: 'var(--ds-spacing-s)' } : {}),
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.color = 'var(--ds-color-surface-secondary)'
@@ -231,8 +230,8 @@ export function TopNavBlock() {
               attention="low"
               aria-label="Search"
               style={{
-                minWidth: columns <= 4 ? 44 : 0,
-                minHeight: columns <= 4 ? 44 : undefined,
+                minWidth: isMobile ? 44 : 0,
+                minHeight: isMobile ? 44 : undefined,
                 padding: 'var(--ds-spacing-xs)',
               }}
             >
@@ -245,8 +244,8 @@ export function TopNavBlock() {
               attention="low"
               aria-label="Profile"
               style={{
-                minWidth: columns <= 4 ? 44 : 0,
-                minHeight: columns <= 4 ? 44 : undefined,
+                minWidth: isMobile ? 44 : 0,
+                minHeight: isMobile ? 44 : undefined,
                 padding: 'var(--ds-spacing-xs)',
               }}
             >
@@ -288,7 +287,7 @@ export function TopNavBlock() {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: columns <= 4 ? '1fr' : columns <= 8 ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+                gridTemplateColumns: isMobile ? '1fr' : isTablet ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
                 gap: 'var(--ds-spacing-2xl)',
               }}
             >
@@ -534,10 +533,10 @@ export function TopNavBlock() {
               {showBusinessProductPanel && l3?.listings?.length && (
                 <div
                   style={{
-                    gridColumn: columns <= 4 ? '1' : 'span 3',
+                    gridColumn: isMobile ? '1' : 'span 3',
                     textAlign: 'left',
-                    paddingLeft: columns <= 4 ? 0 : 'var(--ds-spacing-xl)',
-                    borderLeft: columns <= 4 ? 'none' : '1px solid var(--ds-color-stroke-divider)',
+                    paddingLeft: isMobile ? 0 : 'var(--ds-spacing-xl)',
+                    borderLeft: isMobile ? 'none' : '1px solid var(--ds-color-stroke-divider)',
                     overflowY: 'auto',
                     overflowX: 'hidden',
                     maxHeight: '70vh',
@@ -586,7 +585,7 @@ export function TopNavBlock() {
                         <div
                           style={{
                             display: 'grid',
-                            gridTemplateColumns: columns <= 4 ? '1fr' : columns <= 8 ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+                            gridTemplateColumns: isMobile ? '1fr' : isTablet ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
                             gap: 'var(--ds-spacing-l) var(--ds-spacing-m)',
                           }}
                         >
@@ -620,10 +619,10 @@ export function TopNavBlock() {
               {showMobileAppsPanel && MOBILE_APPS_SERVICES.listings?.length && (
                 <div
                   style={{
-                    gridColumn: columns <= 4 ? '1' : 'span 3',
+                    gridColumn: isMobile ? '1' : 'span 3',
                     textAlign: 'left',
-                    paddingLeft: columns <= 4 ? 0 : 'var(--ds-spacing-xl)',
-                    borderLeft: columns <= 4 ? 'none' : '1px solid var(--ds-color-stroke-divider)',
+                    paddingLeft: isMobile ? 0 : 'var(--ds-spacing-xl)',
+                    borderLeft: isMobile ? 'none' : '1px solid var(--ds-color-stroke-divider)',
                     overflowY: 'auto',
                     overflowX: 'hidden',
                     maxHeight: '70vh',
@@ -674,7 +673,7 @@ export function TopNavBlock() {
                         <div
                           style={{
                             display: 'grid',
-                            gridTemplateColumns: columns <= 4 ? '1fr' : columns <= 8 ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+                            gridTemplateColumns: isMobile ? '1fr' : isTablet ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
                             gap: 'var(--ds-spacing-l)',
                           }}
                         >
@@ -749,7 +748,7 @@ export function TopNavBlock() {
                 </div>
               )}
 
-              {columns > 4 && <div style={{ gridColumn: 'span 2' }} />}
+              {!isMobile && <div style={{ gridColumn: 'span 2' }} />}
             </div>
           </div>
         </div>

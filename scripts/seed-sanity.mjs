@@ -693,6 +693,13 @@ async function seed() {
         },
       ],
     },
+    {
+      _type: 'labBlockPage',
+      _id: 'labBlockPage-top-nav',
+      slug: 'top-nav',
+      title: 'Top nav (mega menu)',
+      sections: [{ _type: 'topNavBlock', _key: 'top-nav' }],
+    },
   ]
 
   for (const page of labBlockPages) {
@@ -715,6 +722,7 @@ async function seed() {
         spacingTop: 'large',
         spacingBottom: 'large',
         items: [
+          { _type: 'listItem', _key: 'top-nav', subtitle: 'Top nav (mega menu)', linkUrl: '/lab/top-nav' },
           { _type: 'listItem', _key: 'hero', subtitle: 'Hero', linkUrl: '/lab/hero' },
           { _type: 'listItem', _key: 'media-text', subtitle: 'Media + Text: Stacked', linkUrl: '/lab/media-text' },
           { _type: 'listItem', _key: 'media-text-5050', subtitle: 'Media + Text: 50/50', linkUrl: '/lab/media-text-5050' },

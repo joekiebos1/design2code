@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { MediaTextBlock } from './MediaTextBlock'
+import { MediaTextBlock } from './MediaTextBlock/MediaTextBlock'
 
 const meta: Meta<typeof MediaTextBlock> = {
   component: MediaTextBlock,

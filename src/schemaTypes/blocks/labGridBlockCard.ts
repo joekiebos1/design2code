@@ -1,7 +1,7 @@
 import { defineField, defineType } from 'sanity'
 import { DS_THEMES, DS_THEME_DEFAULT } from '../shared/dsThemes'
-import { IconPickerInput } from '../../components/IconPickerInput'
-import { ColorPickerInput } from '../../components/ColorPickerInput'
+import { IconPickerInput } from '../../components/sanity/IconPickerInput'
+import { ColorPickerInput } from '../../components/sanity/ColorPickerInput'
 import { spacingTopField, spacingBottomField } from '../shared/spacingFields'
 import { surfaceColourField, emphasisField } from '../shared/blockColourFields'
 

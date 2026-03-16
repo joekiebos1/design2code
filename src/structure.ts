@@ -1,6 +1,6 @@
 import { DocumentIcon, ImageIcon, UploadIcon, BulbOutlineIcon } from '@sanity/icons'
 import type { StructureResolver } from 'sanity/structure'
-import { ImageLibraryUpload } from './components/ImageLibraryUpload'
+import { ImageLibraryUpload } from './components/sanity/ImageLibraryUpload'
 
 export const structure: StructureResolver = (S) =>
   S.list()

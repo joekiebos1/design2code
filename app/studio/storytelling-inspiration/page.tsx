@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { GridBlock } from '../../components/GridBlock'
-import { useGridBreakpoint } from '../../lib/use-grid-breakpoint'
-import { InputPanel } from '../../components/storytelling-inspiration/InputPanel'
-import { OutputPanel } from '../../components/storytelling-inspiration/OutputPanel'
-import type { StoryCoachInput, StoryCoachState } from '../../components/storytelling-inspiration/types'
+import { Grid } from '../../components/blocks/Grid'
+import { useGridBreakpoint } from '../../../lib/utils/use-grid-breakpoint'
+import { InputPanel } from '../../components/studio/storytelling-inspiration/InputPanel'
+import { OutputPanel } from '../../components/studio/storytelling-inspiration/OutputPanel'
+import type { StoryCoachInput, StoryCoachState } from '../../components/studio/storytelling-inspiration/types'
 
 const initialState: StoryCoachState = {
   status: 'idle',
@@ -44,7 +44,7 @@ export default function StorytellingInspirationPage() {
   }
 
   return (
-    <GridBlock as="main" style={{ height: '100%', minHeight: 0, alignContent: 'stretch' }}>
+    <Grid as="main" style={{ height: '100%', minHeight: 0, alignContent: 'stretch' }}>
       <aside
         style={{
           gridColumn: asideCol,
@@ -65,6 +65,6 @@ export default function StorytellingInspirationPage() {
       >
         <OutputPanel state={state} productName={productName} />
       </div>
-    </GridBlock>
+    </Grid>
   )
 }

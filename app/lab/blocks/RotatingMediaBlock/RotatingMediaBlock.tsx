@@ -14,9 +14,7 @@
 import { useState, useEffect } from 'react'
 import { createTransition } from '@marcelinodzn/ds-tokens'
 import { Button, Icon } from '@marcelinodzn/ds-react'
-import { GridBlock, useGridCell } from '../../../components/GridBlock'
-import { BlockContainer } from '../../../blocks/BlockContainer'
-import { BlockSurfaceProvider } from '../../../lib/block-surface'
+import { WidthCap } from '../../../blocks/WidthCap'
 import type { RotatingMediaBlockProps, RotatingMediaItem } from './RotatingMediaBlock.types'
 
 const IcPlay = () => (
@@ -308,13 +306,10 @@ function CombinedLayout({
   )
 }
 
-export function RotatingMediaBlock({
+export function LabRotatingMediaBlock({
   variant = 'small',
   items,
-  emphasis = 'ghost',
-  surfaceColour = 'primary',
 }: RotatingMediaBlockProps) {
-  const cell = useGridCell('Wide')
   const [isPaused, setIsPaused] = useState(false)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
 
@@ -334,7 +329,7 @@ export function RotatingMediaBlock({
   const effectivePaused = isPaused || prefersReducedMotion
 
   return (
-    <BlockSurfaceProvider emphasis={emphasis} surfaceColour={surfaceColour} fullWidth>
+    <>
       <style>{`
         @keyframes rotating-media-scroll {
           from { transform: translateX(0); }
@@ -345,47 +340,37 @@ export function RotatingMediaBlock({
           to { transform: translateX(-50%); }
         }
       `}</style>
-      <GridBlock as="section">
-        <div
-          style={{
-            ...cell,
-            display: 'flex',
-            flexDirection: 'column',
-          }}
-        >
-          <BlockContainer contentWidth="Wide" style={{ width: '100%', overflow: 'hidden' }}>
-            <div style={{ width: '100%' }}>
-              {variant === 'small' && (
-                <SmallCarousel
-                  items={items_}
-                  isPaused={effectivePaused}
-                  prefersReducedMotion={prefersReducedMotion}
-                  onPause={handlePause}
-                  onResume={handleResume}
-                />
-              )}
-              {variant === 'large' && (
-                <LargeCarousel
-                  items={items_}
-                  isPaused={effectivePaused}
-                  prefersReducedMotion={prefersReducedMotion}
-                  onPause={handlePause}
-                  onResume={handleResume}
-                />
-              )}
-              {variant === 'combined' && (
-                <CombinedLayout
-                  items={items_}
-                  isPaused={effectivePaused}
-                  prefersReducedMotion={prefersReducedMotion}
-                  onPause={handlePause}
-                  onResume={handleResume}
-                />
-              )}
-            </div>
-          </BlockContainer>
+      <WidthCap as="section" contentWidth="Wide" style={{ overflow: 'hidden' }}>
+        <div style={{ width: '100%' }}>
+          {variant === 'small' && (
+            <SmallCarousel
+              items={items_}
+              isPaused={effectivePaused}
+              prefersReducedMotion={prefersReducedMotion}
+              onPause={handlePause}
+              onResume={handleResume}
+            />
+          )}
+          {variant === 'large' && (
+            <LargeCarousel
+              items={items_}
+              isPaused={effectivePaused}
+              prefersReducedMotion={prefersReducedMotion}
+              onPause={handlePause}
+              onResume={handleResume}
+            />
+          )}
+          {variant === 'combined' && (
+            <CombinedLayout
+              items={items_}
+              isPaused={effectivePaused}
+              prefersReducedMotion={prefersReducedMotion}
+              onPause={handlePause}
+              onResume={handleResume}
+            />
+          )}
         </div>
-      </GridBlock>
-    </BlockSurfaceProvider>
+      </WidthCap>
+    </>
   )
 }

@@ -20,7 +20,7 @@
   --local-spacing-block-gap-chapter: clamp(var(--ds-spacing-3xl), 12vw, calc(var(--ds-spacing-4xl) + var(--ds-spacing-xl)));
 }
 
-/* Block stack – blocks stack directly; BlockContainer adds padding per block */
+/* Block stack – blocks stack directly; BlockShell adds padding per block */
 .block-stack {
   display: flex;
   flex-direction: column;
@@ -35,7 +35,7 @@ html {
 body {
   font-family: var(--ds-font-family);
   margin: 0;
-  /* Page background at layout level so BlockContainer inset reads as breathing room */
+  /* Page background at layout level so WidthCap inset reads as breathing room */
   background: var(--ds-color-background-ghost);
 }
 
@@ -51,7 +51,7 @@ main * {
   font-family: var(--ds-font-family) !important;
 }
 
-/* Content width: use BlockContainer (editorial, narrow, default, wide, edgeToEdge) - see app/blocks/BlockContainer.tsx */
+/* Content width: use WidthCap (editorial, narrow, default, wide, edgeToEdge) - see app/blocks/WidthCap.tsx */
 
 /* DS grid container – uses DS grid margin (from ds-tokens) */
 .ds-container {

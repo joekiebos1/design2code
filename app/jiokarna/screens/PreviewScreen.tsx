@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react'
 import { Headline, Text, SurfaceProvider, Button } from '@marcelinodzn/ds-react'
-import { BlockRenderer } from '../../components/BlockRenderer'
+import { BlockRenderer } from '../../components/content/BlockRenderer'
 import { briefToBlocks } from '../briefToBlocks'
 import { useImageStream } from '../../hooks/useImageStream'
 import type { PageBrief } from '../types'

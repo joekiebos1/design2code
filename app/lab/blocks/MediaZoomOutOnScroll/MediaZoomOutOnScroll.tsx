@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
-import { useGridBreakpoint } from '../../../lib/use-grid-breakpoint'
+import { useGridBreakpoint } from '../../../../lib/utils/use-grid-breakpoint'
 import { useScrollZoomProgress } from './use-scroll-zoom-progress'
 import type { MediaZoomOutOnScrollProps } from './MediaZoomOutOnScroll.types'
 
@@ -12,13 +12,13 @@ import type { MediaZoomOutOnScrollProps } from './MediaZoomOutOnScroll.types'
  * On scroll, reduces to Default content width and normal scale.
  * Respects prefers-reduced-motion: shows final state without animation.
  */
-export function MediaZoomOutOnScroll({
+export function LabMediaZoomOutOnScroll({
   image,
   videoUrl,
   alt = '',
 }: MediaZoomOutOnScrollProps) {
   const { progress, ref, prefersReducedMotion } = useScrollZoomProgress()
-  const { contentMaxDefault, columns } = useGridBreakpoint()
+  const { contentMaxDefault, isMobile } = useGridBreakpoint()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -60,7 +60,7 @@ export function MediaZoomOutOnScroll({
     backgroundColor: 'var(--ds-color-surface-subtle)',
   }
 
-  const minHeightVh = columns <= 4 ? 80 : 120
+  const minHeightVh = isMobile ? 80 : 120
 
   return (
     <div

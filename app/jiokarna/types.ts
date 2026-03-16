@@ -1,5 +1,5 @@
 /**
- * Page brief types — matches the structured JSON schema from cursorrules.md
+ * Page brief types — matches the structured JSON schema from lib/jiokarna/architect-rules-product-page.md
  */
 
 export type PageType = 'campaign' | 'product-launch' | 'editorial' | 'category' | 'other'

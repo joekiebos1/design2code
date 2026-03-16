@@ -1,5 +1,5 @@
 import { defineField, defineType } from 'sanity'
-import { IconPickerInput } from '../../components/IconPickerInput'
+import { IconPickerInput } from '../../components/sanity/IconPickerInput'
 
 /**
  * Text on colour card – unified card with optional icon, CTAs, features.
