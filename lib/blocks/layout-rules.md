@@ -186,8 +186,8 @@ column alignment — WidthCap's max-width is pixel-based and doesn't know about 
 ```tsx
 // WRONG: WidthCap inside Grid at the grid layer
 <Grid>
-  <div style={useCell('Wide')}>
-    <WidthCap contentWidth="Default">   ← double margin, no grid alignment
+  <div style={useCell('XL')}>
+    <WidthCap contentWidth="L">   ← double margin, no grid alignment
       <Headline />
     </WidthCap>
   </div>
@@ -198,14 +198,14 @@ column alignment — WidthCap's max-width is pixel-based and doesn't know about 
 ```tsx
 // No Grid needed. WidthCap owns the width constraint.
 <section>
-  <WidthCap contentWidth="Default">
+  <WidthCap contentWidth="L">
     <ProductName />
     <Headline />
   </WidthCap>
   <WidthCap contentWidth="XS">
     <Subheadline />
   </WidthCap>
-  <WidthCap contentWidth="Default">
+  <WidthCap contentWidth="L">
     <Buttons />
   </WidthCap>
 </section>
@@ -215,7 +215,7 @@ column alignment — WidthCap's max-width is pixel-based and doesn't know about 
 ```tsx
 // WidthCap is content here, not a layout layer. This is fine.
 <Grid>
-  <div style={useCell('Wide')}>
+  <div style={useCell('XL')}>
     <WidthCap contentWidth="S">
       <Caption />
     </WidthCap>
@@ -321,12 +321,13 @@ Never hardcode px values for grid geometry. If a value has no token, stop and fl
 | `contentMaxXS` | `100%` | `100%` | px (4 cols) |
 | `contentMaxS` | `100%` | `100%` | px (6 cols) |
 | `contentMaxM` | `100%` | `100%` | px (8 cols) |
-| `contentMaxDefault` | `100%` | `100%` | px (10 cols) |
-| `contentMaxWide` | `100%` | `100%` | px (12 cols) |
+| `contentMaxL` | `100%` | `100%` | px (10 cols) |
+| `contentMaxXL` | `100%` | `100%` | px (12 cols) |
+| `contentMaxXXL` | = contentMaxXL | = contentMaxXL | px (12 cols, 1920 cap) |
 | `isDesktop` | false | false | true (viewport ≥ 1440) |
 | `gridMaxWidth` | undefined | undefined | px (capped) |
 
-**Important:** `contentMax*` are `100%` when `!isDesktop` (viewport < 1440). On desktop they are pixel values (capped at ~1346px).
+**Important:** `contentMax*` are `100%` when `!isDesktop` (viewport < 1440). On desktop they are pixel values (capped at ~1346px). `contentMaxXXL` uses 1920px cap for blocks that opt in.
 
 ### useGridCell(contentWidth)
 
@@ -335,8 +336,9 @@ Never hardcode px values for grid geometry. If a value has no token, stop and fl
 | XS | 4 | 4 | 4 |
 | S | 4 | 6 | 6 |
 | M | 4 | 6 | 8 |
-| Default | 4 | 6 | 10 |
-| Wide | 4 | 8 | 12 |
+| L | 4 | 6 | 10 |
+| XL | 4 | 8 | 12 |
+| XXL | 4 | 8 | 12 |
 
 ### WidthCap(contentWidth)
 
@@ -345,8 +347,9 @@ Never hardcode px values for grid geometry. If a value has no token, stop and fl
 | XS | contentMaxXS |
 | S | contentMaxS |
 | M | contentMaxM |
-| Default | contentMaxDefault |
-| Wide | contentMaxWide |
+| L | contentMaxL |
+| XL | contentMaxXL |
+| XXL | contentMaxXXL — 12 cols, 1920px cap. Opt-in for wider layout. |
 | edgeToEdge | Full viewport, capped 1920px |
 | full | 100%, no max-width |
 

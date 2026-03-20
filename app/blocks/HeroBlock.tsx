@@ -79,7 +79,7 @@ export function HeroBlock({
 }: HeroBlockProps) {
   const router = useRouter()
   const { columns, isMobile, isTablet, isStacked, isDesktop } = useGridBreakpoint()
-  const cell = useCell('Wide')
+  const cell = useCell('XL')
   const edgeStyles = useEdgeToEdgeMediaStyles()
   const { ref: revealRef, getRevealStyle, prefersReducedMotion } = useHeroStaggeredReveal(4)
   const categorySectionRef = useRef<HTMLElement>(null)
@@ -170,7 +170,7 @@ export function HeroBlock({
   const textContentCentered = (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
       <div style={getRevealStyle(0)}>
-        <WidthCap contentWidth="Default">
+        <WidthCap contentWidth="L">
           <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column' }}>
             {productName && <Text size="L" weight="high" align="center" as="span" style={{ marginBottom: 'var(--ds-spacing-m)', fontSize: isMobile ? 'var(--ds-typography-label-s)' : HERO_BODY_STYLE.fontSize, lineHeight: HERO_BODY_STYLE.lineHeight }}>{productName}</Text>}
             {headline && <Display size="L" as="h1" align="center" style={{ lineHeight: 1.1, whiteSpace: 'pre-line', marginBottom: headlineMarginBottom, fontSize: headlineFontSizeCentered }}>{headline}</Display>}
@@ -186,7 +186,7 @@ export function HeroBlock({
       )}
       {(ctaText || cta2Text) && (
         <div style={getRevealStyle(2)}>
-          <WidthCap contentWidth="Default">
+          <WidthCap contentWidth="L">
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--ds-spacing-m)', justifyContent: 'center' }}>
               {ctaText && ctaLink && <Button appearance="primary" size="M" attention="high" onPress={() => handleCtaPress(ctaLink)}>{ctaText}</Button>}
               {cta2Text && cta2Link && <Button appearance="primary" size="M" attention="medium" onPress={() => handleCtaPress(cta2Link)}>{cta2Text}</Button>}
@@ -325,7 +325,7 @@ export function HeroBlock({
                 <div style={{ ...cell, display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-m)' }}>
                   {(productName || headline) && textContentCentered}
                   <div style={getRevealStyle(3)}>
-                    <WidthCap contentWidth="Default" style={{ marginTop: 'var(--ds-spacing-xl)' }}>
+                    <WidthCap contentWidth="L" style={{ marginTop: 'var(--ds-spacing-xl)' }}>
                       <div
                         ref={categoryMediaRef}
                         style={{ aspectRatio: '2 / 1', overflow: 'hidden', borderRadius: 'var(--ds-radius-card-m)' }}
@@ -350,7 +350,7 @@ export function HeroBlock({
           <div style={{ ...cell, display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-m)' }}>
             {(productName || headline) && textContentCentered}
             <div style={getRevealStyle(3)}>
-              <WidthCap contentWidth="Wide" style={{ marginTop: 'var(--ds-spacing-xl)' }}>
+              <WidthCap contentWidth="XL" style={{ marginTop: 'var(--ds-spacing-xl)' }}>
                 <div style={{ aspectRatio: isMobile ? '4 / 5' : '2 / 1', overflow: 'hidden', borderRadius: 'var(--ds-radius-card-m)' }}>
                   {mediaElement}
                 </div>

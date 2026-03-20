@@ -12,6 +12,9 @@ import {
 
 const bp = getBreakpoints()
 
+/** Content cap for XXL layout (12 cols at 1920px). */
+export const CONTENT_CAP_XL = bp.desktopLarge
+
 // --- Breakpoint constants (single source of truth for layout) ---
 /** Grid columns at breakpoint boundaries. Use these for layout decisions. */
 export const BREAKPOINT_COLUMNS = {
@@ -114,13 +117,15 @@ export type GridBreakpoint = {
   contentMaxS: string
   /** M: 8 cols. Desktop 1440px+. */
   contentMaxM: string
-  /** Default: 10 cols. Desktop 1440px+. */
-  contentMaxDefault: string
-  /** Wide: 12 cols. Desktop 1440px+. */
-  contentMaxWide: string
+  /** L: 10 cols. Desktop 1440px+. */
+  contentMaxL: string
+  /** XL: 12 cols, 1346 cap. Desktop 1440px+. */
+  contentMaxXL: string
+  /** XXL: 12 cols, 1920 cap. Opt-in for wider layout (e.g. editorial). */
+  contentMaxXXL: string
   /** 5 cols. Desktop 1440px+. For Medium carousel cards. */
   contentMax5Cols: string
-  /** True when viewport >= 1440 — narrow/default/wide use calculated widths */
+  /** True when viewport >= 1440 — contentMax* use calculated widths */
   isDesktop: boolean
   /** Max width for grid wrapper (containerWidth + 2*margin) on desktop. Ensures grid respects 1346px cap. */
   gridMaxWidth: string | undefined
@@ -153,23 +158,44 @@ function resolveGridValues(platform: string, viewport: number): GridBreakpoint {
     Number(getVariableByName(CONTAINER_MAX_TOKEN, ctx)) || CONTAINER_MAX_FALLBACK
 
   const rawContainerWidth = Math.max(0, viewport - 2 * margin)
-  const isDesktop = viewport >= 1440
-  const containerWidth = isDesktop
+  const isDesktopViewport = viewport >= bp.desktop
+  const containerWidth = isDesktopViewport
     ? Math.min(rawContainerWidth, containerMaxCap)
     : rawContainerWidth
 
   const columnWidth =
     columns > 0 ? (containerWidth - gutter * (columns - 1)) / columns : 0
 
-  const spanWide = columns === 12 ? 12 : columns === 8 ? 8 : 4
-  const spanDefault = columns === 12 ? 10 : columns === 8 ? 6 : 4
+  // XXL layout (1920 cap): for blocks that opt in via contentWidth XXL
+  const isDesktop = viewport >= bp.desktop
+  const ctxXXL = createTokenContext({
+    [COLLECTION_NAMES.PLATFORM]: PLATFORM_MODES.DESKTOP_1920,
+    [COLLECTION_NAMES.DENSITY]: DENSITY_MODES.DEFAULT,
+  })
+  const marginXXL = Number(getVariableByName('Grid/XL (1920)/margin', ctxXXL)) || 47
+  const gutterXXL = Number(getVariableByName('Grid/XL (1920)/gutter', ctxXXL)) || 19
+  const xxlCapPx = bp.desktopLarge - 2 * marginXXL
+  const containerWidthXXL = isDesktop
+    ? Math.min(Math.max(0, viewport - 2 * marginXXL), xxlCapPx)
+    : 0
+  const columnWidthXXL =
+    columns > 0 ? (containerWidthXXL - gutterXXL * (columns - 1)) / columns : 0
+  const spanXL = columns === 12 ? 12 : columns === 8 ? 8 : 4
+  const pxXXL =
+    isDesktop && containerWidthXXL > 0
+      ? spanXL * columnWidthXXL + (spanXL - 1) * gutterXXL
+      : columnWidth > 0
+        ? spanXL * columnWidth + (spanXL - 1) * gutter
+        : 0
+
+  const spanL = columns === 12 ? 10 : columns === 8 ? 6 : 4
   const spanM = columns === 12 ? 8 : columns === 8 ? 6 : 4
   const spanS = columns === 12 ? 6 : columns === 8 ? 6 : 4
   const spanXS = columns === 12 ? 4 : columns === 8 ? 4 : 4
   const span5 = columns >= 5 ? 5 : 4
 
-  const pxWide = spanWide * columnWidth + (spanWide - 1) * gutter
-  const pxDefault = spanDefault * columnWidth + (spanDefault - 1) * gutter
+  const pxXL = spanXL * columnWidth + (spanXL - 1) * gutter
+  const pxL = spanL * columnWidth + (spanL - 1) * gutter
   const pxM = spanM * columnWidth + (spanM - 1) * gutter
   const pxS = spanS * columnWidth + (spanS - 1) * gutter
   const pxXS = spanXS * columnWidth + (spanXS - 1) * gutter
@@ -188,10 +214,11 @@ function resolveGridValues(platform: string, viewport: number): GridBreakpoint {
     contentMaxXS: `${pxXS}px`,
     contentMaxS: `${pxS}px`,
     contentMaxM: `${pxM}px`,
-    contentMaxDefault: `${pxDefault}px`,
-    contentMaxWide: `${pxWide}px`,
+    contentMaxL: `${pxL}px`,
+    contentMaxXL: `${pxXL}px`,
+    contentMaxXXL: `${pxXXL}px`,
     contentMax5Cols: `${px5}px`,
-    isDesktop,
+    isDesktop: isDesktopViewport,
     gridMaxWidth,
     breakpoint,
     isMobile: isMobileCols(columns),
@@ -208,8 +235,9 @@ const DEFAULT_VALUES = resolveGridValues(DEFAULT_PLATFORM, DEFAULT_VIEWPORT)
 function gridValuesEqual(a: GridBreakpoint, b: GridBreakpoint): boolean {
   return (
     a.columns === b.columns &&
-    a.contentMaxDefault === b.contentMaxDefault &&
-    a.contentMaxWide === b.contentMaxWide &&
+    a.contentMaxL === b.contentMaxL &&
+    a.contentMaxXL === b.contentMaxXL &&
+    a.contentMaxXXL === b.contentMaxXXL &&
     a.isDesktop === b.isDesktop
   )
 }

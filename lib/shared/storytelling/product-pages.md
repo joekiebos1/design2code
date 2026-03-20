@@ -103,3 +103,60 @@ Jio built the network that connects India. Jio products never frame connectivity
 Never reference slow data, poor signal, or unreliable connectivity as problems. Instead: Jio keeps you connected everywhere, always. The product works across every kind of Jio network because Jio built those networks to reach everyone.
 
 When a product's connectivity reach is an RTB, frame it as a statement of ambition: "Jio ensures you are always connected" — not as a concession to infrastructure limitations.
+
+---
+
+## Content ambition
+
+AI tends toward the obvious. Fight it.
+
+Never settle for the first way to express a feature. Go deeper. Name the moment, not the feature.
+Bad: "Offline listening available."
+Good: "On the metro, between stations, the music never stops."
+
+Every headline must be specific enough that it could only be true for this product, this person, in this moment. A headline that could apply to any product has failed.
+
+Each block makes a promise. That promise must be earned — by a specific fact, a number, a capability that makes the headline true. Never let a promise stand without its proof. The `proof` field is where that evidence lives — it must be concrete and specific, not a restatement of the headline.
+
+---
+
+## Block types beyond product features
+
+When product features run out, the page should not repeat itself.
+Fill remaining blocks with these four types — none require new
+product facts:
+
+SCENARIOS: A specific moment in someone's day where this product
+changes something. Name the time, the place, the person, the shift.
+Not a feature description — a lived situation.
+Example: "It's 11pm. You plug in. By 7am you're at 100%."
+
+USE CASES: Who uses this product, in what context, for what purpose.
+Different users reveal different dimensions of the same product.
+A home owner is not a fleet operator. Both are real.
+
+CONTRAST: The world before this product existed versus after.
+Not problem/solution framing — just the specific shift in how
+daily life works. Small and concrete beats large and abstract.
+
+ECOSYSTEM: How this product connects to the broader Jio world.
+The app, the platform, the engineering team, the connected home.
+Individual products are chapters — the ecosystem is the book.
+
+---
+
+## Hierarchy — chapters and supporting blocks
+
+Every page has chapters and supporting blocks. They are not equal.
+
+CHAPTER blocks open a new narrative territory. They are larger,
+more dramatic, more emotionally loaded. A page should have 4–5
+chapter blocks — one for each major shift in the story.
+
+SUPPORTING blocks add depth, proof, or texture within a chapter's
+territory. They are smaller, more specific, more functional.
+Several supporting blocks can follow one chapter block.
+
+Mark each block with a role: "chapter" or "supporting".
+Chapter blocks carry the story forward.
+Supporting blocks make it believable.

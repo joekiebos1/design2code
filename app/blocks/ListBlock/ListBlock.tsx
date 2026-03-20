@@ -226,7 +226,7 @@ export function ListBlock({
   const level = normalizeHeadingLevel('h2')
   const itemLevel = getChildLevel(level)
   const headlineSize = getHeadlineSize(level)
-  const cell = useCell('Wide')
+  const cell = useCell('XL')
   const items_ = (items ?? []).filter((i) => i != null) as (ListBlockTextItem | ListBlockFaqItem | ListBlockLinkItem)[]
 
   if (items_.length === 0 && !blockTitle) return null

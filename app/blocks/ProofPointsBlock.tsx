@@ -99,7 +99,7 @@ export function ProofPointsBlock({
   const level = normalizeHeadingLevel('h2')
   const items_ = (items?.filter((i) => i?.title) ?? []).slice(0, MAX_ITEMS)
   const itemLevel = getChildLevel(level)
-  const cell = useCell('Wide')
+  const cell = useCell('XL')
   const { columnWidth, gutter } = useGridBreakpoint()
   const { ref, isVisible, prefersReducedMotion } = useCarouselReveal(items_.length)
   const motionLevel = prefersReducedMotion ? 'subtle' : 'moderate'
@@ -116,7 +116,7 @@ export function ProofPointsBlock({
     <Grid as="section">
       <div style={{ ...cell, display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-2xl)' }}>
         {title && (
-          <WidthCap contentWidth="Default">
+          <WidthCap contentWidth="L">
             <Headline
               size="S"
               weight="high"
@@ -128,7 +128,7 @@ export function ProofPointsBlock({
             </Headline>
           </WidthCap>
         )}
-        <WidthCap contentWidth="Wide">
+        <WidthCap contentWidth="XL">
           {isStat ? (
             <div
               ref={ref}

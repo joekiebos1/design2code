@@ -409,7 +409,7 @@ export function LabMediaText5050Block({
   const textCellStyle = { gridColumn: `1 / span ${halfSpan}` as const }
   const mediaCellStyle = { gridColumn: `${halfSpan + 1} / span ${halfSpan}` as const }
 
-  const textOnlyCell = useCell('Default')
+  const textOnlyCell = useCell('L')
 
   /** Stacked: WidthCap only. Side-by-side: Grid + two Cells. */
   const stackedContent = !hasMedia ? (
@@ -420,19 +420,19 @@ export function LabMediaText5050Block({
     <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-3xl)' }}>
       {mediaFirst ? (
         <>
-          <WidthCap contentWidth="Wide">
+          <WidthCap contentWidth="XL">
             <div style={{ position: 'relative', minWidth: 0 }}>{mediaContent}</div>
           </WidthCap>
-          <WidthCap contentWidth="Default">
+          <WidthCap contentWidth="L">
             <div style={textColumnStyle}>{textContent}</div>
           </WidthCap>
         </>
       ) : (
         <>
-          <WidthCap contentWidth="Default">
+          <WidthCap contentWidth="L">
             <div style={textColumnStyle}>{textContent}</div>
           </WidthCap>
-          <WidthCap contentWidth="Wide">
+          <WidthCap contentWidth="XL">
             <div style={{ position: 'relative', minWidth: 0 }}>{mediaContent}</div>
           </WidthCap>
         </>

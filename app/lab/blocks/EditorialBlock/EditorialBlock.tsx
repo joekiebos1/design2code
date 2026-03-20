@@ -14,6 +14,11 @@ const DEBUG_EDITORIAL_GRID = process.env.NEXT_PUBLIC_DEBUG_EDITORIAL_GRID === 't
 import { useRouter } from 'next/navigation'
 import { Display, Headline, Title, Text, Button, SurfaceProvider } from '@marcelinodzn/ds-react'
 import { BlockSurfaceProvider, getSurfaceProviderProps } from '../../../../lib/utils/block-surface'
+import {
+  useEdgeToEdgeMediaStyles,
+  EDGE_TO_EDGE_CAPPED_RADIUS,
+  EDGE_TO_EDGE_MAX_PX,
+} from '../../../../lib/utils/edge-to-edge'
 import { useGridBreakpoint } from '../../../../lib/utils/use-grid-breakpoint'
 import { Grid, useCell } from '../../../components/blocks/Grid'
 import { WidthCap } from '../../../blocks/WidthCap'
@@ -38,6 +43,9 @@ function fromCorners(
 export function EditorialBlock({
   headline,
   body,
+  backgroundImage,
+  backgroundImagePositionX,
+  backgroundImagePositionY,
   image,
   videoUrl,
   ctaText,
@@ -46,7 +54,7 @@ export function EditorialBlock({
   textBottomRight,
   headlineSize = 'display',
   textAlign = 'left',
-  textVerticalAlign = 'top',
+  textVerticalAlign = 'center',
   imageTopLeft,
   imageBottomRight,
   imageFit = 'contain',
@@ -57,11 +65,12 @@ export function EditorialBlock({
 }: EditorialBlockProps) {
   const router = useRouter()
   const { columns, isStacked } = useGridBreakpoint()
-  const cell = useCell('Wide')
+  const cell = useCell('XL')
   const containerRef = useRef<HTMLDivElement>(null)
   const [cellSize, setCellSize] = useState(0)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
   const surfaceProps = getSurfaceProviderProps(emphasis)
+  const edgeStyles = useEdgeToEdgeMediaStyles()
 
   const rowsClamped = Math.min(16, Math.max(2, rows ?? 6))
 
@@ -85,8 +94,9 @@ export function EditorialBlock({
   }, [])
 
   const hasMedia = Boolean(image || videoUrl)
+  const hasBackground = Boolean(backgroundImage)
   const textAlignStyle = textAlign === 'center' ? 'center' : 'left'
-  const alignItems = textVerticalAlign === 'top' ? 'flex-start' : textVerticalAlign === 'bottom' ? 'flex-end' : 'center'
+  const alignItems = textVerticalAlign === 'bottom' ? 'flex-end' : 'center'
   const objPos = 'center'
 
   const handleCtaPress = () => {
@@ -109,7 +119,7 @@ export function EditorialBlock({
           display: 'flex',
           flexDirection: 'column',
           alignItems: alignItems,
-          justifyContent: textVerticalAlign === 'top' ? 'flex-start' : textVerticalAlign === 'bottom' ? 'flex-end' : 'center',
+          justifyContent: textVerticalAlign === 'bottom' ? 'flex-end' : 'center',
           gap: 'var(--ds-spacing-m)',
           height: '100%',
         }}
@@ -168,14 +178,49 @@ export function EditorialBlock({
   if (isStacked) {
     const isMobile = columns <= 4
     return (
-      <section>
+      <section style={{ position: 'relative' }}>
         <BlockSurfaceProvider emphasis={emphasis} surfaceColour={surfaceColour} fullWidth={false}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-l)' }}>
-            <WidthCap contentWidth="Default">
+          {hasBackground && (
+            <div
+              style={{
+                position: 'absolute',
+                left: 0,
+                marginLeft: 'calc(50% - 50vw)',
+                width: '100vw',
+                maxWidth: `${EDGE_TO_EDGE_MAX_PX}px`,
+                top: 0,
+                bottom: 0,
+                overflow: 'hidden',
+                zIndex: 0,
+                borderRadius: edgeStyles.isCapped ? EDGE_TO_EDGE_CAPPED_RADIUS : 0,
+              }}
+            >
+              <img
+                src={backgroundImage!}
+                alt=""
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  objectPosition: `${backgroundImagePositionX ?? 0}% ${backgroundImagePositionY ?? 50}%`,
+                }}
+              />
+            </div>
+          )}
+          <div
+            style={{
+              position: 'relative',
+              zIndex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--ds-spacing-l)',
+            }}
+          >
+            <WidthCap contentWidth="L">
               {textContent}
             </WidthCap>
             {hasMedia && (
-              <WidthCap contentWidth="Wide">
+              <WidthCap contentWidth="XL">
                 <div
                   style={{
                     aspectRatio: isMobile ? '4/5' : '2/1',
@@ -256,6 +301,7 @@ export function EditorialBlock({
           gridColumn: `${tColStart} / span ${tColSpan}`,
           gridRow: `${tRowStart} / span ${tRowSpan}`,
           zIndex: textInFront ? 2 : 1,
+          position: 'relative',
           minHeight: 0,
           minWidth: 0,
         }}
@@ -268,6 +314,7 @@ export function EditorialBlock({
             gridColumn: `${iColStart} / span ${iColSpan}`,
             gridRow: `${iRowStart} / span ${iRowSpan}`,
             zIndex: textInFront ? 1 : 2,
+            position: 'relative',
             minHeight: 0,
             minWidth: 0,
           }}
@@ -280,9 +327,36 @@ export function EditorialBlock({
   )
 
   return (
-    <section>
+    <section style={{ position: 'relative' }}>
       <BlockSurfaceProvider emphasis={emphasis} surfaceColour={surfaceColour} fullWidth={false}>
-        <Grid as="div">
+        {hasBackground && (
+          <div
+            style={{
+              position: 'absolute',
+              left: 0,
+              marginLeft: 'calc(50% - 50vw)',
+              width: '100vw',
+              maxWidth: `${EDGE_TO_EDGE_MAX_PX}px`,
+              top: 0,
+              bottom: 0,
+              overflow: 'hidden',
+              zIndex: 0,
+              borderRadius: edgeStyles.isCapped ? EDGE_TO_EDGE_CAPPED_RADIUS : 0,
+            }}
+          >
+            <img
+              src={backgroundImage!}
+              alt=""
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                objectPosition: `${backgroundImagePositionX ?? 0}% ${backgroundImagePositionY ?? 50}%`,
+              }}
+            />
+          </div>
+        )}
+        <Grid as="div" style={{ position: 'relative', zIndex: 1 }}>
           {gridContent}
         </Grid>
       </BlockSurfaceProvider>

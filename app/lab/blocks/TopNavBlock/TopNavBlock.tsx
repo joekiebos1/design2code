@@ -86,7 +86,7 @@ export function LabTopNavBlock() {
   const [businessHoverL3, setBusinessHoverL3] = useState<string | null>(null)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
-  const { contentMaxDefault, isMobile, isTablet } = useGridBreakpoint()
+  const { contentMaxL, isMobile, isTablet } = useGridBreakpoint()
 
   const navTransition = prefersReducedMotion ? undefined : createTransition('color', 's', 'transition', 'subtle')
   const navTextTransition = prefersReducedMotion ? undefined : createTransition(['color', 'transform'], 's', 'transition', 'subtle')
@@ -163,7 +163,7 @@ export function LabTopNavBlock() {
       >
         <div
           style={{
-            maxWidth: contentMaxDefault,
+            maxWidth: contentMaxL,
             width: '100%',
             margin: '0 auto',
             paddingLeft: headerPadding,
@@ -273,7 +273,7 @@ export function LabTopNavBlock() {
         >
           <div
             style={{
-              maxWidth: contentMaxDefault,
+              maxWidth: contentMaxL,
               width: '100%',
               margin: '0 auto',
               paddingLeft: headerPadding,

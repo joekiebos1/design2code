@@ -182,7 +182,7 @@ export function MediaText5050Block({
   const hasMedia = media?.src && media.src.trim() !== ''
   const mediaFirst = imagePosition === 'left'
   const surfaceProps = getSurfaceProviderProps(emphasis)
-  const cell = useCell('Default')
+  const cell = useCell('L')
   const { isStacked } = useGridBreakpoint()
 
   const aspectRatio = media?.aspectRatio ? ASPECT_RATIOS[media.aspectRatio] : undefined

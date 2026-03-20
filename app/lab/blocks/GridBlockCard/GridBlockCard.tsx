@@ -164,7 +164,7 @@ export function GridCard({
   surfaceColour = 'primary',
   cards = [],
 }: GridCardProps) {
-  const cell = useCell('Wide')
+  const cell = useCell('XL')
   const cards_ = cards?.filter((c) => c?.title) ?? []
 
   if (cards_.length === 0) return null

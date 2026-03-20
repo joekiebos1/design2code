@@ -18,7 +18,7 @@ export function LabMediaZoomOutOnScroll({
   alt = '',
 }: MediaZoomOutOnScrollProps) {
   const { progress, ref, prefersReducedMotion } = useScrollZoomProgress()
-  const { contentMaxDefault, isMobile } = useGridBreakpoint()
+  const { contentMaxL, isMobile } = useGridBreakpoint()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -31,8 +31,8 @@ export function LabMediaZoomOutOnScroll({
   // Interpolate: 0 = full zoom + 100vw, 1 = normal scale + Default width
   const scale = 1 + (1 - progress) * 0.2 // 1.2 → 1
 
-  const defaultWidthPx = contentMaxDefault.endsWith('px')
-    ? parseFloat(contentMaxDefault)
+  const defaultWidthPx = contentMaxL.endsWith('px')
+    ? parseFloat(contentMaxL)
     : typeof window !== 'undefined'
       ? window.innerWidth
       : 1078

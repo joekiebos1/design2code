@@ -56,7 +56,7 @@ const CARD_SIZE_CONFIG = {
   /** Compact: 3 cols, 4:5 = 1 slot (3 cards), 8:5 = 2 slots. 2:1 falls back to 8:5. Media and coloured container interchangeable. */
   compact: {
     cols: 3,
-    contentWidth: 'Default' as const,
+    contentWidth: 'L' as const,
     getSlots: (ratio?: '4:5' | '8:5' | '2:1') => (ratio === '8:5' || ratio === '2:1' ? 2 : 1),
     getSlotWidthCss: (slots: number) => {
       const colWidth = `calc((100cqw - 2 * ${GAP}) / 3)`
@@ -70,7 +70,7 @@ const CARD_SIZE_CONFIG = {
   /** Large 2:1: 1 card per view, spans Default width (10 cols). Wide container for side buttons. 2:1 only. */
   large: {
     cols: 1,
-    contentWidth: 'Default' as const,
+    contentWidth: 'L' as const,
     getSlots: () => 1,
     getSlotWidthCss: () => '100cqw',
     getImageHeight4_5: () => 'auto',
@@ -79,7 +79,7 @@ const CARD_SIZE_CONFIG = {
   /** Medium: 2 cards per view within Default width. Each card = (Default - gap) / 2. 4:5 only. */
   medium: {
     cols: 2,
-    contentWidth: 'Default' as const,
+    contentWidth: 'L' as const,
     getSlots: () => 1,
     getSlotWidthCss: () => `calc((100cqw - ${GAP}) / 2)`,
     getImageHeight4_5: () => `calc(((100cqw - ${GAP}) / 2) * 5 / 4)`,
@@ -129,8 +129,8 @@ export function CarouselBlock({
   images,
 }: CarouselBlockProps) {
   const level = normalizeHeadingLevel('h2')
-  const cellContainer = useCell('Wide')
-  const { contentMaxDefault } = useGridBreakpoint()
+  const cellContainer = useCell('XL')
+  const { contentMaxL } = useGridBreakpoint()
   const config = cardSize && cardSize in CARD_SIZE_CONFIG ? CARD_SIZE_CONFIG[cardSize] : undefined
   if (!config) return null
   const viewportRef = useRef<HTMLDivElement>(null)
@@ -297,10 +297,10 @@ export function CarouselBlock({
   const halfBtn = 'var(--ds-spacing-l)'
   const buttonMediaCenterOffset =
     cardSize === 'large'
-      ? `calc(${contentMaxDefault} / 4 - ${halfBtn})`
+      ? `calc(${contentMaxL} / 4 - ${halfBtn})`
       : cardSize === 'medium'
-        ? `calc((${contentMaxDefault} - var(--ds-spacing-l)) * 5 / 16 - ${halfBtn})`
-        : `calc((${contentMaxDefault} - 2 * var(--ds-spacing-l)) * 5 / 24 - ${halfBtn})`
+        ? `calc((${contentMaxL} - var(--ds-spacing-l)) * 5 / 16 - ${halfBtn})`
+        : `calc((${contentMaxL} - 2 * var(--ds-spacing-l)) * 5 / 24 - ${halfBtn})`
 
   return (
     <Grid as="section">
@@ -315,7 +315,7 @@ export function CarouselBlock({
           }}
         >
           {title && (
-            <WidthCap contentWidth="Default">
+            <WidthCap contentWidth="L">
               <Headline
                 size={getHeadlineSize(level)}
                 weight="high"
@@ -334,7 +334,7 @@ export function CarouselBlock({
               </Headline>
             </WidthCap>
           )}
-          <WidthCap contentWidth="Wide" className="card-block-carousel" style={{ overflow: 'visible' }}>
+          <WidthCap contentWidth="XL" className="card-block-carousel" style={{ overflow: 'visible' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-l)' }}>
               <div
                 style={{
@@ -376,7 +376,7 @@ export function CarouselBlock({
                   <div
                     ref={viewportRef}
                     style={{
-                      width: contentMaxDefault,
+                      width: contentMaxL,
                       maxWidth: '100%',
                       minWidth: 0,
                       containerType: 'inline-size',

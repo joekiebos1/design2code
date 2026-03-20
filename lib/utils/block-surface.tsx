@@ -158,7 +158,7 @@ export function BlockSurfaceProvider({
   const surfaceProps = getSurfaceProviderProps(emphasis)
   const bgColor = useBlockBackgroundColor(emphasis, surfaceColour)
   const edgeStyles = useEdgeToEdgeMediaStyles()
-  const { contentMaxWide } = useGridBreakpoint()
+  const { contentMaxXL } = useGridBreakpoint()
 
   const content = <SurfaceProvider {...surfaceProps}>{children}</SurfaceProvider>
 
@@ -188,12 +188,12 @@ export function BlockSurfaceProvider({
       )
     }
 
-    /** Contained: band aligned to Wide content (contentMaxWide). */
+    /** Contained: band aligned to XL content (contentMaxXL). */
     return (
       <div
         style={{
           width: '100%',
-          maxWidth: contentMaxWide,
+          maxWidth: contentMaxXL,
           marginInline: 'auto',
           background,
           boxSizing: 'border-box',

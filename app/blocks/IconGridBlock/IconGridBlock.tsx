@@ -131,7 +131,7 @@ export function IconGrid({
 
   if (items_.length === 0) return null
 
-  const cell = useCell('Wide')
+  const cell = useCell('XL')
 
   return (
     <Grid as="section">

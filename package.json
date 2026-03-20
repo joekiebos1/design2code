@@ -30,6 +30,7 @@
     "@marcelinodzn/ds-tokens": "^1.0.1",
     "@sanity/client": "^7.16.0",
     "@sanity/icons": "^3.4.0",
+    "html2canvas": "^1.4.1",
     "json5": "^2.2.3",
     "next": "^16.1.6",
     "next-sanity": "^12.1.0",

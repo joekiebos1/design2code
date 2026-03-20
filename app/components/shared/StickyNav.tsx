@@ -27,7 +27,7 @@ export function StickyNav({ pageTitle }: StickyNavProps) {
     >
       <WidthCap
         as="div"
-        contentWidth="Wide"
+        contentWidth="XL"
         style={{
           display: 'flex',
           justifyContent: 'space-between',

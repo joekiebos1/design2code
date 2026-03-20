@@ -243,7 +243,7 @@ export function LabFullBleedVerticalCarousel({ items }: FullBleedVerticalCarouse
               >
                 <SurfaceProvider level={1} hasBoldBackground={showOverlay}>
                   {item.title && (
-                    <WidthCap contentWidth="Default" style={{ marginBottom: 0 }}>
+                    <WidthCap contentWidth="L" style={{ marginBottom: 0 }}>
                       <Headline
                         size="L"
                         weight="high"

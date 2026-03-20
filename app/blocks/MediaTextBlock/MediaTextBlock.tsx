@@ -100,11 +100,11 @@ export function MediaTextBlock({
   /** Text alignment must match container alignment. When align is set, use it; otherwise default center. */
   const textAlign = (align === 'center' || align === 'left') ? align : 'center'
 
-  /** Left = Default grid width. Center = M (title) / XS (body) for centered content. */
-  const titleContentWidth = align === 'left' ? 'Default' : 'M'
+  /** Left = L grid width. Center = M (title) / XS (body) for centered content. */
+  const titleContentWidth = align === 'left' ? 'L' : 'M'
   const bodyContentWidth =
     align === 'left'
-      ? (variant === 'text-only' ? 'S' : 'Default')
+      ? (variant === 'text-only' ? 'S' : 'L')
       : 'XS'
 
   /** Text-only left: WidthCaps align to start of Default grid (no center margin). */
@@ -343,8 +343,8 @@ export function MediaTextBlock({
 
   /** Internal vertical padding for background colour: always Large (4xl) per spec. */
   const internalPaddingLarge = SPACING_VAR.large
-  const cellMedia = useCell('Default')
-  const cellWide = useCell('Wide')
+  const cellMedia = useCell('L')
+  const cellWide = useCell('XL')
 
   const bgColor = useBlockBackgroundColor(emphasis, surfaceColour)
   const useGradient =
@@ -395,7 +395,7 @@ export function MediaTextBlock({
           <Grid as="section">
             <div style={{ ...cellMedia, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--ds-spacing-2xl)' }}>
               {titleContent}
-              <WidthCap contentWidth="Default">
+              <WidthCap contentWidth="L">
                 {mediaContent}
               </WidthCap>
               {bodyContent}
@@ -410,7 +410,7 @@ export function MediaTextBlock({
     const ratio = media.aspectRatio ?? '16:9'
     const aspectRatio = ASPECT_RATIOS[ratio] ?? '16 / 9'
     const isVideo = media.type === 'video'
-    const isOverlayContained = width === 'Default'
+    const isOverlayContained = width === 'L'
 
     if (isOverlayContained) {
       return blockBgWrapper(
@@ -418,7 +418,7 @@ export function MediaTextBlock({
           <SurfaceProvider {...surfaceProps}>
             <Grid as="section">
               <div style={{ ...cellWide }}>
-                <WidthCap contentWidth="Wide">
+                <WidthCap contentWidth="XL">
                   <div
                     style={{
                       position: 'relative',
@@ -635,7 +635,7 @@ export function MediaTextBlock({
             ) : (
               <Grid as="div">
                 <div style={{ ...cellMedia }}>
-                  <WidthCap contentWidth="Default">
+                  <WidthCap contentWidth="L">
                     <div
                       style={{
                         display: 'flex',

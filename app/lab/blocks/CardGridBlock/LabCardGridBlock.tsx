@@ -58,13 +58,13 @@ export function LabCardGridBlock({
       <section>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--ds-spacing-2xl)' }}>
           {title && (
-            <WidthCap contentWidth="Default">
+            <WidthCap contentWidth="L">
               <Headline size="S" weight="high" as={level} align="center" style={{ margin: 0, fontSize: TYPOGRAPHY.h2, whiteSpace: 'pre-line' }}>
                 {title}
               </Headline>
             </WidthCap>
           )}
-          <WidthCap contentWidth="Default" style={{ overflow: 'visible' }}>
+          <WidthCap contentWidth="L" style={{ overflow: 'visible' }}>
             <div
               style={{
                 display: 'grid',

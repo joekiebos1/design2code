@@ -5,7 +5,7 @@ export type MediaTextBlockVariant =
   | 'centered-media-below'
   | 'full-bleed'
 
-export type MediaTextBlockWidth = 'XS' | 'S' | 'M' | 'Default' | 'Wide' | 'edgeToEdge'
+export type MediaTextBlockWidth = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'edgeToEdge'
 export type MediaTextBlockAlign = 'left' | 'center'
 export type MediaTextBlockMediaStyle = 'contained' | 'overflow'
 export type MediaTextBlockSpacing = 'none' | 'medium' | 'large'

@@ -2,6 +2,7 @@ import { defineField, defineType } from 'sanity'
 import { spacingTopField, spacingBottomField } from '../shared/spacingFields'
 import { surfaceColourField, emphasisField } from '../shared/blockColourFields'
 import { GridAreaInput } from '../../components/sanity/GridAreaInput'
+import { BackgroundPositionSliderInput } from '../../components/sanity/BackgroundPositionSliderInput'
 
 /**
  * Lab-only editorial block. 12×6 grid composition for text + image.
@@ -124,13 +125,12 @@ export const editorialBlock = defineType({
       title: 'Text vertical align',
       options: {
         list: [
-          { value: 'top', title: 'Top' },
           { value: 'center', title: 'Center' },
           { value: 'bottom', title: 'Bottom' },
         ],
         layout: 'radio',
       },
-      initialValue: 'top',
+      initialValue: 'center',
     }),
     defineField({
       name: 'textInFront',
@@ -160,6 +160,40 @@ export const editorialBlock = defineType({
       name: 'ctaLink',
       type: 'string',
       title: 'CTA link',
+    }),
+    // Background image (full block height, center-aligned, clips sides)
+    defineField({
+      name: 'backgroundImage',
+      type: 'image',
+      title: 'Background image',
+      description: 'Optional. Spans full block height, crops sides.',
+      options: { hotspot: true },
+    }),
+    defineField({
+      name: 'backgroundImagePositionX',
+      type: 'number',
+      title: 'Background position (horizontal)',
+      description: '0 = left, 50 = center, 100 = right.',
+      validation: (Rule) => Rule.min(0).max(100),
+      initialValue: 0,
+      components: { input: BackgroundPositionSliderInput },
+      hidden: ({ parent }) => !parent?.backgroundImage && !parent?.backgroundImageUrl,
+    }),
+    defineField({
+      name: 'backgroundImagePositionY',
+      type: 'number',
+      title: 'Background position (vertical)',
+      description: '0 = top, 50 = center, 100 = bottom.',
+      validation: (Rule) => Rule.min(0).max(100),
+      initialValue: 50,
+      components: { input: BackgroundPositionSliderInput },
+      hidden: ({ parent }) => !parent?.backgroundImage && !parent?.backgroundImageUrl,
+    }),
+    defineField({
+      name: 'backgroundImageUrl',
+      type: 'string',
+      title: 'Background image URL',
+      description: 'External URL when no background image is uploaded.',
     }),
     // Image
     defineField({

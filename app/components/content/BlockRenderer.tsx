@@ -154,7 +154,7 @@ function mapMediaTextBlock(block: Block): MediaTextBlockProps {
   const width =
     (template === 'Stacked' || template === 'Overlay') && mediaSize === 'edgeToEdge'
       ? 'edgeToEdge'
-      : 'Default'
+      : 'L'
 
   return {
     size: 'feature',

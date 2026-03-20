@@ -51,7 +51,7 @@ type CarouselConfig = {
   breakpoint: Breakpoint
   cols: number
   buttonsPlacement: 'side' | 'bottom'
-  outerContentWidth: 'Default' | 'Wide'
+  outerContentWidth: 'L' | 'XL'
   gap: string
   useFixedCardWidth: boolean
   getCardWidthCss: (slots: number) => string
@@ -81,7 +81,7 @@ function getCarouselConfig(
       breakpoint: 'mobile',
       cols: 1,
       buttonsPlacement: 'bottom',
-      outerContentWidth: 'Default',
+      outerContentWidth: 'L',
       gap: isLarge ? largeGap : GAP_MOBILE,
       useFixedCardWidth: !isLarge,
       getCardWidthCss: (slots) =>
@@ -105,7 +105,7 @@ function getCarouselConfig(
       breakpoint: 'tablet',
       cols,
       buttonsPlacement: 'bottom',
-      outerContentWidth: 'Default',
+      outerContentWidth: 'L',
       gap: GAP_MOBILE,
       useFixedCardWidth: true,
       getCardWidthCss: (slots) => (slots === 1 ? `${cardPx}px` : `${cardPx * 2 + g}px`),
@@ -127,7 +127,7 @@ function getCarouselConfig(
     breakpoint: 'desktop',
     cols,
     buttonsPlacement: isLarge ? 'side' : 'bottom',
-    outerContentWidth: isLarge ? 'Wide' : 'Default',
+    outerContentWidth: isLarge ? 'XL' : 'L',
     gap: GAP_DESKTOP,
     useFixedCardWidth: false,
     getCardWidthCss: (slots) =>
@@ -184,7 +184,7 @@ export function LabCarouselBlock({
   images,
 }: LabCarouselBlockProps) {
   const level = normalizeHeadingLevel('h2')
-  const { columns, contentMaxDefault, columnWidth, gutter, isMobile, isTablet, isDesktop } = useGridBreakpoint()
+  const { columns, contentMaxL, columnWidth, gutter, isMobile, isTablet, isDesktop } = useGridBreakpoint()
 
   const config = cardSize ? getCarouselConfig(cardSize, columns, { columnWidth, gutter }) : undefined
   if (!config || !cardSize) return null
@@ -358,10 +358,10 @@ export function LabCarouselBlock({
   /** Vertically center nav buttons on media: marginTop = half media height − gap. Large (2:1): height = contentMax/2. Medium/Compact (4:5): half height = cardWidth × 5/8; cardWidth = (contentMax − gaps) / cols. */
   const buttonMediaCenterOffset =
     config.cols === 1
-      ? `calc(${contentMaxDefault} / 4 - ${config.gap})`
+      ? `calc(${contentMaxL} / 4 - ${config.gap})`
       : config.cols === 2
-        ? `calc((${contentMaxDefault} - ${config.gap}) * 5 / 16 - ${config.gap})`
-        : `calc((${contentMaxDefault} - 2 * ${config.gap}) * 5 / 24 - ${config.gap})`
+        ? `calc((${contentMaxL} - ${config.gap}) * 5 / 16 - ${config.gap})`
+        : `calc((${contentMaxL} - 2 * ${config.gap}) * 5 / 24 - ${config.gap})`
 
   const noFade = isMobile || isTablet
   const titleCarouselGap =
@@ -393,15 +393,15 @@ export function LabCarouselBlock({
   }
 
   const cardAreaStyle: CSSProperties = {
-    width: config.useFixedCardWidth ? '100%' : contentMaxDefault,
-    maxWidth: contentMaxDefault,
+    width: config.useFixedCardWidth ? '100%' : contentMaxL,
+    maxWidth: contentMaxL,
     minWidth: 0,
     containerType: config.useFixedCardWidth ? undefined : 'inline-size',
     marginInline: 'auto',
     overflow: 'visible',
   }
 
-  const cellContainer = useCell(config.outerContentWidth === 'Wide' ? 'Wide' : 'Default')
+  const cellContainer = useCell(config.outerContentWidth === 'XL' ? 'XL' : 'L')
 
   return (
     <Grid as="section">
@@ -418,7 +418,7 @@ export function LabCarouselBlock({
       >
         <WidthCap contentWidth={config.outerContentWidth} style={{ overflow: 'visible' }}>
           {title && (
-            <WidthCap contentWidth="Default">
+            <WidthCap contentWidth="L">
               <Headline
                 size={getHeadlineSize(level)}
                 weight="high"

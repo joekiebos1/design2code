@@ -340,7 +340,7 @@ export function LabRotatingMediaBlock({
           to { transform: translateX(-50%); }
         }
       `}</style>
-      <WidthCap as="section" contentWidth="Wide" style={{ overflow: 'hidden' }}>
+      <WidthCap as="section" contentWidth="XL" style={{ overflow: 'hidden' }}>
         <div style={{ width: '100%' }}>
           {variant === 'small' && (
             <SmallCarousel

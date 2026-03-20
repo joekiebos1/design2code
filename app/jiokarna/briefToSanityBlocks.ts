@@ -131,7 +131,7 @@ export function briefToSanityBlocks(brief: PageBrief, assetIds: string[]): Sanit
           ...(effectiveTemplate !== 'TextOnly' && opts.mediaSize && { mediaSize: opts.mediaSize as 'edgeToEdge' | 'default' }),
           surfaceColour: opts.surfaceColour,
           emphasis: opts.emphasis,
-          contentWidth: 'Default',
+          contentWidth: 'L',
           mediaStyle: opts.mediaStyle ?? 'contained',
           title: slots.headline ?? s.sectionName,
           subhead: slots.subhead,

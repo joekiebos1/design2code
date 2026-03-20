@@ -268,7 +268,7 @@ function mapMediaTextBlock(block: LabBlock): MediaTextBlockProps {
   const width =
     (template === 'Stacked' || template === 'Overlay') && mediaSize === 'edgeToEdge'
       ? 'edgeToEdge'
-      : 'Default'
+      : 'L'
 
   return {
     size: 'feature',
@@ -431,7 +431,7 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, listBlockOpenLi
     const layoutTitle = variantLabels?.[i] ?? getBlockLayoutTitle(block)
     const otherSettings = getBlockOtherSettings(block)
     const helperInfo = (
-      <WidthCap contentWidth="Default" style={{ marginBottom: 'var(--ds-spacing-l)' }}>
+      <WidthCap contentWidth="L" style={{ marginBottom: 'var(--ds-spacing-l)' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-2xs)', alignItems: 'flex-start' }}>
           <Headline size="S" weight="high" as="h2" style={{ margin: 0, fontSize: 'var(--ds-typography-h3)', whiteSpace: 'pre-line' }}>
             {layoutTitle}
@@ -602,6 +602,9 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, listBlockOpenLi
               <EditorialBlock
                 headline={block.headline as string | null}
                 body={block.body as string | null}
+                backgroundImage={block.backgroundImage as string | null}
+                backgroundImagePositionX={block.backgroundImagePositionX as number | null}
+                backgroundImagePositionY={block.backgroundImagePositionY as number | null}
                 image={block.image as string | null}
                 videoUrl={block.videoUrl as string | null}
                 ctaText={block.ctaText as string | null}
@@ -610,7 +613,7 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, listBlockOpenLi
                 textBottomRight={textArea?.bottomRight}
                 headlineSize={block.headlineSize as 'display' | 'headline' | 'title' | undefined}
                 textAlign={block.textAlign as 'left' | 'center' | undefined}
-                textVerticalAlign={block.textVerticalAlign as 'top' | 'center' | 'bottom' | undefined}
+                textVerticalAlign={block.textVerticalAlign as 'center' | 'bottom' | undefined}
                 imageTopLeft={imageArea?.topLeft}
                 imageBottomRight={imageArea?.bottomRight}
                 imageFit={(block.imageFit as 'cover' | 'contain') ?? 'contain'}

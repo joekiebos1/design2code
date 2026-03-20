@@ -28,7 +28,7 @@ Options:
 - size: hero (largest), feature (standard), editorial (compact)
 - emphasis: ghost | minimal | subtle | bold
 - surfaceColour: primary | secondary | neutral
-- contentWidth: XS | S | M | Default | Wide | edgeToEdge
+- contentWidth: XS | S | M | L | XL | XXL | edgeToEdge
 - stackImagePosition: top | bottom (for Stacked)
 Slots: eyebrow, title, subhead, body, descriptionTitle, descriptionBody, ctaText, ctaLink, cta2Text, cta2Link, image, video.
 

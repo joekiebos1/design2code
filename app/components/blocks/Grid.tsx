@@ -93,8 +93,9 @@ export function Grid({ children, as: Component = 'div', style }: GridProps) {
  *   XS      = 4 cols
  *   S       = 6 cols
  *   M       = 8 cols
- *   Default = 10 cols
- *   Wide    = 12 cols (full grid)
+ *   L  = 10 cols
+ *   XL = 12 cols (full grid)
+ *   XXL = 12 cols (1920 cap)
  *
  * Tablet (8 cols): XS=4, all others collapse to 6.
  * Mobile (4 cols): always full width (4 cols).
@@ -102,7 +103,7 @@ export function Grid({ children, as: Component = 'div', style }: GridProps) {
  * Content is centred by calculating the start column from the span.
  * See lib/blocks/layout-rules.md
  */
-export function useCell(contentWidth: ContentWidth = 'Default') {
+export function useCell(contentWidth: ContentWidth = 'L') {
   const { columns } = useGridBreakpoint()
 
   const span =
@@ -113,13 +114,13 @@ export function useCell(contentWidth: ContentWidth = 'Default') {
           ? 6
           : contentWidth === 'M'
             ? 8
-            : contentWidth === 'Default'
+            : contentWidth === 'L'
               ? 10
-              : 12 // Wide, edgeToEdge, full
+              : 12 // XL, XXL, edgeToEdge, full
       : columns === 8
         ? contentWidth === 'XS'
           ? 4
-          : 6   // S, M, Default, Wide collapse to 6 on tablet
+          : 6   // S, M, L, XL, XXL collapse to 6 on tablet
         : 4     // mobile — always full width
 
   const start = Math.floor((columns - span) / 2) + 1

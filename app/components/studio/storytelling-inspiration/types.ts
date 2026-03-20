@@ -8,25 +8,26 @@ export type StoryCoachInput = {
   builtFor: string
 }
 
-export type RTBs = {
+export type BuyerModalities = {
   emotional: string
   rational: string
   social: string
-  proud: string
+  security: string
 }
 
 export type Block = {
   num: number
   type: string
   section: 'setup' | 'engage' | 'resolve'
+  role: 'chapter' | 'supporting'
   job: string
   headline: string
+  proof: string
 }
 
 export type StoryCoachResult = {
   primaryEmotion: string
-  centralTruth: string
-  rtbs: RTBs
+  modalities: BuyerModalities
   hook: {
     visitorState: string
     openingTension: string

@@ -276,7 +276,7 @@ export function briefToBlocks(brief: PageBrief, sanityImageUrls: string[] = []):
           size: opts.size ?? 'feature',
           surfaceColour: opts.surfaceColour,
           emphasis: opts.emphasis,
-          contentWidth: 'Default',
+          contentWidth: 'L',
           mediaStyle: opts.mediaStyle ?? 'contained',
           title: slots.headline ?? s.sectionName,
           subhead: slots.subhead,

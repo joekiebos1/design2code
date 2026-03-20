@@ -160,7 +160,7 @@ export function LabHeroBlock({
   const textContentCentered = (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
       <div style={getRevealStyle(0)}>
-        <WidthCap contentWidth="Default">
+        <WidthCap contentWidth="L">
           <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column' }}>
             {productName && <Text size="L" weight="high" align="center" as="span" style={{ marginBottom: 'var(--ds-spacing-m)', fontSize: isMobile ? 'var(--ds-typography-label-s)' : HERO_BODY_STYLE.fontSize, lineHeight: HERO_BODY_STYLE.lineHeight }}>{productName}</Text>}
             {headline && <Display size="L" as="h1" align="center" style={{ lineHeight: 1.1, whiteSpace: 'pre-line', marginBottom: headlineMarginBottom, fontSize: headlineFontSizeCentered }}>{headline}</Display>}
@@ -176,7 +176,7 @@ export function LabHeroBlock({
       )}
       {(ctaText || cta2Text) && (
         <div style={getRevealStyle(2)}>
-          <WidthCap contentWidth="Default">
+          <WidthCap contentWidth="L">
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--ds-spacing-m)', justifyContent: 'center' }}>
               {ctaText && ctaLink && <Button appearance="primary" size="M" attention="high" onPress={() => handleCtaPress(ctaLink)}>{ctaText}</Button>}
               {cta2Text && cta2Link && <Button appearance="primary" size="M" attention="medium" onPress={() => handleCtaPress(cta2Link)}>{cta2Text}</Button>}
@@ -304,7 +304,7 @@ export function LabHeroBlock({
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-m)' }}>
                 {(productName || headline) && textContentCentered}
                 <div style={getRevealStyle(3)}>
-                  <WidthCap contentWidth="Default" style={{ marginTop: 'var(--ds-spacing-xl)' }}>
+                  <WidthCap contentWidth="L" style={{ marginTop: 'var(--ds-spacing-xl)' }}>
                     <div
                       ref={categoryMediaRef}
                       style={{ aspectRatio: getAspectRatioForBreakpoint('2:1', columns).replace(':', ' / '), overflow: 'hidden', borderRadius: 'var(--ds-radius-card-m)' }}
@@ -327,7 +327,7 @@ export function LabHeroBlock({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-m)' }}>
           {(productName || headline) && textContentCentered}
           <div style={getRevealStyle(3)}>
-            <WidthCap contentWidth="Wide" style={{ marginTop: 'var(--ds-spacing-xl)' }}>
+            <WidthCap contentWidth="XL" style={{ marginTop: 'var(--ds-spacing-xl)' }}>
               <div style={{ aspectRatio: getAspectRatioForBreakpoint('2:1', columns).replace(':', ' / '), overflow: 'hidden', borderRadius: 'var(--ds-radius-card-m)' }}>
                 {mediaElement}
               </div>
@@ -525,8 +525,8 @@ export function LabHeroBlock({
 
   const sideBySideContent = isStacked ? (
     <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-xl)' }}>
-      <WidthCap contentWidth="Default">{textContentSideBySide}</WidthCap>
-      <WidthCap contentWidth="Wide">{imageContent}</WidthCap>
+      <WidthCap contentWidth="L">{textContentSideBySide}</WidthCap>
+      <WidthCap contentWidth="XL">{imageContent}</WidthCap>
     </section>
   ) : (
     <Grid

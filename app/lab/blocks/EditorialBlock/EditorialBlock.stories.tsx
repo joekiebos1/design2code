@@ -89,3 +89,19 @@ export const CentredSplit: Story = {
     emphasis: 'ghost',
   },
 }
+
+export const BackgroundPositioned: Story = {
+  args: {
+    ...defaultContent,
+    backgroundImage: '/placeholder-preview.svg',
+    backgroundImagePositionX: 30,
+    backgroundImagePositionY: 50,
+    textTopLeft: { column: 1, row: 2 },
+    textBottomRight: { column: 6, row: 4 },
+    imageTopLeft: { column: 5, row: 1 },
+    imageBottomRight: { column: 12, row: 6 },
+    textInFront: true,
+    headlineSize: 'display',
+    emphasis: 'ghost',
+  },
+}
