@@ -8,7 +8,18 @@
 
 import { Headline, Text, Icon } from '@marcelinodzn/ds-react'
 import { Grid, useCell } from '../../components/blocks/Grid'
+import { WidthCap } from '../WidthCap'
 import { useGridBreakpoint } from '../../../lib/utils/use-grid-breakpoint'
+import { normalizeHeadingLevel } from '../../../lib/utils/semantic-headline'
+import {
+  labBlockFramingDescriptionStyle,
+  labBlockFramingDescriptionTextProps,
+  labBlockFramingHeadlineProps,
+  labBlockFramingIntroStackStyle,
+  labBlockFramingTitleStyle,
+} from '../../../lib/lab/lab-block-framing-typography'
+import { hasLabBlockFraming } from '../../../lib/lab/has-lab-block-framing'
+import { LabBlockFramingCallToActions } from '../../lab/components/LabBlockFramingCallToActions'
 import { getPrimaryColor } from '../../../lib/colors/jio-colors'
 import { getIconGridIcon } from './icon-grid-icons'
 import type { IconGridItem, IconGridAccentColor, IconGridBlockProps } from './IconGridBlock.types'
@@ -118,10 +129,14 @@ function IconGridCard({ item }: { item: IconGridItem }) {
 }
 
 export function IconGrid({
+  title,
+  description,
+  callToActions,
   items,
   columns,
 }: IconGridBlockProps) {
-  const { columns: gridColumns } = useGridBreakpoint()
+  const level = normalizeHeadingLevel('h2')
+  const { columns: gridColumns, isMobile } = useGridBreakpoint()
   const items_ = (items ?? []).filter((i) => i?.title).slice(0, 20)
   const cols = deriveColumns(items_.length, columns)
 
@@ -138,15 +153,52 @@ export function IconGrid({
       <div
         style={{
           ...cell,
-          display: 'grid',
-          gridTemplateColumns,
-          gap: 'var(--ds-spacing-2xl)',
+          display: 'flex',
+          flexDirection: 'column',
           alignItems: 'stretch',
+          gap: 'var(--ds-spacing-3xl)',
         }}
       >
-        {items_.map((item, i) => (
-          <IconGridCard key={i} item={item} />
-        ))}
+        {hasLabBlockFraming(title, description, callToActions) && (
+          <WidthCap contentWidth="L">
+            <div style={labBlockFramingIntroStackStyle}>
+              {title && (
+                <Headline
+                  size="S"
+                  as={level}
+                  align="center"
+                  {...labBlockFramingHeadlineProps}
+                  style={labBlockFramingTitleStyle(isMobile)}
+                >
+                  {title}
+                </Headline>
+              )}
+              {description && (
+                <Text
+                  as="p"
+                  align="center"
+                  {...labBlockFramingDescriptionTextProps}
+                  style={labBlockFramingDescriptionStyle}
+                >
+                  {description}
+                </Text>
+              )}
+              <LabBlockFramingCallToActions actions={callToActions} />
+            </div>
+          </WidthCap>
+        )}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns,
+            gap: 'var(--ds-spacing-2xl)',
+            alignItems: 'stretch',
+          }}
+        >
+          {items_.map((item, i) => (
+            <IconGridCard key={i} item={item} />
+          ))}
+        </div>
       </div>
     </Grid>
   )

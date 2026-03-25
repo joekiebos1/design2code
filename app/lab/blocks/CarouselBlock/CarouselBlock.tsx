@@ -9,14 +9,22 @@
 import { useRef, useState, useEffect } from 'react'
 import type { CSSProperties } from 'react'
 import { createTransition } from '@marcelinodzn/ds-tokens'
-import { Headline, Button, Icon, IcChevronLeft, IcChevronRight } from '@marcelinodzn/ds-react'
+import { Headline, Text, Button, Icon, IcChevronLeft, IcChevronRight } from '@marcelinodzn/ds-react'
 import { getHeadlineSize, normalizeHeadingLevel } from '../../../../lib/utils/semantic-headline'
-import { LAB_TYPOGRAPHY_VARS, labHeadlineBlockTitle } from '../../../../lib/typography/block-typography'
 import { useGridBreakpoint, getBreakpointName } from '../../../../lib/utils/use-grid-breakpoint'
 import { Grid, useCell } from '../../../components/blocks/Grid'
 import { WidthCap } from '../../../blocks/WidthCap'
 import { useCarouselReveal } from '../../../../lib/utils/use-carousel-reveal'
 import { LabCardRenderer, type LabCardItem } from '../LabCardRenderer'
+import { LabBlockFramingCallToActions } from '../../components/LabBlockFramingCallToActions'
+import {
+  labBlockFramingDescriptionStyle,
+  labBlockFramingIntroStackStyle,
+  labBlockFramingTitleStyle,
+} from '../../../../lib/lab/lab-block-framing-typography'
+import { hasLabBlockFraming } from '../../../../lib/lab/has-lab-block-framing'
+import type { LabBlockCallToAction } from '../../../../lib/lab/lab-block-framing-typography'
+import { labHeadlinePresets, labTextPresets } from '../../../../lib/typography/lab-typography-presets'
 
 type CarouselItem = LabCardItem
 
@@ -28,6 +36,8 @@ type CarouselSurfaceColour = 'primary' | 'secondary' | 'sparkle' | 'neutral'
 
 export type LabCarouselBlockProps = {
   title?: string | null
+  description?: string | null
+  callToActions?: LabBlockCallToAction[] | null
   cardSize?: CarouselCardSize
   emphasis?: CarouselEmphasis
   minimalBackgroundStyle?: 'block' | 'gradient' | null
@@ -40,6 +50,9 @@ const GAP_MOBILE = 'var(--ds-spacing-m)'
 const GAP_DESKTOP = 'var(--ds-spacing-l)'
 /** Faded opacity for cards outside viewport. DS has no opacity token for this. */
 const CAROUSEL_FADED_OPACITY = 0.25
+
+/** Subpixel / rounding tolerance for scroll bounds and “next/prev changes position?”. */
+const SCROLL_EPS = 2
 
 /** Fixed card widths (px) when useFixedCardWidth: mobile/tablet breakpoints. */
 const CARD_WIDTH_MOBILE_PX = 280
@@ -179,6 +192,8 @@ function NavButton({
 
 export function LabCarouselBlock({
   title,
+  description,
+  callToActions,
   cardSize = 'medium',
   emphasis = 'ghost',
   items,
@@ -229,20 +244,18 @@ export function LabCarouselBlock({
   if (items_.length === 0) return null
   if (isLargeLayout && items_.length < LARGE_VISIBLE) return null
 
-  // Compact/Medium: stop when last card is in view. Desktop medium only: use n - cols (cards align with grid, in view sooner).
-  // Compact and tablet/mobile: n - cols + 1 to avoid skipping a card.
-  const isMediumDesktop = isDesktop && config.cols === 2
-  const maxPage = isMediumDesktop
-    ? Math.max(0, items_.length - config.cols)
-    : Math.max(0, Math.min(items_.length - 1, items_.length - config.cols + 1))
   const pageIdx = isLargeLayout ? largeCenterIndex : pageIndex
-  const capScrollPos =
-    pageIndex >= maxPage
-      ? maxScrollPx
-      : (cumulativeScrollPx[pageIndex] ?? pageIndex * stepPx)
+
+  /** Clamped scroll if card `p` is aligned to the leading edge (compact/medium). */
+  const scrollTargetForPage = (p: number) =>
+    Math.min(cumulativeScrollPx[p] ?? p * stepPx, maxScrollPx)
+
+  const capScrollPos = capScrollAtGrid
+    ? scrollTargetForPage(pageIndex)
+    : Math.max(0, (largeCenterIndex + 1) * stepPx)
   const scrollPosition = capScrollAtGrid
     ? Math.min(capScrollPos, maxScrollPx)
-    : Math.max(0, (largeCenterIndex + 1) * stepPx)
+    : capScrollPos
 
   scrollPositionRef.current = scrollPosition
 
@@ -295,8 +308,9 @@ export function LabCarouselBlock({
   }, [items_.length, config.cols, capScrollAtGrid, isLargeLayout])
 
   useEffect(() => {
-    if (capScrollAtGrid) setPageIndex((p) => Math.min(p, maxPage))
-  }, [capScrollAtGrid, maxPage])
+    if (!capScrollAtGrid) return
+    setPageIndex((p) => Math.min(p, Math.max(0, items_.length - 1)))
+  }, [items_.length, capScrollAtGrid])
 
   const handleLargeTransitionEnd = (e: React.TransitionEvent) => {
     if (!isLargeLayout || e.target !== e.currentTarget) return
@@ -317,15 +331,37 @@ export function LabCarouselBlock({
     return () => cancelAnimationFrame(id)
   }, [isWrapping])
 
-  const canScrollLeft = isLargeLayout ? true : pageIndex > 0
-  const canScrollRight = isLargeLayout ? true : pageIndex < maxPage
+  const canScrollLeft = isLargeLayout
+    ? true
+    : capScrollAtGrid
+      ? scrollPosition > SCROLL_EPS
+      : pageIndex > 0
+  const canScrollRight = isLargeLayout
+    ? true
+    : capScrollAtGrid
+      ? scrollPosition < maxScrollPx - SCROLL_EPS
+      : pageIndex < items_.length - 1
 
   const scroll = (dir: 'left' | 'right') => {
     if (capScrollAtGrid) {
       if (dir === 'right') {
-        setPageIndex((p) => Math.min(maxPage, p + 1))
+        setPageIndex((p) => {
+          const cur = scrollTargetForPage(p)
+          for (let q = p + 1; q < items_.length; q++) {
+            const nxt = scrollTargetForPage(q)
+            if (nxt > cur + SCROLL_EPS) return q
+          }
+          return p
+        })
       } else {
-        setPageIndex((p) => Math.max(0, p - 1))
+        setPageIndex((p) => {
+          const cur = scrollTargetForPage(p)
+          for (let q = p - 1; q >= 0; q--) {
+            const prv = scrollTargetForPage(q)
+            if (prv < cur - SCROLL_EPS) return q
+          }
+          return p
+        })
       }
     } else {
       // Large: circular, animate through wrap (to n or -1) then reset on transition end
@@ -365,13 +401,9 @@ export function LabCarouselBlock({
         : `calc((${contentMaxL} - 2 * ${config.gap}) * 5 / 24 - ${config.gap})`
 
   const noFade = isMobile || isTablet
-  const titleCarouselGap =
-    isMobile || config.breakpoint === 'tablet' ? 'var(--ds-spacing-2xl)' : 'var(--ds-spacing-3xl)'
   const buttonGap = isMobile ? 'var(--ds-spacing-m)' : 'var(--ds-spacing-l)'
   const navButtonSize =
     isLargeLayout && config.buttonsPlacement === 'bottom' ? 'M' : isMobile ? 'S' : 'M'
-  const titleFontSize = isMobile ? LAB_TYPOGRAPHY_VARS.h3 : LAB_TYPOGRAPHY_VARS.h2
-
   const effectiveCardLayout =
     config.cols === 1 ? (cardSize === 'large' ? 'large' : 'medium') : config.cols === 2 ? 'medium' : 'compact'
 
@@ -412,33 +444,44 @@ export function LabCarouselBlock({
           ...cellContainer,
           display: 'flex',
           flexDirection: 'column',
-          gap: titleCarouselGap,
+          alignItems: 'stretch',
+          gap: 'var(--ds-spacing-3xl)',
           width: '100%',
           overflow: 'visible',
         }}
       >
-        <WidthCap contentWidth={config.outerContentWidth} style={{ overflow: 'visible' }}>
-          {title && (
-            <WidthCap contentWidth="L">
-              <Headline
-                size={getHeadlineSize(level)}
-                as={level}
-                align="center"
-                {...labHeadlineBlockTitle}
-                style={{
-                  margin: 0,
-                  fontSize: titleFontSize,
-                  whiteSpace: 'pre-line',
-                  opacity: containerVisible ? 1 : 0,
-                  transform: 'translateY(0)',
-                  transition: titleTransition,
-                }}
-              >
-                {title}
-              </Headline>
-            </WidthCap>
-          )}
+        {hasLabBlockFraming(title, description, callToActions) && (
+          <WidthCap contentWidth="L" style={{ overflow: 'visible' }}>
+            <div
+              style={{
+                ...labBlockFramingIntroStackStyle,
+                opacity: containerVisible ? 1 : 0,
+                transform: 'translateY(0)',
+                transition: titleTransition,
+              }}
+            >
+              {title && (
+                <Headline
+                  size={getHeadlineSize(level)}
+                  as={level}
+                  align="center"
+                  {...labHeadlinePresets.block}
+                  style={labBlockFramingTitleStyle(isMobile)}
+                >
+                  {title}
+                </Headline>
+              )}
+              {description && (
+                <Text as="p" align="center" {...labTextPresets.framingIntro} style={labBlockFramingDescriptionStyle}>
+                  {description}
+                </Text>
+              )}
+              <LabBlockFramingCallToActions actions={callToActions} />
+            </div>
+          </WidthCap>
+        )}
 
+        <WidthCap contentWidth={config.outerContentWidth} style={{ overflow: 'visible' }}>
           <div
             className="card-block-carousel"
             style={{

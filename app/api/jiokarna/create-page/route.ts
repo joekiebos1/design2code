@@ -47,9 +47,14 @@ export async function POST(request: Request) {
     const imageAssets = await client.fetch<{ _id: string }[]>(
       `*[_type == "sanity.imageAsset"]{ _id }`
     )
-    const assetIds = imageAssets.map((a) => a._id)
+    const imageAssetIds = imageAssets.map((a) => a._id)
 
-    const sections = briefToSanityBlocks(brief, assetIds)
+    const videoAssets = await client.fetch<{ _id: string }[]>(
+      `*[_type == "sanity.fileAsset" && mimeType match "video*"]{ _id }`
+    )
+    const videoAssetIds = videoAssets.map((a) => a._id)
+
+    const sections = briefToSanityBlocks(brief, imageAssetIds, videoAssetIds)
 
     const slug = brief.meta.slug.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
     if (!slug) {

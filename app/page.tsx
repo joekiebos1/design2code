@@ -3,6 +3,7 @@ import { draftMode } from 'next/headers'
 import type { Metadata } from 'next'
 import { getClient } from '../lib/sanity/client'
 import { allPagesQuery, pageByIdQuery } from '../lib/sanity/queries'
+import { pageHrefFromSlug } from '../lib/utils/page-href'
 import { BlockRenderer } from './components/content/BlockRenderer'
 import { StickyNav } from './components/shared/StickyNav'
 
@@ -110,7 +111,7 @@ export default async function Home() {
           {pages.map((p) => (
             <Link
               key={p._id}
-              href={p.slug === 'home' ? '/' : `/${p.slug}`}
+              href={pageHrefFromSlug(p.slug)}
               style={{ color: 'var(--ds-color-text-medium)', textDecoration: 'none', fontSize: 'var(--ds-typography-label-m)' }}
             >
               {p.title}

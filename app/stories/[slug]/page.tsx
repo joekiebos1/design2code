@@ -2,11 +2,11 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { draftMode } from 'next/headers'
 import type { Metadata } from 'next'
-import { getClient } from '../../lib/sanity/client'
-import { pageBySlugQuery, allPagesQuery } from '../../lib/sanity/queries'
-import { pageHrefFromSlug } from '../../lib/utils/page-href'
-import { BlockRenderer } from '../components/content/BlockRenderer'
-import { StickyNav } from '../components/shared/StickyNav'
+import { getClient } from '../../../lib/sanity/client'
+import { pageBySlugQuery, allPagesQuery } from '../../../lib/sanity/queries'
+import { pageHrefFromSlug } from '../../../lib/utils/page-href'
+import { BlockRenderer } from '../../components/content/BlockRenderer'
+import { StickyNav } from '../../components/shared/StickyNav'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -15,16 +15,20 @@ type Props = {
   params: Promise<{ slug: string }>
 }
 
+function fullSlug(segment: string) {
+  return `stories/${segment}`
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const { isEnabled: draft } = await draftMode()
   const sanity = getClient(draft)
-  const pageData = await sanity.fetch<{ title: string } | null>(pageBySlugQuery, { slug })
+  const pageData = await sanity.fetch<{ title: string } | null>(pageBySlugQuery, { slug: fullSlug(slug) })
   if (!pageData) return { title: slug }
   return { title: pageData.title }
 }
 
-export default async function PageBySlug({ params }: Props) {
+export default async function StoryPage({ params }: Props) {
   const { slug } = await params
   const { isEnabled: draft } = await draftMode()
   const sanity = getClient(draft)
@@ -33,7 +37,7 @@ export default async function PageBySlug({ params }: Props) {
     title: string
     slug: string
     sections: unknown[]
-  } | null>(pageBySlugQuery, { slug })
+  } | null>(pageBySlugQuery, { slug: fullSlug(slug) })
 
   if (!pageData) notFound()
 
@@ -55,20 +59,23 @@ export default async function PageBySlug({ params }: Props) {
           Page Architect
         </Link>
         <nav style={{ display: 'flex', gap: 'var(--ds-spacing-m)' }}>
-          {pages?.map((p) => (
+          {pages?.map((p) => {
+            const active = p.slug === fullSlug(slug)
+            return (
             <Link
               key={p._id}
               href={pageHrefFromSlug(p.slug)}
               style={{
-                color: p.slug === slug ? 'var(--ds-color-text-high)' : 'var(--ds-color-text-medium)',
+                color: active ? 'var(--ds-color-text-high)' : 'var(--ds-color-text-medium)',
                 textDecoration: 'none',
                 fontSize: 'var(--ds-typography-label-m)',
-                fontWeight: p.slug === slug ? 600 : 400,
+                fontWeight: active ? 600 : 400,
               }}
             >
               {p.title}
             </Link>
-          ))}
+            )
+          })}
         </nav>
       </header>
       <StickyNav pageTitle={pageData.title} />

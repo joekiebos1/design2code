@@ -1,5 +1,10 @@
 import { defineField, defineType } from 'sanity'
 import { spacingTopField, spacingBottomField } from '../shared/spacingFields'
+import {
+  labBlockCallToActionsField,
+  labBlockSectionDescriptionField,
+  labBlockSectionTitleField,
+} from '../shared/labBlockFramingFields'
 
 /** Lab: MediaZoomOutOnScroll – Media starts zoomed in and full edge-to-edge; on scroll reduces to Default width */
 export const mediaZoomOutOnScrollBlock = defineType({
@@ -10,6 +15,9 @@ export const mediaZoomOutOnScrollBlock = defineType({
   fields: [
     spacingTopField,
     spacingBottomField,
+    labBlockSectionTitleField,
+    labBlockSectionDescriptionField,
+    labBlockCallToActionsField,
     // Content (no layout or colour properties)
     defineField({
       name: 'image',

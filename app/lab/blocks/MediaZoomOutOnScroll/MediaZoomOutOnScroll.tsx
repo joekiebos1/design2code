@@ -2,7 +2,19 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
+import { Headline, Text } from '@marcelinodzn/ds-react'
+import { Grid, useCell } from '../../../components/blocks/Grid'
+import { WidthCap } from '../../../blocks/WidthCap'
 import { useGridBreakpoint } from '../../../../lib/utils/use-grid-breakpoint'
+import { normalizeHeadingLevel } from '../../../../lib/utils/semantic-headline'
+import { LabBlockFramingCallToActions } from '../../components/LabBlockFramingCallToActions'
+import {
+  labBlockFramingDescriptionStyle,
+  labBlockFramingIntroStackStyle,
+  labBlockFramingTitleStyle,
+} from '../../../../lib/lab/lab-block-framing-typography'
+import { hasLabBlockFraming } from '../../../../lib/lab/has-lab-block-framing'
+import { labHeadlinePresets, labTextPresets } from '../../../../lib/typography/lab-typography-presets'
 import { useScrollZoomProgress } from './use-scroll-zoom-progress'
 import type { MediaZoomOutOnScrollProps } from './MediaZoomOutOnScroll.types'
 
@@ -13,10 +25,15 @@ import type { MediaZoomOutOnScrollProps } from './MediaZoomOutOnScroll.types'
  * Respects prefers-reduced-motion: shows final state without animation.
  */
 export function LabMediaZoomOutOnScroll({
+  title,
+  description,
+  callToActions,
   image,
   videoUrl,
   alt = '',
 }: MediaZoomOutOnScrollProps) {
+  const headingLevel = normalizeHeadingLevel('h2')
+  const framingCell = useCell('L')
   const { progress, ref, prefersReducedMotion } = useScrollZoomProgress()
   const { contentMaxL, isMobile } = useGridBreakpoint()
   const [mounted, setMounted] = useState(false)
@@ -69,8 +86,39 @@ export function LabMediaZoomOutOnScroll({
         minHeight: `${minHeightVh}vh`,
         paddingBlockStart: 'var(--ds-spacing-2xl)',
         paddingBlockEnd: 'var(--ds-spacing-2xl)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 'var(--ds-spacing-3xl)',
+        alignItems: 'stretch',
       }}
     >
+      {hasLabBlockFraming(title, description, callToActions) && (
+        <Grid as="div">
+          <div style={framingCell}>
+            <WidthCap contentWidth="L">
+              <div style={labBlockFramingIntroStackStyle}>
+                {title && (
+                  <Headline
+                    size="S"
+                    as={headingLevel}
+                    align="center"
+                    {...labHeadlinePresets.block}
+                    style={labBlockFramingTitleStyle(isMobile)}
+                  >
+                    {title}
+                  </Headline>
+                )}
+                {description && (
+                  <Text as="p" align="center" {...labTextPresets.framingIntro} style={labBlockFramingDescriptionStyle}>
+                    {description}
+                  </Text>
+                )}
+                <LabBlockFramingCallToActions actions={callToActions} />
+              </div>
+            </WidthCap>
+          </div>
+        </Grid>
+      )}
       <div style={containerStyle}>
         <div style={mediaWrapperStyle}>
           {isVideo ? (
@@ -101,3 +149,4 @@ export function LabMediaZoomOutOnScroll({
     </div>
   )
 }
+

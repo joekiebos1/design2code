@@ -12,13 +12,16 @@ import {
   normalizeHeadingLevel,
   type HeadingLevel,
 } from '../../../../lib/utils/semantic-headline'
+import { labStyleHeadlineBlockH2 } from '../../../../lib/typography/block-typography'
+import { labHeadlinePresets, labTextPresets } from '../../../../lib/typography/lab-typography-presets'
+import { LabBlockFramingCallToActions } from '../../components/LabBlockFramingCallToActions'
 import {
-  LAB_TYPOGRAPHY_VARS,
-  labHeadlineBlockTitle,
-  labHeadlineBlockTitleAlt,
-  labTextBody,
-  labTextSubtitle,
-} from '../../../../lib/typography/block-typography'
+  labBlockFramingDescriptionStyle,
+  labBlockFramingIntroStackStyle,
+  labBlockFramingTitleStyle,
+} from '../../../../lib/lab/lab-block-framing-typography'
+import type { LabBlockCallToAction } from '../../../../lib/lab/lab-block-framing-typography'
+import { hasLabBlockFraming } from '../../../../lib/lab/has-lab-block-framing'
 
 const DEFAULT_ICON_NAME = 'IcCheckboxOn'
 const MAX_ITEMS = 8
@@ -36,6 +39,8 @@ type ProofPointsBlockVariant = 'icon' | 'stat'
 
 type ProofPointsBlockProps = {
   title?: string | null
+  description?: string | null
+  callToActions?: LabBlockCallToAction[] | null
   variant?: ProofPointsBlockVariant
   emphasis?: ProofPointsBlockEmphasis
   minimalBackgroundStyle?: 'block' | 'gradient' | null
@@ -65,7 +70,7 @@ function ProofPointCardIcon({ item, itemLevel }: { item: ProofPointItem; itemLev
           <Text
             as={itemLevel}
             align="center"
-            {...labTextSubtitle}
+            {...labTextPresets.subtitle}
             style={{ margin: 0, whiteSpace: 'pre-line' }}
           >
             {item.title}
@@ -76,7 +81,7 @@ function ProofPointCardIcon({ item, itemLevel }: { item: ProofPointItem; itemLev
         <Text
           as="p"
           align="center"
-          {...labTextBody}
+          {...labTextPresets.body}
           style={{
             margin: 0,
             marginTop: 'var(--ds-spacing-m)',
@@ -107,14 +112,14 @@ function ProofPointStatItem({ item }: { item: ProofPointItem }) {
           size="L"
           as="h3"
           align="center"
-          {...labHeadlineBlockTitleAlt}
-          style={{ margin: 0, fontSize: LAB_TYPOGRAPHY_VARS.h2, whiteSpace: 'pre-line' }}
+          {...labHeadlinePresets.blockAlt}
+          style={{ margin: 0, whiteSpace: 'pre-line', ...labStyleHeadlineBlockH2 }}
         >
           {item.title}
         </Headline>
       )}
       {item.description && (
-        <Text as="p" align="center" {...labTextBody} style={{ margin: 0, whiteSpace: 'pre-line' }}>
+        <Text as="p" align="center" {...labTextPresets.body} style={{ margin: 0, whiteSpace: 'pre-line' }}>
           {item.description}
         </Text>
       )}
@@ -124,6 +129,8 @@ function ProofPointStatItem({ item }: { item: ProofPointItem }) {
 
 export function LabProofPointsBlock({
   title,
+  description,
+  callToActions,
   variant,
   items,
 }: ProofPointsBlockProps) {
@@ -131,7 +138,7 @@ export function LabProofPointsBlock({
   const items_ = (items?.filter((i) => i?.title) ?? []).slice(0, MAX_ITEMS)
   const itemLevel = getChildLevel(level)
   const cell = useCell('XL')
-  const { columnWidth, gutter } = useGridBreakpoint()
+  const { columnWidth, gutter, isMobile } = useGridBreakpoint()
   const { ref, isVisible, prefersReducedMotion } = useCarouselReveal(items_.length)
   const motionLevel = prefersReducedMotion ? 'subtle' : 'moderate'
   const cardTransition = prefersReducedMotion
@@ -145,18 +152,35 @@ export function LabProofPointsBlock({
 
   return (
     <Grid as="section">
-      <div style={{ ...cell, display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-2xl)' }}>
-        {title && (
+      <div
+        style={{
+          ...cell,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 'var(--ds-spacing-3xl)',
+        }}
+      >
+        {hasLabBlockFraming(title, description, callToActions) && (
           <WidthCap contentWidth="L">
-            <Headline
-              size="S"
-              as={level}
-              align="center"
-              {...labHeadlineBlockTitle}
-              style={{ margin: 0, fontSize: LAB_TYPOGRAPHY_VARS.h3, whiteSpace: 'pre-line' }}
-            >
-              {title}
-            </Headline>
+            <div style={labBlockFramingIntroStackStyle}>
+              {title && (
+                <Headline
+                  size="S"
+                  as={level}
+                  align="center"
+                  {...labHeadlinePresets.block}
+                  style={labBlockFramingTitleStyle(isMobile)}
+                >
+                  {title}
+                </Headline>
+              )}
+              {description && (
+                <Text as="p" align="center" {...labTextPresets.framingIntro} style={labBlockFramingDescriptionStyle}>
+                  {description}
+                </Text>
+              )}
+              <LabBlockFramingCallToActions actions={callToActions} />
+            </div>
           </WidthCap>
         )}
         <WidthCap contentWidth="XL">

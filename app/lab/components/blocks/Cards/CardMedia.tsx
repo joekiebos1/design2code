@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { VideoWithControls } from '../../../../components/blocks/VideoWithControls'
 import { StreamImage } from '../../../../components/blocks/StreamImage'
-import { LAB_TYPOGRAPHY_VARS } from '../../../../../lib/typography/block-typography'
+import { labStyleTextDenseList } from '../../../../../lib/typography/block-typography'
 import type { CardMediaAspectRatio } from './Card.types'
 import type { ImageSlotState } from '../../../../hooks/useImageStream'
 
@@ -96,7 +96,7 @@ export function CardMedia({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: LAB_TYPOGRAPHY_VARS.bodyXs,
+            ...labStyleTextDenseList,
             color: 'var(--ds-color-text-medium)',
           }}
         >

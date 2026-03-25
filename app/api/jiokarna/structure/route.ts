@@ -62,6 +62,14 @@ Text + icon strip. Use for top-of-page reasons to believe, trust signals.
 Options: emphasis (ghost | minimal | subtle | bold), surfaceColour (primary | secondary | sparkle | neutral).
 Slots: title, items[] (title, description, icon).
 
+### mediaTextAsymmetric
+Asymmetric layout: optional left **block title**, main column on the right. Use for dense editorial copy (paragraph rows, merged paragraphs, FAQ, links, long-form body, or a main-column image).
+- **Stacking:** Use several \`mediaTextAsymmetric\` sections in sequence when one left title should visually anchor multiple blocks of content.
+- **Continuation:** For follow-up blocks, omit a block title (or use null / empty in briefs). The left column is not rendered; the main column spans the block width so copy continues under the previous block’s title.
+- **Variants (one per block):** \`textList\`, \`paragraphs\`, \`longForm\`, \`faq\`, \`links\`, \`image\`.
+- **Brief mapping:** \`contentSlots.headline\` → block title when present; null or omitted headline → continuation block.
+Options: variant, emphasis, surfaceColour, theme; per variant: items[], paragraphRows[], longFormParagraphs[], image brief / aspect / alt as applicable.
+
 ## Block-level options (apply to blocks that support them)
 - emphasis: ghost (no background) | minimal (neutral grey) | subtle (primary tint) | bold (brand colour)
 - surfaceColour: primary (brand) | secondary (brand secondary) | neutral (grey)

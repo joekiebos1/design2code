@@ -3,6 +3,10 @@ import { DS_THEMES, DS_THEME_DEFAULT } from '../shared/dsThemes'
 import { spacingTopField, spacingBottomField } from '../shared/spacingFields'
 import { surfaceColourField, emphasisField } from '../shared/blockColourFields'
 import { minimalBackgroundStyleField } from '../shared/minimalBackgroundStyleField'
+import {
+  labBlockCallToActionsField,
+  labBlockSectionDescriptionField,
+} from '../shared/labBlockFramingFields'
 
 /**
  * Lab-only carousel. Uses LabCardItem (unified card type).
@@ -21,7 +25,8 @@ export const labCarouselBlock = defineType({
       name: 'cardSize',
       type: 'string',
       title: 'Card size',
-      description: 'Compact: 3 cards per row. Medium: 2 cards per row (4:5). Large: 3 cards visible (center full, sides clipped), min 3 cards required.',
+      description:
+        'Compact (small): 3 cards per row — card aspect 4:5 or 8:5 only. Medium: 2 per row — 4:5 only. Large: 3 visible, min 3 cards — 2:1 only.',
       options: {
         list: [
           { value: 'compact', title: 'Compact' },
@@ -55,6 +60,8 @@ export const labCarouselBlock = defineType({
       rows: 2,
       description: 'Optional heading above the carousel. Press Enter for a line break.',
     }),
+    labBlockSectionDescriptionField,
+    labBlockCallToActionsField,
     defineField({
       name: 'items',
       type: 'array',

@@ -12,7 +12,11 @@ import { Button, Icon } from '@marcelinodzn/ds-react'
 import { useDsContextOptional } from '../../../../../lib/utils/use-ds-token-context'
 import { getProofPointIcon } from '@/lib/proof-point-icons'
 import { resolveCardBackgroundColor } from '../../../../../lib/utils/resolve-card-background-color'
-import { LAB_TYPOGRAPHY_VARS, labCardGridTypography } from '../../../../../lib/typography/block-typography'
+import {
+  LAB_TYPOGRAPHY_VARS,
+  labCardGridTypography,
+  labStyleTextDenseList,
+} from '../../../../../lib/typography/block-typography'
 
 export type TextOnColourCardGridBackground = string
 
@@ -159,8 +163,7 @@ export function TextOnColourCardGrid({
                 display: 'flex',
                 alignItems: 'flex-start',
                 gap: 'var(--ds-spacing-s)',
-                fontSize: LAB_TYPOGRAPHY_VARS.bodyXs,
-                lineHeight: 1.4,
+                ...labStyleTextDenseList,
                 color: 'inherit',
                 opacity: isDark ? 0.95 : 1,
               }}

@@ -42,7 +42,7 @@ export function CardGrid({
   return (
     <BlockReveal>
       <Grid as="section">
-        <div style={{ ...cell, display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-2xl)' }}>
+        <div style={{ ...cell, display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-3xl)' }}>
           {title && (
             <WidthCap contentWidth="L">
               <Headline size="S" weight="high" as={level} align="center" style={{ margin: 0, fontSize: TYPOGRAPHY.h2, whiteSpace: 'pre-line' }}>

@@ -13,8 +13,18 @@
 
 import { useState, useEffect } from 'react'
 import { createTransition } from '@marcelinodzn/ds-tokens'
-import { Button, Icon } from '@marcelinodzn/ds-react'
+import { Button, Icon, Headline, Text } from '@marcelinodzn/ds-react'
 import { WidthCap } from '../../../blocks/WidthCap'
+import { getHeadlineSize, normalizeHeadingLevel } from '../../../../lib/utils/semantic-headline'
+import { useGridBreakpoint } from '../../../../lib/utils/use-grid-breakpoint'
+import { LabBlockFramingCallToActions } from '../../components/LabBlockFramingCallToActions'
+import {
+  labBlockFramingDescriptionStyle,
+  labBlockFramingIntroStackStyle,
+  labBlockFramingTitleStyle,
+} from '../../../../lib/lab/lab-block-framing-typography'
+import { hasLabBlockFraming } from '../../../../lib/lab/has-lab-block-framing'
+import { labHeadlinePresets, labTextPresets } from '../../../../lib/typography/lab-typography-presets'
 import type { RotatingMediaBlockProps, RotatingMediaItem } from './RotatingMediaBlock.types'
 
 const IcPlay = () => (
@@ -308,8 +318,13 @@ function CombinedLayout({
 
 export function LabRotatingMediaBlock({
   variant = 'small',
+  title,
+  description,
+  callToActions,
   items,
 }: RotatingMediaBlockProps) {
+  const level = normalizeHeadingLevel('h2')
+  const { isMobile } = useGridBreakpoint()
   const [isPaused, setIsPaused] = useState(false)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
 
@@ -341,7 +356,31 @@ export function LabRotatingMediaBlock({
         }
       `}</style>
       <WidthCap as="section" contentWidth="XL" style={{ overflow: 'hidden' }}>
-        <div style={{ width: '100%' }}>
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-3xl)' }}>
+          {hasLabBlockFraming(title, description, callToActions) && (
+            <WidthCap contentWidth="L">
+              <div style={labBlockFramingIntroStackStyle}>
+                {title && (
+                  <Headline
+                    size={getHeadlineSize(level)}
+                    as={level}
+                    align="center"
+                    {...labHeadlinePresets.block}
+                    style={labBlockFramingTitleStyle(isMobile)}
+                  >
+                    {title}
+                  </Headline>
+                )}
+                {description && (
+                  <Text as="p" align="center" {...labTextPresets.framingIntro} style={labBlockFramingDescriptionStyle}>
+                    {description}
+                  </Text>
+                )}
+                <LabBlockFramingCallToActions actions={callToActions} />
+              </div>
+            </WidthCap>
+          )}
+          <div style={{ width: '100%' }}>
           {variant === 'small' && (
             <SmallCarousel
               items={items_}
@@ -369,6 +408,7 @@ export function LabRotatingMediaBlock({
               onResume={handleResume}
             />
           )}
+          </div>
         </div>
       </WidthCap>
     </>

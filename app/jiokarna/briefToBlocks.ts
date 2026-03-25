@@ -1,7 +1,7 @@
 /**
  * Converts JioKarna PageBrief sections to BlockRenderer block format.
  * Used for the preview step to render a visual mock of the proposed page.
- * Images come from Sanity Image Library when available; otherwise placeholder.
+ * Images and videos come from the Sanity Media Library when available; otherwise placeholder for images.
  */
 
 import type { PageBrief, Section } from './types'
@@ -167,6 +167,17 @@ function resolveImage(
   return PLACEHOLDER_IMAGE
 }
 
+/** Video URL from brief, or rotating pick from Sanity file assets (Media Library). */
+function resolveVideo(
+  raw: string | null | undefined,
+  sanityVideoUrls: string[],
+  index: number
+): string | undefined {
+  if (raw && typeof raw === 'string' && raw.trim() !== '') return raw.trim()
+  if (sanityVideoUrls.length > 0) return sanityVideoUrls[index % sanityVideoUrls.length]
+  return undefined
+}
+
 type Block = {
   _type: string
   _key: string
@@ -235,7 +246,11 @@ function normalizeItems(
   })
 }
 
-export function briefToBlocks(brief: PageBrief, sanityImageUrls: string[] = []): Block[] {
+export function briefToBlocks(
+  brief: PageBrief,
+  sanityImageUrls: string[] = [],
+  sanityVideoUrls: string[] = [],
+): Block[] {
   const sections = [...brief.sections].sort((a, b) => a.order - b.order)
   let itemOffset = 0
 
@@ -270,6 +285,8 @@ export function briefToBlocks(brief: PageBrief, sanityImageUrls: string[] = []):
       case 'mediaTextStacked': {
         const template = opts.template ?? 'Stacked'
         const hasMedia = slots.mediaType === 'image' || slots.mediaType === 'video'
+        const isVideo = slots.mediaType === 'video'
+        const videoUrl = isVideo ? resolveVideo(undefined, sanityVideoUrls, i) : undefined
         return {
           ...base,
           template: hasMedia ? template : 'TextOnly',
@@ -288,7 +305,7 @@ export function briefToBlocks(brief: PageBrief, sanityImageUrls: string[] = []):
           cta2Text: undefined,
           cta2Link: undefined,
           image: hasMedia ? resolveImage(undefined, sanityImageUrls, i) : undefined,
-          video: undefined,
+          video: videoUrl,
           imageSlot: hasMedia ? `mediaTextStacked-${i}-media` : undefined,
         }
       }

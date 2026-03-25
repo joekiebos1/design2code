@@ -22,12 +22,11 @@ import { EDGE_TO_EDGE_BREAKOUT, useEdgeToEdgeMediaStyles } from '../../../../lib
 import type { ImageSlotState } from '../../../hooks/useImageStream'
 import {
   LAB_TYPOGRAPHY_VARS,
-  labDisplayRole,
-  labHeadlineBlockTitle,
   labHeroHeadlineSizes,
   labHeroProductNameStyle,
   labHeroSubheadlineStyle,
 } from '../../../../lib/typography/block-typography'
+import { labDisplayPreset, labHeadlinePresets } from '../../../../lib/typography/lab-typography-presets'
 
 const IMAGE_ASPECT_RATIO_SIDE_BY_SIDE = '5 / 4'
 const MEDIA_OVERLAY_ASPECT_RATIO = '2 / 1'
@@ -188,7 +187,7 @@ export function LabHeroBlock({
               <Display
                 as="h1"
                 align="center"
-                {...labDisplayRole}
+                {...labDisplayPreset}
                 style={{
                   lineHeight: 1.1,
                   whiteSpace: 'pre-line',
@@ -263,7 +262,7 @@ export function LabHeroBlock({
             size="L"
             align={textAlignProp(align)}
             as="h1"
-            {...labHeadlineBlockTitle}
+            {...labHeadlinePresets.block}
             style={{
               lineHeight: 1.1,
               fontSize: headlineFontSizeCentered,
@@ -331,7 +330,7 @@ export function LabHeroBlock({
           <Headline
             size="L"
             as="h1"
-            {...labHeadlineBlockTitle}
+            {...labHeadlinePresets.block}
             style={{
               lineHeight: 1.1,
               fontSize: isMobile

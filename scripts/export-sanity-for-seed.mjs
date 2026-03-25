@@ -44,6 +44,7 @@ async function exportForSeed() {
     labBlockPages: [],
     labOverview: null,
     imageAssets: [],
+    videoFileAssets: [],
   }
 
   // Lab block pages – full structure for seed reference (fetch full documents)
@@ -55,7 +56,7 @@ async function exportForSeed() {
 
   // Lab overview (asymmetric nav block items for merge)
   const labOverview = await client.fetch(
-    `*[_type == "labOverview"][0]{
+    `*[_type == "labOverview"] | order(_updatedAt desc)[0]{
       _id,
       _type,
       sections[]{
@@ -95,6 +96,13 @@ async function exportForSeed() {
   const imageAssets = await client.fetch(`*[_type == "sanity.imageAsset"]{ _id }`)
   output.imageAssets = imageAssets ?? []
   console.log(`  imageAssets: ${output.imageAssets.length}`)
+
+  // Video file assets (Media Library)
+  const videoFileAssets = await client.fetch(
+    `*[_type == "sanity.fileAsset" && mimeType match "video*"]{ _id, mimeType }`
+  )
+  output.videoFileAssets = videoFileAssets ?? []
+  console.log(`  videoFileAssets: ${output.videoFileAssets.length}`)
 
   const outPath = join(__dirname, 'sanity-export.json')
   writeFileSync(outPath, JSON.stringify(output, null, 2), 'utf-8')

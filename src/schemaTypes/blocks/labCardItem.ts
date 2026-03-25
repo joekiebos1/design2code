@@ -1,6 +1,8 @@
 import { defineField, defineType } from 'sanity'
 import { ColorPickerInput } from '../../components/sanity/ColorPickerInput'
 import { IconPickerInput } from '../../components/sanity/IconPickerInput'
+import { LabCardAspectRatioInput } from '../../components/sanity/LabCardAspectRatioInput'
+import { validateLabCardAspectRatioForPath } from '../shared/labCarouselCardContext'
 
 const CARD_TYPE_MEDIA_BELOW = 'media-description-below'
 const CARD_TYPE_MEDIA_INSIDE = 'media-description-inside'
@@ -35,7 +37,9 @@ export const labCardItem = defineType({
       name: 'aspectRatio',
       type: 'string',
       title: 'Aspect ratio',
-      description: 'Carousel only.',
+      description:
+        'Compact carousel: 4:5 or 8:5. Medium carousel: 4:5. Large carousel: 2:1. Card grid: any of the three.',
+      components: { input: LabCardAspectRatioInput },
       options: {
         list: [
           { value: '4:5', title: '4:5' },
@@ -45,6 +49,14 @@ export const labCardItem = defineType({
         layout: 'radio',
       },
       initialValue: '4:5',
+      validation: (Rule) =>
+        Rule.custom((value, context) =>
+          validateLabCardAspectRatioForPath(
+            value,
+            context.document as Parameters<typeof validateLabCardAspectRatioForPath>[1],
+            context.path,
+          ),
+        ),
     }),
     defineField({
       name: 'size',

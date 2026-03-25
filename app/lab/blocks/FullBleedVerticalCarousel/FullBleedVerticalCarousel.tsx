@@ -5,8 +5,19 @@ import Image from 'next/image'
 import { getMotionDurationCSS, getMotionEasing, createTransition } from '@marcelinodzn/ds-tokens'
 import { Headline, Text, SurfaceProvider } from '@marcelinodzn/ds-react'
 import { useCarouselReveal } from '../../../../lib/utils/use-carousel-reveal'
+import { Grid, useCell } from '../../../components/blocks/Grid'
 import { WidthCap } from '../../../blocks/WidthCap'
-import { labHeadlineBlockTitle, labTextBody } from '../../../../lib/typography/block-typography'
+import { useGridBreakpoint } from '../../../../lib/utils/use-grid-breakpoint'
+import { normalizeHeadingLevel } from '../../../../lib/utils/semantic-headline'
+import { LabBlockFramingCallToActions } from '../../components/LabBlockFramingCallToActions'
+import {
+  labBlockFramingDescriptionStyle,
+  labBlockFramingIntroStackStyle,
+  labBlockFramingTitleStyle,
+} from '../../../../lib/lab/lab-block-framing-typography'
+import type { LabBlockCallToAction } from '../../../../lib/lab/lab-block-framing-typography'
+import { hasLabBlockFraming } from '../../../../lib/lab/has-lab-block-framing'
+import { labHeadlinePresets, labTextPresets } from '../../../../lib/typography/lab-typography-presets'
 type CarouselItem = {
   title?: string | null
   description?: string | null
@@ -17,6 +28,9 @@ type CarouselItem = {
 type FullBleedVerticalCarouselProps = {
   emphasis?: 'ghost' | 'minimal' | 'subtle' | 'bold'
   surfaceColour?: 'primary' | 'secondary' | 'sparkle' | 'neutral'
+  title?: string | null
+  description?: string | null
+  callToActions?: LabBlockCallToAction[] | null
   items?: CarouselItem[] | null
 }
 
@@ -64,7 +78,15 @@ function MediaLayer({ item }: { item: CarouselItem }) {
  * 2. While sticky, images show in a fixed overlay; text scrolls; when item text crosses top, fade to next image
  * 3. When last item's text center reaches viewport center, container unsticks
  */
-export function LabFullBleedVerticalCarousel({ items }: FullBleedVerticalCarouselProps) {
+export function LabFullBleedVerticalCarousel({
+  title,
+  description,
+  callToActions,
+  items,
+}: FullBleedVerticalCarouselProps) {
+  const framingHeadingLevel = normalizeHeadingLevel('h2')
+  const framingCell = useCell('L')
+  const { isMobile } = useGridBreakpoint()
   const items_ = items?.filter((i) => i?.title || i?.description) ?? []
   const n = items_.length
   const { ref: revealRef, isVisible: isItemVisible, containerVisible } = useCarouselReveal(n)
@@ -155,7 +177,35 @@ export function LabFullBleedVerticalCarousel({ items }: FullBleedVerticalCarouse
     : createTransition(['opacity', 'transform'], 'xl', 'entrance', level)
 
   return (
-    <section ref={revealRef}>
+    <>
+      {hasLabBlockFraming(title, description, callToActions) && (
+        <Grid as="div">
+          <div style={framingCell}>
+            <WidthCap contentWidth="L">
+              <div style={labBlockFramingIntroStackStyle}>
+                {title && (
+                  <Headline
+                    size="S"
+                    as={framingHeadingLevel}
+                    align="center"
+                    {...labHeadlinePresets.block}
+                    style={labBlockFramingTitleStyle(isMobile)}
+                  >
+                    {title}
+                  </Headline>
+                )}
+                {description && (
+                  <Text as="p" align="center" {...labTextPresets.framingIntro} style={labBlockFramingDescriptionStyle}>
+                    {description}
+                  </Text>
+                )}
+                <LabBlockFramingCallToActions actions={callToActions} />
+              </div>
+            </WidthCap>
+          </div>
+        </Grid>
+      )}
+      <section ref={revealRef}>
       <style>{`
         @keyframes carouselFade {
           from { opacity: 0; }
@@ -247,7 +297,7 @@ export function LabFullBleedVerticalCarousel({ items }: FullBleedVerticalCarouse
                       <Headline
                         size="L"
                         as="h2"
-                        {...labHeadlineBlockTitle}
+                        {...labHeadlinePresets.block}
                         style={{
                           textShadow,
                           whiteSpace: 'pre-line',
@@ -264,7 +314,7 @@ export function LabFullBleedVerticalCarousel({ items }: FullBleedVerticalCarouse
                     <WidthCap contentWidth="XS">
                       <Text
                         as="p"
-                        {...labTextBody}
+                        {...labTextPresets.body}
                         style={{
                           textShadow,
                           margin: 0,
@@ -283,5 +333,6 @@ export function LabFullBleedVerticalCarousel({ items }: FullBleedVerticalCarouse
         })}
       </div>
     </section>
+    </>
   )
 }

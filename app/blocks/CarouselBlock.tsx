@@ -9,8 +9,18 @@
 import { useRef, useState, useEffect } from 'react'
 import type { CSSProperties } from 'react'
 import { createTransition } from '@marcelinodzn/ds-tokens'
-import { Headline, Button, Icon, IcChevronLeft, IcChevronRight } from '@marcelinodzn/ds-react'
+import { Headline, Text, Button, Icon, IcChevronLeft, IcChevronRight } from '@marcelinodzn/ds-react'
 import { getHeadlineSize, normalizeHeadingLevel, TYPOGRAPHY } from '../../lib/utils/semantic-headline'
+import type { LabBlockCallToAction } from '../../lib/lab/lab-block-framing-typography'
+import {
+  labBlockFramingDescriptionStyle,
+  labBlockFramingDescriptionTextProps,
+  labBlockFramingHeadlineProps,
+  labBlockFramingIntroStackStyle,
+  labBlockFramingTitleStyle,
+} from '../../lib/lab/lab-block-framing-typography'
+import { hasLabBlockFraming } from '../../lib/lab/has-lab-block-framing'
+import { LabBlockFramingCallToActions } from '../lab/components/LabBlockFramingCallToActions'
 import { useGridBreakpoint, getBreakpointName } from '../../lib/utils/use-grid-breakpoint'
 import { Grid, useCell } from '../components/blocks/Grid'
 import { WidthCap } from './WidthCap'
@@ -37,6 +47,8 @@ type CarouselSurfaceColour = 'primary' | 'secondary' | 'sparkle' | 'neutral'
 
 type CarouselBlockProps = {
   title?: string | null
+  description?: string | null
+  callToActions?: LabBlockCallToAction[] | null
   cardSize?: CarouselCardSize
   emphasis?: CarouselEmphasis
   minimalBackgroundStyle?: 'block' | 'gradient' | null
@@ -195,6 +207,8 @@ function buildLargeDisplayItems(items: CarouselItem[]): CarouselItem[] {
 
 export function CarouselBlock({
   title,
+  description,
+  callToActions,
   cardSize = 'medium',
   emphasis = 'ghost',
   items,
@@ -390,7 +404,6 @@ export function CarouselBlock({
   const buttonGap = isMobile ? 'var(--ds-spacing-m)' : 'var(--ds-spacing-l)'
   const navButtonSize =
     isLargeLayout && config.buttonsPlacement === 'bottom' ? 'M' : isMobile ? 'S' : 'M'
-  const titleFontSize = isMobile ? TYPOGRAPHY.h3 : TYPOGRAPHY.h2
 
   const effectiveCardLayout =
     config.cols === 1 ? (cardSize === 'large' ? 'large' : 'medium') : config.cols === 2 ? 'medium' : 'compact'
@@ -438,24 +451,39 @@ export function CarouselBlock({
           overflow: 'visible',
         }}
       >
-        {title && (
+        {hasLabBlockFraming(title, description, callToActions) && (
           <WidthCap contentWidth="L" style={{ overflow: 'visible' }}>
-            <Headline
-              size={getHeadlineSize(level)}
-              weight="high"
-              as={level}
-              align="center"
+            <div
               style={{
-                margin: 0,
-                fontSize: titleFontSize,
-                whiteSpace: 'pre-line',
+                ...labBlockFramingIntroStackStyle,
                 opacity: containerVisible ? 1 : 0,
                 transform: 'translateY(0)',
                 transition: titleTransition,
               }}
             >
-              {title}
-            </Headline>
+              {title && (
+                <Headline
+                  size={getHeadlineSize(level)}
+                  as={level}
+                  align="center"
+                  {...labBlockFramingHeadlineProps}
+                  style={labBlockFramingTitleStyle(isMobile)}
+                >
+                  {title}
+                </Headline>
+              )}
+              {description && (
+                <Text
+                  as="p"
+                  align="center"
+                  {...labBlockFramingDescriptionTextProps}
+                  style={labBlockFramingDescriptionStyle}
+                >
+                  {description}
+                </Text>
+              )}
+              <LabBlockFramingCallToActions actions={callToActions} />
+            </div>
           </WidthCap>
         )}
 

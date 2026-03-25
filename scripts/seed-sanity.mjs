@@ -4,14 +4,18 @@
  * Requires: SANITY_STUDIO_PROJECT_ID, SANITY_STUDIO_DATASET, and SANITY_API_TOKEN (write token from sanity.io/manage)
  * Run: node --env-file=.env scripts/seed-sanity.mjs
  *
- * Seeds: Lab block pages, About Us page. Does NOT seed home/product pages — Sanity is the source of truth for content.
- * Images: Uses Sanity Image Library only. If empty, uploads public/placeholder-preview.svg.
+ * Seeds: Lab block pages, marketing pages (About Us, Story of Jio, JioTag). Sanity export merge applies to lab routes where noted.
+ * Images: Uses Sanity Media Library (image assets) only. If empty, uploads public/placeholder-preview.svg.
  */
 
 import { createClient } from '@sanity/client'
 import { readFileSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
+import { buildStoryOfJioSections } from './story-of-jio-sections.mjs'
+import { buildJioTagPageSections } from './jiotag-page-sections.mjs'
+import { buildMediaTextAsymmetricLabPageSections } from './lab-media-text-asymmetric-page-sections.mjs'
+import { buildLabMediaText5050PageSections } from './lab-media-text-5050-page-sections.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -40,134 +44,6 @@ const client = createClient({
 const SEED_LIST_LONG_FORM_BODY =
   'We believe in creating products that stand the test of time. Every detail is considered—from the materials we source to the craftsmanship that goes into each piece. Our commitment to quality means you get furniture that not only looks beautiful but lasts for generations.\n\nFounded over two decades ago, we started with a simple idea: design should be honest, functional, and meaningful. Today, that philosophy guides everything we do.\n\nWe work with artisans and makers from around the world who share our values. Each collaboration brings new techniques and traditions into our collection, ensuring that every piece tells a story beyond its function. Sustainability runs through our entire process—from responsibly sourced materials to packaging designed for a second life.\n\nOur showrooms are designed as places to slow down and experience the pieces in context. We want you to feel the weight of a drawer, the grain of the wood, the way light falls across a surface. These are the details that matter when you live with something every day.\n\nThank you for trusting us with your space. We are honoured to be part of the stories you build at home—the meals shared, the conversations had, the quiet moments that make a house feel like yours.'
 
-/** Three lab asymmetric variants for /lab/media-text-asymmetric — rich copy for review and QA. */
-function buildMediaTextAsymmetricLabPageSections() {
-  return [
-    {
-      _type: 'labMediaTextAsymmetric',
-      _key: 'mta-paragraphs',
-      blockTitle: 'Air fibre for real homes',
-      variant: 'paragraphs',
-      emphasis: 'ghost',
-      surfaceColour: 'primary',
-      spacingTop: 'large',
-      spacingBottom: 'large',
-      paragraphRows: [
-        {
-          _type: 'labMediaTextAsymmetricParagraphRow',
-          _key: 'p1',
-          title: 'Speed you can feel every day',
-          body: 'JioAir Fibre is built for households that stream, work, and learn at the same time. Typical evening usage—4K on the TV, video calls in the study, and a dozen smart devices in the background—should feel instant, not “good enough.” We publish expected peak-hour performance so you can compare plans on something closer to reality than a lab number.',
-          bodyTypography: 'large',
-          linkText: 'See speed tiers',
-          linkUrl: '#speed',
-        },
-        {
-          _type: 'labMediaTextAsymmetricParagraphRow',
-          _key: 'p2',
-          title: 'Installation without the drama',
-          body: 'Our field teams map your flat or bungalow before drill day: cable paths, power backup, and where the router will actually live. You get a single appointment window, SMS updates, and a walkthrough when we hand over. If something is not right in the first 30 days, we will reschedule a visit at no extra charge.',
-          bodyTypography: 'regular',
-          linkText: 'Prep checklist',
-          linkUrl: '#install',
-        },
-        {
-          _type: 'labMediaTextAsymmetricParagraphRow',
-          _key: 'p3',
-          body: 'Security is not an afterthought. The home gateway ships with sane defaults: no open admin from the WAN, automatic firmware checks, and optional guest Wi‑Fi that is isolated from your printers and NAS. For families, you can pause devices by profile—school night, dinner, or “everyone outside for an hour.”',
-          bodyTypography: 'regular',
-        },
-        {
-          _type: 'labMediaTextAsymmetricParagraphRow',
-          _key: 'p4',
-          title: 'Rural and semi-urban rollout',
-          body: 'We are expanding along high-demand corridors first, then filling in neighbourhoods block by block. Enter your PIN code in the app to see whether you are in a live zone, a waitlist zone, or a planned phase. Waitlisted addresses get notified when the local POP goes live—no need to keep checking the website.',
-          bodyTypography: 'large',
-          linkText: 'Check availability',
-          linkUrl: '#coverage',
-        },
-        {
-          _type: 'labMediaTextAsymmetricParagraphRow',
-          _key: 'p5',
-          title: 'Billing that stays predictable',
-          body: 'Plans are calendar-month with GST shown upfront. Overage, if any, is itemised in the bill PDF and in the app. You can switch tiers once per billing cycle; downgrades take effect next cycle, upgrades prorate fairly. Enterprise and society bulk pricing is handled by a separate desk with dedicated SLAs.',
-          bodyTypography: 'regular',
-        },
-      ],
-    },
-    {
-      _type: 'labMediaTextAsymmetric',
-      _key: 'mta-faq',
-      blockTitle: 'Questions before you switch',
-      variant: 'faq',
-      emphasis: 'minimal',
-      surfaceColour: 'secondary',
-      spacingTop: 'large',
-      spacingBottom: 'large',
-      items: [
-        {
-          _type: 'mediaTextAsymmetricItem',
-          _key: 'fq1',
-          title: 'Do I need a new router if I already have Wi‑Fi 6?',
-          body: 'In most cases, no. If your existing router supports PPPoE or DHCP from the ONT and can handle your plan speed, you can keep it. We supply a Jio gateway by default because it is pre-provisioned and supported end-to-end. Our technician will test throughput to your primary room before closing the ticket.',
-        },
-        {
-          _type: 'mediaTextAsymmetricItem',
-          _key: 'fq2',
-          title: 'What happens during a power cut?',
-          body: 'The outdoor unit and street fibre stay up; your in-home ONT and router need power. Many customers add a small UPS for the ONT/router pair (roughly 15–25 W). We can recommend compatible models during install. Mobile backup on your phone still works on the Jio network as usual.',
-        },
-        {
-          _type: 'mediaTextAsymmetricItem',
-          _key: 'fq3',
-          title: 'Can I keep my old email or static IP?',
-          body: 'Consumer plans use dynamic public IPv4 with optional static IP add-ons where available. If you run a home server, ask about port-forwarding limits and CGNAT vs public IP at order time. Corporate static ranges are sold only on business SKUs with a different contract.',
-        },
-        {
-          _type: 'mediaTextAsymmetricItem',
-          _key: 'fq4',
-          title: 'How long does migration from another ISP take?',
-          body: 'Porting your landline number (where supported) is 7–10 working days. Pure broadband cutover is usually same day once fibre is lit: we run the new line in parallel, you verify speed, then we help you cancel the old service. Avoid double-billing by aligning your old ISP’s billing date.',
-        },
-        {
-          _type: 'mediaTextAsymmetricItem',
-          _key: 'fq5',
-          title: 'Is there a fair-use policy?',
-          body: 'Truly unlimited plans have no FUP on download volume for residential use. We may rate-limit only if automated abuse detection flags something that looks like commercial resale or constant 24/7 seeding at line rate. Normal household use—including heavy streaming—is explicitly allowed.',
-        },
-        {
-          _type: 'mediaTextAsymmetricItem',
-          _key: 'fq6',
-          title: 'Who do I contact for billing disputes?',
-          body: 'Open a ticket in the MyJio app under Help → Broadband → Bill dispute. Attach a screenshot if something looks wrong. SLA for first human response is one business day; most incorrect tax or proration issues are fixed within three. Escalation paths to nodal officers are listed on the legal page.',
-        },
-      ],
-    },
-    {
-      _type: 'labMediaTextAsymmetric',
-      _key: 'mta-links',
-      blockTitle: 'Explore more',
-      variant: 'links',
-      emphasis: 'subtle',
-      surfaceColour: 'sparkle',
-      spacingTop: 'large',
-      spacingBottom: 'large',
-      items: [
-        { _type: 'mediaTextAsymmetricItem', _key: 'lk1', subtitle: 'Plans and pricing', linkUrl: '#plans' },
-        { _type: 'mediaTextAsymmetricItem', _key: 'lk2', subtitle: 'Speed test methodology', linkUrl: '#methodology' },
-        { _type: 'mediaTextAsymmetricItem', _key: 'lk3', subtitle: 'Router and Wi‑Fi guides', linkUrl: '#wifi' },
-        { _type: 'mediaTextAsymmetricItem', _key: 'lk4', subtitle: 'Business and society fibre', linkUrl: '#business' },
-        { _type: 'mediaTextAsymmetricItem', _key: 'lk5', subtitle: 'Outage map and maintenance', linkUrl: '#status' },
-        { _type: 'mediaTextAsymmetricItem', _key: 'lk6', subtitle: 'Refer a neighbour', linkUrl: '#refer' },
-        { _type: 'mediaTextAsymmetricItem', _key: 'lk7', subtitle: 'Accessibility and support', linkUrl: '#a11y' },
-        { _type: 'mediaTextAsymmetricItem', _key: 'lk8', subtitle: 'Terms and fair use', linkUrl: '#terms' },
-        { _type: 'mediaTextAsymmetricItem', _key: 'lk9', subtitle: 'Open API for developers', linkUrl: '#api' },
-        { _type: 'mediaTextAsymmetricItem', _key: 'lk10', subtitle: 'Careers in field operations', linkUrl: '#careers' },
-      ],
-    },
-  ]
-}
-
 async function seed() {
   console.log('Seeding Sanity...')
 
@@ -187,7 +63,7 @@ async function seed() {
   let assetIds = imageAssets.map((a) => a._id)
 
   if (assetIds.length === 0) {
-    console.log('Image Library is empty. Uploading placeholder from public/placeholder-preview.svg...')
+    console.log('Media Library has no images. Uploading placeholder from public/placeholder-preview.svg...')
     const placeholderPath = join(__dirname, '../public/placeholder-preview.svg')
     const buffer = readFileSync(placeholderPath)
     const asset = await client.assets.upload('image', buffer, {
@@ -197,7 +73,7 @@ async function seed() {
     assetIds = [asset._id]
     console.log(`Uploaded 1 placeholder image. Using ${assetIds.length} image(s).`)
   } else {
-    console.log(`Using ${assetIds.length} image(s) from Image Library`)
+    console.log(`Using ${assetIds.length} image(s) from Media Library`)
   }
 
   const getAsset = (i) => (assetIds.length > 0 ? assetIds[i % assetIds.length] : null)
@@ -218,6 +94,18 @@ async function seed() {
   const stripSanityMeta = (doc) => {
     const { _rev, _createdAt, _updatedAt, _system, ...rest } = doc
     return rest
+  }
+
+  /** Lab overview link row per `labBlockPage` (Media + Text Asymmetric · links). */
+  function buildLabOverviewNavItemsFromPages(pages) {
+    return pages.map((p) => ({
+      _type: 'mediaTextAsymmetricItem',
+      _key: String(p.slug ?? p._id ?? 'item')
+        .replace(/[^a-zA-Z0-9-]/g, '-')
+        .replace(/^-+|-+$/g, '') || 'item',
+      subtitle: p.title,
+      linkUrl: `/lab/${p.slug}`,
+    }))
   }
 
   // Build labBlockPages: use export for existing pages, add editorial (5 blocks), replace carousel (3 carousels)
@@ -386,7 +274,16 @@ async function seed() {
           _id: page?._id ?? 'labBlockPage-media-text-asymmetric',
           slug: 'media-text-asymmetric',
           title: 'Media + Text Asymmetric',
-          sections: buildMediaTextAsymmetricLabPageSections(),
+          sections: buildMediaTextAsymmetricLabPageSections(getAsset, imageRef),
+        })
+      } else if (slug === 'media-text-5050') {
+        const page = bySlug['media-text-5050']
+        merged.push({
+          _type: 'labBlockPage',
+          _id: page?._id ?? 'labBlockPage-media-text-5050',
+          slug: 'media-text-5050',
+          title: 'Media + Text: 50/50',
+          sections: buildLabMediaText5050PageSections(getAsset, imageRef),
         })
       } else if (bySlug[slug]) {
         merged.push(bySlug[slug])
@@ -446,58 +343,7 @@ async function seed() {
       _id: 'labBlockPage-media-text-5050',
       slug: 'media-text-5050',
       title: 'Media + Text: 50/50',
-      sections: [
-        {
-          _type: 'mediaText5050',
-          _key: 'mt5050-single',
-          variant: 'paragraphs',
-          imagePosition: 'right',
-          items: [
-            { _type: 'mediaText5050Item', _key: 'i1', subtitle: "Don't settle for less. Make the switch.", body: 'Transfer your data, iMessages, photos and more. Use Pixel functions that make switching simple. e-SIM transfer, innovative AI for photos and videos, and your data stays secure.' },
-          ],
-          image: imageRef(getAsset(0)),
-          imageAspectRatio: '5:4',
-          emphasis: 'ghost',
-          surfaceColour: 'primary',
-          spacingTop: 'large',
-          spacingBottom: 'large',
-        },
-        {
-          _type: 'mediaText5050',
-          _key: 'mt5050-accordion',
-          variant: 'accordion',
-          imagePosition: 'left',
-          headline: 'Battery and durability',
-          items: [
-            { _type: 'mediaText5050Item', _key: 'a1', subtitle: 'Lasts longer than a day, without charging.', body: 'Your Pixel lasts more than 30 hours on a full charge and up to 120 hours with Extreme Battery Saver. Fast charging is built in so you can stay connected.' },
-            { _type: 'mediaText5050Item', _key: 'a2', subtitle: 'Lasts for years.', body: 'The Google Pixel 10a is built to resist drops, scratches and spills with IP68 protection against water and dust, durable materials and a strong Corning Gorilla Glass 7i screen.' },
-            { _type: 'mediaText5050Item', _key: 'a3', subtitle: '7 years of security and OS updates.', body: 'To protect you and your sensitive data, your Pixel receives regular software updates, making your phone more secure over time.' },
-          ],
-          image: imageRef(getAsset(1)),
-          imageAspectRatio: '5:4',
-          emphasis: 'minimal',
-          surfaceColour: 'secondary',
-          spacingTop: 'large',
-          spacingBottom: 'large',
-        },
-        {
-          _type: 'mediaText5050',
-          _key: 'mt5050-multi',
-          variant: 'paragraphs',
-          imagePosition: 'right',
-          items: [
-            { _type: 'mediaText5050Item', _key: 'p1', subtitle: 'Lasts longer than a day, without charging.', body: 'Your Pixel lasts more than 30 hours on a full charge and up to 120 hours with Extreme Battery Saver. Fast charging is built in.' },
-            { _type: 'mediaText5050Item', _key: 'p2', subtitle: 'Lasts for years.', body: 'The Google Pixel 10a is built to resist drops, scratches and spills with IP68 protection against water and dust.' },
-            { _type: 'mediaText5050Item', _key: 'p3', subtitle: '7 years of security and OS updates.', body: 'Your Pixel receives regular software updates, making your phone more secure over time.' },
-          ],
-          image: imageRef(getAsset(2)),
-          imageAspectRatio: '5:4',
-          emphasis: 'subtle',
-          surfaceColour: 'sparkle',
-          spacingTop: 'large',
-          spacingBottom: 'large',
-        },
-      ],
+      sections: buildLabMediaText5050PageSections(getAsset, imageRef),
     },
     {
       _type: 'labBlockPage',
@@ -916,7 +762,7 @@ async function seed() {
       _id: 'labBlockPage-media-text-asymmetric',
       slug: 'media-text-asymmetric',
       title: 'Media + Text Asymmetric',
-      sections: buildMediaTextAsymmetricLabPageSections(),
+      sections: buildMediaTextAsymmetricLabPageSections(getAsset, imageRef),
     },
     {
       _type: 'labBlockPage',
@@ -933,46 +779,46 @@ async function seed() {
     console.log(`Created Lab block page: ${page.title} (/lab/${page.slug})`)
   }
 
-  // Lab overview – merge from export when available, preserve existing sections
-  const defaultLabOverviewItems = [
-    { _type: 'mediaTextAsymmetricItem', _key: 'top-nav', subtitle: 'Top nav (mega menu)', linkUrl: '/lab/top-nav' },
-    { _type: 'mediaTextAsymmetricItem', _key: 'hero', subtitle: 'Hero', linkUrl: '/lab/hero' },
-    { _type: 'mediaTextAsymmetricItem', _key: 'media-text', subtitle: 'Media + Text: Stacked', linkUrl: '/lab/media-text' },
-    { _type: 'mediaTextAsymmetricItem', _key: 'media-text-5050', subtitle: 'Media + Text: 50/50', linkUrl: '/lab/media-text-5050' },
-    { _type: 'mediaTextAsymmetricItem', _key: 'carousel', subtitle: 'Carousel', linkUrl: '/lab/carousel' },
-    { _type: 'mediaTextAsymmetricItem', _key: 'card-grid', subtitle: 'Card grid', linkUrl: '/lab/card-grid' },
-    { _type: 'mediaTextAsymmetricItem', _key: 'editorial', subtitle: 'Editorial', linkUrl: '/lab/editorial' },
-    { _type: 'mediaTextAsymmetricItem', _key: 'icon-grid', subtitle: 'Icon grid', linkUrl: '/lab/icon-grid' },
-    { _type: 'mediaTextAsymmetricItem', _key: 'proof-points', subtitle: 'Proof points', linkUrl: '/lab/proof-points' },
-    { _type: 'mediaTextAsymmetricItem', _key: 'media-text-asymmetric', subtitle: 'Media + Text Asymmetric', linkUrl: '/lab/media-text-asymmetric' },
-    { _type: 'mediaTextAsymmetricItem', _key: 'fbvc', subtitle: 'Full bleed vertical carousel', linkUrl: '/lab/full-bleed-vertical-carousel' },
-    { _type: 'mediaTextAsymmetricItem', _key: 'rotating-media', subtitle: 'Rotating media', linkUrl: '/lab/rotating-media' },
-    { _type: 'mediaTextAsymmetricItem', _key: 'media-zoom-out', subtitle: 'Media zoom out on scroll', linkUrl: '/lab/media-zoom-out-on-scroll' },
-  ]
+  // Lab overview – nav `items` always synced from `labBlockPages` (one link per block page).
+  const labOverviewNavItems = buildLabOverviewNavItemsFromPages(labBlockPages)
+  function labOverviewNavSectionIndex(sections) {
+    const byKey = sections.findIndex((s) => s._key === 'lab-overview-blocks')
+    if (byKey >= 0) return byKey
+    return sections.findIndex((s) => {
+      if (s._type !== 'labMediaTextAsymmetric' && s._type !== 'mediaTextAsymmetric') return false
+      if (!Array.isArray(s.items) || s.items.length === 0) return false
+      if (s.variant === 'links') return true
+      return s.items.some((i) => typeof i?.linkUrl === 'string' && i.linkUrl.startsWith('/lab/'))
+    })
+  }
   let labOverview
   if (sanityExport?.labOverview?.sections?.length) {
     const sections = sanityExport.labOverview.sections.map((s) => stripSanityMeta(s))
-    // Ensure editorial and carousel links exist in the first asymmetric nav block on the lab overview
-    const overviewNavBlock = sections.find(
-      (s) => (s._type === 'mediaTextAsymmetric' || s._type === 'labMediaTextAsymmetric') && s.items,
-    )
-    if (overviewNavBlock) {
-      const hasEditorial = overviewNavBlock.items.some((i) => i.linkUrl === '/lab/editorial' || i._key === 'editorial')
-      const hasCarousel = overviewNavBlock.items.some((i) => i.linkUrl === '/lab/carousel' || i._key === 'carousel')
-      if (!hasEditorial)
-        overviewNavBlock.items.push({
-          _type: 'mediaTextAsymmetricItem',
-          _key: 'editorial',
-          subtitle: 'Editorial',
-          linkUrl: '/lab/editorial',
-        })
-      if (!hasCarousel)
-        overviewNavBlock.items.push({
-          _type: 'mediaTextAsymmetricItem',
-          _key: 'carousel',
-          subtitle: 'Carousel',
-          linkUrl: '/lab/carousel',
-        })
+    const navIdx = labOverviewNavSectionIndex(sections)
+    const navPayload = {
+      emphasis: 'ghost',
+      surfaceColour: 'primary',
+      spacingTop: 'large',
+      spacingBottom: 'large',
+      variant: 'links',
+      items: labOverviewNavItems,
+    }
+    if (navIdx >= 0) {
+      const cur = sections[navIdx]
+      sections[navIdx] = {
+        ...cur,
+        ...navPayload,
+        _key: cur._key ?? 'lab-overview-blocks',
+        _type: 'labMediaTextAsymmetric',
+        blockTitle: cur.blockTitle ?? 'Lab blocks',
+      }
+    } else {
+      sections.unshift({
+        _type: 'labMediaTextAsymmetric',
+        _key: 'lab-overview-blocks',
+        blockTitle: 'Lab blocks',
+        ...navPayload,
+      })
     }
     labOverview = { _type: 'labOverview', _id: 'labOverview', sections }
     console.log('Merged Lab overview from export')
@@ -984,19 +830,36 @@ async function seed() {
         {
           _type: 'labMediaTextAsymmetric',
           _key: 'lab-overview-blocks',
-          blockTitle: 'Blocks',
+          blockTitle: 'Lab blocks',
           variant: 'links',
           emphasis: 'ghost',
           surfaceColour: 'primary',
           spacingTop: 'large',
           spacingBottom: 'large',
-          items: defaultLabOverviewItems,
+          items: labOverviewNavItems,
         },
       ],
     }
   }
   await client.createOrReplace(labOverview)
+  try {
+    await client.delete('lab/overview')
+    console.log('Removed invalid-id lab overview doc lab/overview (if it existed)')
+  } catch {
+    // No such document
+  }
   console.log('Created Lab overview')
+
+  // The story of Jio — /stories/the-story-of-jio (Figma Story frame; hero + asymmetric + stacked)
+  const storyOfJioPage = {
+    _type: 'page',
+    _id: 'page-the-story-of-jio',
+    title: 'The story of Jio',
+    slug: { _type: 'slug', current: 'stories/the-story-of-jio' },
+    sections: buildStoryOfJioSections(getAsset, imageRef),
+  }
+  await client.createOrReplace(storyOfJioPage)
+  console.log('Created The story of Jio page (/stories/the-story-of-jio)')
 
   // About Us page – header block + icon grid (Connection is at our core)
   const aboutUsPage = {
@@ -1186,6 +1049,16 @@ async function seed() {
   }
   await client.createOrReplace(aboutUsPage)
   console.log('Created About Us page')
+
+  const jiotagPage = {
+    _type: 'page',
+    _id: 'page-jiotag',
+    title: 'JioTag',
+    slug: { _type: 'slug', current: 'jiotag' },
+    sections: buildJioTagPageSections(getAsset, imageRef),
+  }
+  await client.createOrReplace(jiotagPage)
+  console.log('Created JioTag product page (/jiotag)')
 
   console.log('Done. Open your app to see the seeded content.')
 }

@@ -4,7 +4,15 @@ import { useCallback, useState, useRef } from 'react'
 import { Card, Stack, Text, Box } from '@sanity/ui'
 import { useClient } from 'sanity'
 
-export function ImageLibraryUpload() {
+function isImageFile(f: File): boolean {
+  return f.type.startsWith('image/')
+}
+
+function isVideoFile(f: File): boolean {
+  return f.type.startsWith('video/')
+}
+
+export function MediaLibraryUpload() {
   const client = useClient({ apiVersion: '2024-01-01' })
   const [isDragging, setIsDragging] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -13,20 +21,35 @@ export function ImageLibraryUpload() {
 
   const uploadFiles = useCallback(
     async (files: FileList | File[]) => {
-      const fileArray = Array.from(files).filter((f) => f.type.startsWith('image/'))
+      const fileArray = Array.from(files).filter((f) => isImageFile(f) || isVideoFile(f))
       if (fileArray.length === 0) {
-        setMessage({ type: 'error', text: 'No image files selected' })
+        setMessage({ type: 'error', text: 'No image or video files selected' })
         return
       }
       setUploading(true)
       setMessage(null)
+      let imageCount = 0
+      let videoCount = 0
       try {
         for (const file of fileArray) {
-          await client.assets.upload('image', file, { filename: file.name })
+          if (isImageFile(file)) {
+            await client.assets.upload('image', file, { filename: file.name })
+            imageCount += 1
+          } else if (isVideoFile(file)) {
+            await client.assets.upload('file', file, { filename: file.name })
+            videoCount += 1
+          }
+        }
+        const parts: string[] = []
+        if (imageCount > 0) {
+          parts.push(`${imageCount} image${imageCount > 1 ? 's' : ''}`)
+        }
+        if (videoCount > 0) {
+          parts.push(`${videoCount} video${videoCount > 1 ? 's' : ''}`)
         }
         setMessage({
           type: 'success',
-          text: `Uploaded ${fileArray.length} image${fileArray.length > 1 ? 's' : ''}`,
+          text: `Uploaded ${parts.join(' and ')}`,
         })
       } catch (err) {
         setMessage({
@@ -91,23 +114,35 @@ export function ImageLibraryUpload() {
         <input
           ref={inputRef}
           type="file"
-          accept="image/*"
+          accept="image/*,video/*"
           multiple
           onChange={handleFileChange}
           style={{ display: 'none' }}
         />
         <Stack space={3}>
           <Text size={2} weight="semibold" align="center">
-            {uploading ? 'Uploading…' : isDragging ? 'Drop images here' : 'Drag & drop images or click to upload'}
+            {uploading
+              ? 'Uploading…'
+              : isDragging
+                ? 'Drop files here'
+                : 'Drag & drop images or videos, or click to upload'}
           </Text>
           <Text size={1} muted align="center">
-            Supports multiple images at once
+            Images go to the image library; videos become file assets for video fields in blocks
           </Text>
         </Stack>
       </Card>
       {message && (
         <Box padding={2}>
-          <Text size={1} style={{ color: message.type === 'error' ? 'var(--card-status-error-fg-color)' : 'var(--card-status-success-fg-color)' }}>
+          <Text
+            size={1}
+            style={{
+              color:
+                message.type === 'error'
+                  ? 'var(--card-status-error-fg-color)'
+                  : 'var(--card-status-success-fg-color)',
+            }}
+          >
             {message.text}
           </Text>
         </Box>

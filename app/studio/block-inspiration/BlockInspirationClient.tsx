@@ -176,7 +176,7 @@ function BlockListPanel({
           lineHeight: 1.5,
         }}
       >
-        Browse all blocks. Click to preview. Thumbnails editable in Sanity → Lab → Block Inspiration.
+        Browse all blocks. Click to preview.
       </Text>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-xl)' }}>

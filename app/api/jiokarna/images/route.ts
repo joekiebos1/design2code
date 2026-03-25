@@ -4,7 +4,7 @@ import { client } from '../../../../lib/sanity/client'
 
 /**
  * GET /api/jiokarna/images
- * Returns image URLs from the Sanity Image Library for use in JioKarna preview.
+ * Returns image URLs (Image Library) and video URLs (Media Library file assets) for JioKarna preview.
  */
 export async function GET() {
   try {
@@ -22,11 +22,19 @@ export async function GET() {
         }
       })
       .filter((u): u is string => typeof u === 'string' && u.trim() !== '')
-    return NextResponse.json({ urls })
+
+    const videoRows = await client.fetch<{ url: string | null }[]>(
+      `*[_type == "sanity.fileAsset" && mimeType match "video*"]{ url }`
+    )
+    const videoUrls = videoRows
+      .map((r) => r.url)
+      .filter((u): u is string => typeof u === 'string' && u.trim() !== '')
+
+    return NextResponse.json({ urls, videoUrls })
   } catch (err) {
-    console.error('JioKarna images fetch error:', err)
+    console.error('JioKarna media fetch error:', err)
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Failed to fetch images' },
+      { error: err instanceof Error ? err.message : 'Failed to fetch media' },
       { status: 500 }
     )
   }

@@ -23,12 +23,14 @@ import { useGridBreakpoint } from '../../../../lib/utils/use-grid-breakpoint'
 import { Grid, useCell } from '../../../components/blocks/Grid'
 import { WidthCap } from '../../../blocks/WidthCap'
 import type { EditorialBlockProps } from './EditorialBlock.types'
+import { labStyleEditorialTitleWeight } from '../../../../lib/typography/block-typography'
 import {
-  LAB_TYPOGRAPHY_VARS,
-  labDisplayRole,
-  labHeadlineBlockTitle,
-  labTextBody,
-} from '../../../../lib/typography/block-typography'
+  labDisplayPreset,
+  labHeadlinePresets,
+  labTextPresets,
+} from '../../../../lib/typography/lab-typography-presets'
+import { LabBlockFramingCallToActions } from '../../components/LabBlockFramingCallToActions'
+import { labBlockFramingDescriptionStyle } from '../../../../lib/lab/lab-block-framing-typography'
 
 function fromCorners(
   topLeft: { column?: number; row?: number } | null | undefined,
@@ -48,6 +50,8 @@ function fromCorners(
 
 export function EditorialBlock({
   headline,
+  description,
+  callToActions,
   body,
   backgroundImage,
   backgroundImagePositionX,
@@ -111,11 +115,11 @@ export function EditorialBlock({
   }
 
   const headlineComponent = headlineSize === 'display' ? (
-    <Display as="h1" align={textAlignStyle} style={{ whiteSpace: 'pre-line', margin: 0 }} {...labDisplayRole}>
+    <Display as="h1" align={textAlignStyle} style={{ whiteSpace: 'pre-line', margin: 0 }} {...labDisplayPreset}>
       {headline}
     </Display>
   ) : headlineSize === 'headline' ? (
-    <Headline size="L" as="h1" align={textAlignStyle} style={{ whiteSpace: 'pre-line', margin: 0 }} {...labHeadlineBlockTitle}>
+    <Headline size="L" as="h1" align={textAlignStyle} style={{ whiteSpace: 'pre-line', margin: 0 }} {...labHeadlinePresets.block}>
       {headline}
     </Headline>
   ) : (
@@ -125,7 +129,7 @@ export function EditorialBlock({
         textAlign: textAlignStyle,
         whiteSpace: 'pre-line',
         margin: 0,
-        fontWeight: LAB_TYPOGRAPHY_VARS.weightHigh,
+        ...labStyleEditorialTitleWeight,
       }}
     >
       {headline}
@@ -145,10 +149,23 @@ export function EditorialBlock({
         }}
       >
         {headline && headlineComponent}
+        {description && String(description).trim().length > 0 && (
+          <Text
+            as="p"
+            {...labTextPresets.framingIntro}
+            style={{
+              ...labBlockFramingDescriptionStyle,
+              textAlign: textAlignStyle,
+              maxWidth: '100%',
+            }}
+          >
+            {description}
+          </Text>
+        )}
         {body && (
           <Text
             as="p"
-            {...labTextBody}
+            {...labTextPresets.body}
             style={{
               margin: 0,
               whiteSpace: 'pre-line',
@@ -159,8 +176,17 @@ export function EditorialBlock({
             {body}
           </Text>
         )}
-        {ctaText && ctaLink && (
-          <Button size="M" appearance="primary" attention="high" onPress={handleCtaPress}>{ctaText}</Button>
+        {callToActions?.some((a) => (a?.label ?? '').toString().trim().length > 0) ? (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--ds-spacing-m)', justifyContent: textAlignStyle === 'center' ? 'center' : 'flex-start' }}>
+            <LabBlockFramingCallToActions actions={callToActions} />
+          </div>
+        ) : (
+          ctaText &&
+          ctaLink && (
+            <Button size="M" appearance="primary" attention="high" onPress={handleCtaPress}>
+              {ctaText}
+            </Button>
+          )
         )}
       </div>
     </SurfaceProvider>

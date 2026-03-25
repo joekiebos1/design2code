@@ -1,14 +1,19 @@
 /**
- * Lab – Overview page. Content from Sanity (labOverview with navigation links block).
+ * Lab – overview from Sanity `labOverview` document (`_id` labOverview).
  */
 
 import { draftMode } from 'next/headers'
+import type { Metadata } from 'next'
 import { LabOverviewClient } from './LabOverviewClient'
 import { getClient } from '../../lib/sanity/client'
 import { labOverviewQuery } from '../../lib/sanity/queries'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
+
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: 'Lab' }
+}
 
 export default async function LabPage() {
   const { isEnabled: draft } = await draftMode()
@@ -17,7 +22,7 @@ export default async function LabPage() {
   try {
     overview = await sanity.fetch(labOverviewQuery)
   } catch {
-    // No Sanity project or fetch failed
+    overview = null
   }
 
   return <LabOverviewClient sections={overview?.sections ?? []} />

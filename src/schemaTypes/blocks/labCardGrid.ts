@@ -3,6 +3,10 @@ import { DS_THEMES, DS_THEME_DEFAULT } from '../shared/dsThemes'
 import { spacingTopField, spacingBottomField } from '../shared/spacingFields'
 import { surfaceColourField, emphasisField } from '../shared/blockColourFields'
 import { minimalBackgroundStyleField } from '../shared/minimalBackgroundStyleField'
+import {
+  labBlockCallToActionsField,
+  labBlockSectionDescriptionField,
+} from '../shared/labBlockFramingFields'
 
 /**
  * Lab-only Card grid: media cards (image below/inside) + text inside cards in one block.
@@ -51,6 +55,8 @@ export const labCardGridBlock = defineType({
       title: 'Section title',
       rows: 2,
     }),
+    labBlockSectionDescriptionField,
+    labBlockCallToActionsField,
     defineField({
       name: 'items',
       type: 'array',

@@ -11,7 +11,7 @@ const BLOCK_DESCRIPTIONS: Record<string, string> = {
   carousel: 'Carousel: cardSize (compact|medium|large), emphasis, title, items (title, description, image, link, ctaText, aspectRatio)',
   proofPoints: 'Proof points: title, items (title, description, icon)',
   mediaTextAsymmetric:
-    'Media + Text Asymmetric: blockTitle, variant (textList|faq|links|longForm), items or longFormParagraphs, emphasis, surfaceColour',
+    'Media + Text Asymmetric: optional blockTitle (omit or empty for a continuation block under the previous block’s left title); variant (textList|paragraphs|faq|links|longForm|image); items, paragraphRows, longFormParagraphs, or image fields per variant; emphasis, surfaceColour',
 }
 
 const SYSTEM_PROMPT = `You are an expert content strategist helping to configure a block on a brand website. You see the current block state and help the user refine it.

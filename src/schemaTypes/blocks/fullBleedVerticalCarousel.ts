@@ -3,6 +3,11 @@ import { DS_THEMES, DS_THEME_DEFAULT } from '../shared/dsThemes'
 import { spacingTopField, spacingBottomField } from '../shared/spacingFields'
 import { surfaceColourField, emphasisField } from '../shared/blockColourFields'
 import { minimalBackgroundStyleField } from '../shared/minimalBackgroundStyleField'
+import {
+  labBlockCallToActionsField,
+  labBlockSectionDescriptionField,
+  labBlockSectionTitleField,
+} from '../shared/labBlockFramingFields'
 
 export const fullBleedVerticalCarouselItem = defineType({
   name: 'fullBleedVerticalCarouselItem',
@@ -84,6 +89,9 @@ export const fullBleedVerticalCarouselBlock = defineType({
     emphasisField(),
     minimalBackgroundStyleField('emphasis'),
     // Content
+    labBlockSectionTitleField,
+    labBlockSectionDescriptionField,
+    labBlockCallToActionsField,
     defineField({
       name: 'items',
       type: 'array',

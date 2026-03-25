@@ -28,15 +28,26 @@ export function PreviewScreen({ brief, imageSource, onApprove, onBack }: Preview
   )
 
   const [sanityUrls, setSanityUrls] = useState<string[]>([])
+  const [sanityVideoUrls, setSanityVideoUrls] = useState<string[]>([])
   useEffect(() => {
     if (imageSource !== 'sanityOnly') return
     fetch('/api/jiokarna/images')
       .then((res) => res.json())
-      .then((data) => setSanityUrls(data?.urls ?? []))
-      .catch(() => setSanityUrls([]))
+      .then((data) => {
+        setSanityUrls(data?.urls ?? [])
+        setSanityVideoUrls(data?.videoUrls ?? [])
+      })
+      .catch(() => {
+        setSanityUrls([])
+        setSanityVideoUrls([])
+      })
   }, [imageSource])
 
-  const blocks = briefToBlocks(brief, imageSource === 'sanityOnly' ? sanityUrls : [])
+  const blocks = briefToBlocks(
+    brief,
+    imageSource === 'sanityOnly' ? sanityUrls : [],
+    imageSource === 'sanityOnly' ? sanityVideoUrls : [],
+  )
 
   return (
     <SurfaceProvider level={0}>

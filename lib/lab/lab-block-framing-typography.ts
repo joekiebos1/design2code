@@ -4,7 +4,8 @@
  */
 
 import type { CSSProperties } from 'react'
-import { LAB_TYPOGRAPHY_VARS, labHeadlineBlockTitle, labTextBody } from '../typography/block-typography'
+import { LAB_TYPOGRAPHY_VARS } from '../typography/block-typography'
+import { labHeadlinePresets, labTextPresets } from '../typography/lab-typography-presets'
 
 export type LabBlockCallToAction = {
   _key?: string
@@ -15,8 +16,7 @@ export type LabBlockCallToAction = {
 
 /** DS `Headline` props for section titles (centre-aligned blocks). */
 export const labBlockFramingHeadlineProps = {
-  ...labHeadlineBlockTitle,
-  weight: 'high' as const,
+  ...labHeadlinePresets.block,
 }
 
 /** Inline styles added to section `Headline` (font size follows lab carousel / card grid scale). */
@@ -30,10 +30,7 @@ export function labBlockFramingTitleStyle(isMobile: boolean): CSSProperties {
 
 /** DS `Text` props for section description under the title. */
 export const labBlockFramingDescriptionTextProps = {
-  ...labTextBody,
-  size: 'M' as const,
-  weight: 'low' as const,
-  color: 'low' as const,
+  ...labTextPresets.framingIntro,
 }
 
 export const labBlockFramingDescriptionStyle: CSSProperties = {

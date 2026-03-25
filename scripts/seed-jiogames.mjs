@@ -38,7 +38,7 @@ async function seed() {
   const getAsset = (i) => (assetIds.length > 0 ? assetIds[i % assetIds.length] : null)
 
   if (assetIds.length === 0) {
-    console.warn('Image Library is empty. Upload images via Image Library → Upload images in Sanity Studio, then re-run this seed.')
+    console.warn('Media Library has no images. Upload via Media Library → Upload media in Sanity Studio, then re-run this seed.')
   } else {
     console.log(`Using ${assetIds.length} image(s) from Image Library`)
   }

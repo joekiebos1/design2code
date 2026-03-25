@@ -3,6 +3,10 @@ import { spacingTopField, spacingBottomField } from '../shared/spacingFields'
 import { surfaceColourField, emphasisField } from '../shared/blockColourFields'
 import { GridAreaInput } from '../../components/sanity/GridAreaInput'
 import { BackgroundPositionSliderInput } from '../../components/sanity/BackgroundPositionSliderInput'
+import {
+  labBlockCallToActionsField,
+  labBlockSectionDescriptionField,
+} from '../shared/labBlockFramingFields'
 
 /**
  * Lab-only editorial block. 12×6 grid composition for text + image.
@@ -145,6 +149,8 @@ export const editorialBlock = defineType({
       title: 'Headline',
       rows: 2,
     }),
+    labBlockSectionDescriptionField,
+    labBlockCallToActionsField,
     defineField({
       name: 'body',
       type: 'text',

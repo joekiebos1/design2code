@@ -1,6 +1,6 @@
 /**
  * Converts JioKarna PageBrief sections to Sanity block format for document creation.
- * Uses Sanity image asset references (not URLs). Images come from Sanity Image Library.
+ * Uses Sanity image and video file asset references. Media comes from the Sanity Media Library.
  */
 
 import type { PageBrief, Section } from './types'
@@ -8,6 +8,11 @@ import type { PageBrief, Section } from './types'
 function imageRef(assetId: string | null): { _type: 'image'; asset: { _type: 'reference'; _ref: string } } | undefined {
   if (!assetId) return undefined
   return { _type: 'image', asset: { _type: 'reference', _ref: assetId } }
+}
+
+function fileRef(assetId: string | null): { _type: 'file'; asset: { _type: 'reference'; _ref: string } } | undefined {
+  if (!assetId) return undefined
+  return { _type: 'file', asset: { _type: 'reference', _ref: assetId } }
 }
 
 function getAsset(assetIds: string[], index: number): string | null {
@@ -26,7 +31,7 @@ function getCtaFromSlot(cta: Section['contentSlots']['cta']): { label?: string; 
 function normalizeItems(
   items: unknown[] | null | undefined,
   component: string,
-  assetIds: string[],
+  imageAssetIds: string[],
   itemOffset: number
 ): Record<string, unknown>[] {
   if (!Array.isArray(items) || items.length === 0) return []
@@ -36,31 +41,30 @@ function normalizeItems(
     const o = typeof item === 'object' && item !== null ? (item as Record<string, unknown>) : {}
     const title = (o.title as string) ?? (o.headline as string) ?? `Item ${i + 1}`
     const description = (o.description as string) ?? (o.body as string) ?? ''
+    const imageId = getAsset(imageAssetIds, imgIndex)
 
     switch (component) {
       case 'cardGrid': {
-        const assetId = getAsset(assetIds, imgIndex)
         return {
           _type: 'cardGridItem',
           _key: `cg-${imgIndex}`,
           cardStyle: (o.cardStyle as string) ?? 'image-above',
           title,
           description,
-          image: assetId ? imageRef(assetId) : undefined,
+          image: imageId ? imageRef(imageId) : undefined,
           ctaText: o.ctaText,
           ctaLink: o.ctaLink ?? (o.link as string),
           surface: (o.surface as string) ?? 'bold',
         }
       }
       case 'carousel': {
-        const assetId = getAsset(assetIds, imgIndex)
         return {
           _type: 'cardItem',
           _key: `car-${imgIndex}`,
           cardType: (o.cardType as string) ?? 'media',
           title,
           description,
-          image: assetId ? imageRef(assetId) : undefined,
+          image: imageId ? imageRef(imageId) : undefined,
           link: o.link,
           ctaText: o.ctaText,
           aspectRatio: (o.aspectRatio as string) ?? '4:5',
@@ -87,7 +91,11 @@ export type SanityBlock = {
   [key: string]: unknown
 }
 
-export function briefToSanityBlocks(brief: PageBrief, assetIds: string[]): SanityBlock[] {
+export function briefToSanityBlocks(
+  brief: PageBrief,
+  imageAssetIds: string[],
+  videoAssetIds: string[] = [],
+): SanityBlock[] {
   const sections = [...brief.sections].sort((a, b) => a.order - b.order)
   let itemOffset = 0
 
@@ -104,7 +112,7 @@ export function briefToSanityBlocks(brief: PageBrief, assetIds: string[]): Sanit
 
     switch (s.component) {
       case 'hero': {
-        const assetId = getAsset(assetIds, 0)
+        const imageId = getAsset(imageAssetIds, 0)
         return {
           ...base,
           contentLayout: opts.contentLayout ?? 'stacked',
@@ -115,14 +123,17 @@ export function briefToSanityBlocks(brief: PageBrief, assetIds: string[]): Sanit
           subheadline: slots.subhead ?? brief.meta.keyMessage,
           ctaText: cta?.label,
           ctaLink: cta?.href ?? '#',
-          image: assetId ? imageRef(assetId) : undefined,
+          image: imageId ? imageRef(imageId) : undefined,
         }
       }
 
       case 'mediaTextStacked': {
         const template = opts.template ?? 'Stacked'
         const hasMedia = slots.mediaType === 'image' || slots.mediaType === 'video'
-        const assetId = hasMedia ? getAsset(assetIds, i) : null
+        const isVideo = slots.mediaType === 'video'
+        const imageId = hasMedia ? getAsset(imageAssetIds, i) : null
+        const videoId =
+          hasMedia && isVideo && videoAssetIds.length > 0 ? getAsset(videoAssetIds, i) : null
         const effectiveTemplate = hasMedia ? template : 'TextOnly'
         return {
           ...base,
@@ -138,12 +149,13 @@ export function briefToSanityBlocks(brief: PageBrief, assetIds: string[]): Sanit
           body: slots.body,
           ctaText: cta?.label,
           ctaLink: cta?.href ?? '#',
-          image: assetId ? imageRef(assetId) : undefined,
+          image: imageId ? imageRef(imageId) : undefined,
+          video: videoId ? fileRef(videoId) : undefined,
         }
       }
 
       case 'cardGrid': {
-        let items = normalizeItems(slots.items, 'cardGrid', assetIds, itemOffset)
+        let items = normalizeItems(slots.items, 'cardGrid', imageAssetIds, itemOffset)
         itemOffset += items.length
         if (items.length === 0) {
           items = [
@@ -153,7 +165,7 @@ export function briefToSanityBlocks(brief: PageBrief, assetIds: string[]): Sanit
               cardStyle: 'image-above',
               title: 'Card 1',
               description: slots.body ?? '',
-              image: getAsset(assetIds, itemOffset) ? imageRef(getAsset(assetIds, itemOffset)!) : undefined,
+              image: getAsset(imageAssetIds, itemOffset) ? imageRef(getAsset(imageAssetIds, itemOffset)!) : undefined,
             },
             {
               _type: 'cardGridItem',
@@ -161,7 +173,7 @@ export function briefToSanityBlocks(brief: PageBrief, assetIds: string[]): Sanit
               cardStyle: 'image-above',
               title: 'Card 2',
               description: '',
-              image: getAsset(assetIds, itemOffset + 1) ? imageRef(getAsset(assetIds, itemOffset + 1)!) : undefined,
+              image: getAsset(imageAssetIds, itemOffset + 1) ? imageRef(getAsset(imageAssetIds, itemOffset + 1)!) : undefined,
             },
             {
               _type: 'cardGridItem',
@@ -169,7 +181,7 @@ export function briefToSanityBlocks(brief: PageBrief, assetIds: string[]): Sanit
               cardStyle: 'image-above',
               title: 'Card 3',
               description: '',
-              image: getAsset(assetIds, itemOffset + 2) ? imageRef(getAsset(assetIds, itemOffset + 2)!) : undefined,
+              image: getAsset(imageAssetIds, itemOffset + 2) ? imageRef(getAsset(imageAssetIds, itemOffset + 2)!) : undefined,
             },
           ]
           itemOffset += 3
@@ -186,7 +198,7 @@ export function briefToSanityBlocks(brief: PageBrief, assetIds: string[]): Sanit
 
       case 'carousel': {
         const carouselCardSize = opts.cardSize ?? 'compact'
-        let items = normalizeItems(slots.items, 'carousel', assetIds, itemOffset)
+        let items = normalizeItems(slots.items, 'carousel', imageAssetIds, itemOffset)
         itemOffset += items.length
         if (items.length === 0) {
           const placeholderItem = (key: string, idx: number) => ({
@@ -195,7 +207,9 @@ export function briefToSanityBlocks(brief: PageBrief, assetIds: string[]): Sanit
             cardType: 'media' as const,
             title: idx === 0 ? 'Item 1' : 'Item 2',
             description: idx === 0 ? (slots.body ?? '') : '',
-            image: getAsset(assetIds, itemOffset + idx) ? imageRef(getAsset(assetIds, itemOffset + idx)!) : undefined,
+            image: getAsset(imageAssetIds, itemOffset + idx)
+              ? imageRef(getAsset(imageAssetIds, itemOffset + idx)!)
+              : undefined,
             ...(carouselCardSize === 'compact' && { aspectRatio: '4:5' as const }),
           })
           items = [placeholderItem('car-1', 0), placeholderItem('car-2', 1)]
@@ -214,7 +228,7 @@ export function briefToSanityBlocks(brief: PageBrief, assetIds: string[]): Sanit
       }
 
       case 'proofPoints': {
-        let items = normalizeItems(slots.items, 'proofPoints', assetIds, itemOffset)
+        let items = normalizeItems(slots.items, 'proofPoints', imageAssetIds, itemOffset)
         itemOffset += items.length
         if (items.length === 0) {
           items = [

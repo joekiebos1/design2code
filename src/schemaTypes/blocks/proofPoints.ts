@@ -4,6 +4,10 @@ import { IconPickerInput } from '../../components/sanity/IconPickerInput'
 import { spacingTopField, spacingBottomField } from '../shared/spacingFields'
 import { surfaceColourField, emphasisField } from '../shared/blockColourFields'
 import { minimalBackgroundStyleField } from '../shared/minimalBackgroundStyleField'
+import {
+  labBlockCallToActionsField,
+  labBlockSectionDescriptionField,
+} from '../shared/labBlockFramingFields'
 
 export const proofPointsBlock = defineType({
   name: 'proofPoints',
@@ -51,6 +55,8 @@ export const proofPointsBlock = defineType({
       rows: 2,
       description: 'Optional heading above the proof points. Press Enter for a line break.',
     }),
+    labBlockSectionDescriptionField,
+    labBlockCallToActionsField,
     defineField({
       name: 'items',
       type: 'array',

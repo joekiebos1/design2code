@@ -7,18 +7,28 @@
  */
 
 import { useEffect, useState } from 'react'
-import { Headline } from '@marcelinodzn/ds-react'
+import { Headline, Text } from '@marcelinodzn/ds-react'
 import { WidthCap } from '../../../blocks/WidthCap'
 import { BlockReveal } from '../../../blocks/BlockReveal'
 import { LabCardRenderer } from '../LabCardRenderer'
 import { useGridBreakpoint } from '../../../../lib/utils/use-grid-breakpoint'
 import { normalizeHeadingLevel } from '../../../../lib/utils/semantic-headline'
-import { LAB_TYPOGRAPHY_VARS, labHeadlineBlockTitle } from '../../../../lib/typography/block-typography'
+import { LabBlockFramingCallToActions } from '../../components/LabBlockFramingCallToActions'
+import {
+  labBlockFramingDescriptionStyle,
+  labBlockFramingIntroStackStyle,
+  labBlockFramingTitleStyle,
+} from '../../../../lib/lab/lab-block-framing-typography'
+import type { LabBlockCallToAction } from '../../../../lib/lab/lab-block-framing-typography'
+import { hasLabBlockFraming } from '../../../../lib/lab/has-lab-block-framing'
+import { labHeadlinePresets, labTextPresets } from '../../../../lib/typography/lab-typography-presets'
 import type { LabCardItem } from '../LabCardRenderer'
 
 export type LabCardGridBlockProps = {
   columns?: 2 | 3 | 4
   title?: string | null
+  description?: string | null
+  callToActions?: LabBlockCallToAction[] | null
   emphasis?: 'ghost' | 'minimal' | 'subtle' | 'bold'
   minimalBackgroundStyle?: 'block' | 'gradient' | null
   surfaceColour?: 'primary' | 'secondary' | 'sparkle' | 'neutral'
@@ -31,12 +41,14 @@ const MAX_ITEMS = 12
 export function LabCardGridBlock({
   columns,
   title,
+  description,
+  callToActions,
   items,
   images,
 }: LabCardGridBlockProps) {
   const level = normalizeHeadingLevel('h2')
   const items_ = (items ?? []).filter((i) => i?.title || (i as { image?: string })?.image || (i as { video?: string })?.video).slice(0, MAX_ITEMS)
-  const { columns: gridColumns } = useGridBreakpoint()
+  const { columns: gridColumns, isMobile } = useGridBreakpoint()
 
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
   useEffect(() => {
@@ -57,18 +69,35 @@ export function LabCardGridBlock({
   return (
     <BlockReveal>
       <section>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--ds-spacing-2xl)' }}>
-          {title && (
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 'var(--ds-spacing-3xl)',
+          }}
+        >
+          {hasLabBlockFraming(title, description, callToActions) && (
             <WidthCap contentWidth="L">
-              <Headline
-                size="S"
-                as={level}
-                align="center"
-                {...labHeadlineBlockTitle}
-                style={{ margin: 0, fontSize: LAB_TYPOGRAPHY_VARS.h2, whiteSpace: 'pre-line' }}
-              >
-                {title}
-              </Headline>
+              <div style={labBlockFramingIntroStackStyle}>
+                {title && (
+                  <Headline
+                    size="S"
+                    as={level}
+                    align="center"
+                    {...labHeadlinePresets.block}
+                    style={labBlockFramingTitleStyle(isMobile)}
+                  >
+                    {title}
+                  </Headline>
+                )}
+                {description && (
+                  <Text as="p" align="center" {...labTextPresets.framingIntro} style={labBlockFramingDescriptionStyle}>
+                    {description}
+                  </Text>
+                )}
+                <LabBlockFramingCallToActions actions={callToActions} />
+              </div>
             </WidthCap>
           )}
           <WidthCap contentWidth="L" style={{ overflow: 'visible' }}>

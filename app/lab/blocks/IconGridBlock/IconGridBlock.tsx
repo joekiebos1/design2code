@@ -6,13 +6,22 @@
  * Column count (3–6) derived from item count; responsive on smaller screens.
  */
 
-import { Text, Icon } from '@marcelinodzn/ds-react'
+import { Text, Icon, Headline } from '@marcelinodzn/ds-react'
 import { Grid, useCell } from '../../../components/blocks/Grid'
+import { WidthCap } from '../../../blocks/WidthCap'
 import { useGridBreakpoint } from '../../../../lib/utils/use-grid-breakpoint'
+import { normalizeHeadingLevel } from '../../../../lib/utils/semantic-headline'
+import { LabBlockFramingCallToActions } from '../../components/LabBlockFramingCallToActions'
+import {
+  labBlockFramingDescriptionStyle,
+  labBlockFramingIntroStackStyle,
+  labBlockFramingTitleStyle,
+} from '../../../../lib/lab/lab-block-framing-typography'
+import { hasLabBlockFraming } from '../../../../lib/lab/has-lab-block-framing'
 import { getPrimaryColor } from '../../../../lib/colors/jio-colors'
 import { getIconGridIcon } from './icon-grid-icons'
 import type { IconGridItem, IconGridAccentColor, IconGridBlockProps } from './IconGridBlock.types'
-import { labTextBody, labTextSubtitle } from '../../../../lib/typography/block-typography'
+import { labHeadlinePresets, labTextPresets } from '../../../../lib/typography/lab-typography-presets'
 
 const ACCENT_COLOR_MAP: Record<IconGridAccentColor, string> = {
   primary: 'var(--ds-color-block-background-bold)',
@@ -85,11 +94,11 @@ function IconGridCard({ item }: { item: IconGridItem }) {
           attention="on-contrasting"
         />
       </div>
-      <Text as="h3" align="center" {...labTextSubtitle} style={{ margin: 0, whiteSpace: 'pre-line' }}>
+      <Text as="h3" align="center" {...labTextPresets.subtitle} style={{ margin: 0, whiteSpace: 'pre-line' }}>
         {item.title}
       </Text>
       {item.body && (
-        <Text as="p" align="center" {...labTextBody} style={{ margin: 0, whiteSpace: 'pre-line' }}>
+        <Text as="p" align="center" {...labTextPresets.body} style={{ margin: 0, whiteSpace: 'pre-line' }}>
           {item.body}
         </Text>
       )}
@@ -97,8 +106,9 @@ function IconGridCard({ item }: { item: IconGridItem }) {
   )
 }
 
-export function LabIconGridBlock({ items, columns }: IconGridBlockProps) {
-  const { columns: gridColumns } = useGridBreakpoint()
+export function LabIconGridBlock({ title, description, callToActions, items, columns }: IconGridBlockProps) {
+  const level = normalizeHeadingLevel('h2')
+  const { columns: gridColumns, isMobile } = useGridBreakpoint()
   const items_ = (items ?? []).filter((i) => i?.title).slice(0, 20)
   const cols = deriveColumns(items_.length, columns)
 
@@ -115,15 +125,47 @@ export function LabIconGridBlock({ items, columns }: IconGridBlockProps) {
       <div
         style={{
           ...cell,
-          display: 'grid',
-          gridTemplateColumns,
-          gap: 'var(--ds-spacing-2xl)',
+          display: 'flex',
+          flexDirection: 'column',
           alignItems: 'stretch',
+          gap: 'var(--ds-spacing-3xl)',
         }}
       >
-        {items_.map((item, i) => (
-          <IconGridCard key={i} item={item} />
-        ))}
+        {hasLabBlockFraming(title, description, callToActions) && (
+          <WidthCap contentWidth="L">
+            <div style={labBlockFramingIntroStackStyle}>
+              {title && (
+                <Headline
+                  size="S"
+                  as={level}
+                  align="center"
+                  {...labHeadlinePresets.block}
+                  style={labBlockFramingTitleStyle(isMobile)}
+                >
+                  {title}
+                </Headline>
+              )}
+              {description && (
+                <Text as="p" align="center" {...labTextPresets.framingIntro} style={labBlockFramingDescriptionStyle}>
+                  {description}
+                </Text>
+              )}
+              <LabBlockFramingCallToActions actions={callToActions} />
+            </div>
+          </WidthCap>
+        )}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns,
+            gap: 'var(--ds-spacing-2xl)',
+            alignItems: 'stretch',
+          }}
+        >
+          {items_.map((item, i) => (
+            <IconGridCard key={i} item={item} />
+          ))}
+        </div>
       </div>
     </Grid>
   )

@@ -3,6 +3,8 @@
  * White rounded cards with circular coloured icon, title, optional body.
  */
 
+import type { LabBlockCallToAction } from '../../../../lib/lab/lab-block-framing-typography'
+
 export type IconGridAccentColor =
   | 'primary'
   | 'secondary'
@@ -36,6 +38,9 @@ export type IconGridBlockEmphasis = 'ghost' | 'minimal' | 'subtle' | 'bold'
 export type IconGridBlockSurfaceColour = 'primary' | 'secondary' | 'sparkle' | 'neutral'
 
 export type IconGridBlockProps = {
+  title?: string | null
+  description?: string | null
+  callToActions?: LabBlockCallToAction[] | null
   items: IconGridItem[]
   columns?: 3 | 4 | 5 | 6
   emphasis?: IconGridBlockEmphasis

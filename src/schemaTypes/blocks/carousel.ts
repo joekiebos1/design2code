@@ -3,6 +3,10 @@ import { DS_THEMES, DS_THEME_DEFAULT } from '../shared/dsThemes'
 import { spacingTopField, spacingBottomField } from '../shared/spacingFields'
 import { surfaceColourField, emphasisField } from '../shared/blockColourFields'
 import { minimalBackgroundStyleField } from '../shared/minimalBackgroundStyleField'
+import {
+  labBlockCallToActionsField,
+  labBlockSectionDescriptionField,
+} from '../shared/labBlockFramingFields'
 
 export const carouselBlock = defineType({
   name: 'carousel',
@@ -51,6 +55,8 @@ export const carouselBlock = defineType({
       rows: 2,
       description: 'Optional heading above the carousel. Press Enter for a line break.',
     }),
+    labBlockSectionDescriptionField,
+    labBlockCallToActionsField,
     defineField({
       name: 'items',
       type: 'array',

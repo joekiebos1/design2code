@@ -20,7 +20,7 @@ import {
 } from '@marcelinodzn/ds-react'
 import { createTransition } from '@marcelinodzn/ds-tokens'
 import { useGridBreakpoint } from '../../../../lib/utils/use-grid-breakpoint'
-import { LAB_TYPOGRAPHY_VARS } from '../../../../lib/typography/block-typography'
+import { LAB_TYPOGRAPHY_VARS, labStyleNavDense } from '../../../../lib/typography/block-typography'
 import {
   L1_CONFIG,
   L2_CONFIG,
@@ -31,10 +31,8 @@ import {
 
 function getNavLinkStyle(transition: string | undefined): React.CSSProperties {
   return {
+    ...labStyleNavDense,
     color: 'var(--ds-color-text-medium)',
-    fontSize: LAB_TYPOGRAPHY_VARS.bodyXs,
-    lineHeight: 1.5,
-    fontWeight: LAB_TYPOGRAPHY_VARS.weightLow,
     fontFamily: 'var(--ds-font-family)',
     ...(transition && { transition }),
     cursor: 'pointer',
@@ -54,10 +52,8 @@ function getNavLinkActiveStyle(base: React.CSSProperties): React.CSSProperties {
 
 function getNavTextLargeStyle(transition: string | undefined): React.CSSProperties {
   return {
+    ...labStyleNavDense,
     fontFamily: 'var(--ds-font-family)',
-    fontSize: LAB_TYPOGRAPHY_VARS.bodyXs,
-    lineHeight: 1.5,
-    fontWeight: LAB_TYPOGRAPHY_VARS.weightLow,
     color: 'var(--ds-color-text-medium)',
     textDecoration: 'none',
     ...(transition && { transition }),
@@ -66,10 +62,8 @@ function getNavTextLargeStyle(transition: string | undefined): React.CSSProperti
 
 function getNavTextSmallStyle(transition: string | undefined): React.CSSProperties {
   return {
+    ...labStyleNavDense,
     fontFamily: 'var(--ds-font-family)',
-    fontSize: LAB_TYPOGRAPHY_VARS.bodyXs,
-    lineHeight: 1.5,
-    fontWeight: LAB_TYPOGRAPHY_VARS.weightLow,
     color: 'var(--ds-color-text-medium)',
     textDecoration: 'none',
     ...(transition && { transition }),

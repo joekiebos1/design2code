@@ -1,9 +1,26 @@
 /**
- * Lab block typography — single source for roles in `lib/blocks/typography-roles.md`.
- * Production blocks may continue using local patterns until migrated.
+ * Lab block typography — roles in `lib/blocks/typography-roles.md`.
+ *
+ * **Presets:** `lab-typography-presets.ts` — one spread per node (`...labTextPresets.body`).
+ * Named `labText*` / `labHeadline*` delegates keep existing imports working.
+ * **`labStyle*`** — token overrides when DS `size` is not enough.
  */
 
 import type { CSSProperties } from 'react'
+
+import {
+  labDisplayPreset,
+  labHeadlinePresets,
+  labLabelPreset,
+  labTextPresets,
+} from './lab-typography-presets'
+
+export {
+  labDisplayPreset,
+  labHeadlinePresets,
+  labLabelPreset,
+  labTextPresets,
+} from './lab-typography-presets'
 
 /** Generated `--ds-typography-*` / `--ds-color-text-*` references (see `scripts/generate-ds-tokens-css.mjs`). */
 export const LAB_TYPOGRAPHY_VARS = {
@@ -29,52 +46,30 @@ export const LAB_TYPOGRAPHY_VARS = {
 const LINE_HEIGHT_BODY = 1.4
 
 /** DS `Display` — no `weight` in published API; size + semantic colour only. */
-export const labDisplayRole = {
-  size: 'L' as const,
-  color: 'high' as const,
-}
+export const labDisplayRole = { ...labDisplayPreset }
 
-/** DS `Headline` — block / section titles. */
-export const labHeadlineBlockTitle = {
-  weight: 'high' as const,
-  color: 'high' as const,
-}
+/** DS `Headline` — block / section titles (no `color`; surface / DS ink). */
+export const labHeadlineBlockTitle = { ...labHeadlinePresets.block }
 
-export const labHeadlineBlockTitleAlt = {
-  weight: 'medium' as const,
-  color: 'high' as const,
-}
+export const labHeadlineBlockTitleAlt = { ...labHeadlinePresets.blockAlt }
 
-/** DS `Text` roles */
-export const labTextBody = {
-  size: 'S' as const,
-  weight: 'low' as const,
-  color: 'low' as const,
-}
+/** DS `Text` roles (no `color` except `labTextBodyMedium`; surface / DS ink). */
+export const labTextBody = { ...labTextPresets.body }
 
-export const labTextSubtitle = {
-  size: 'M' as const,
-  weight: 'medium' as const,
-  color: 'high' as const,
-}
+export const labTextSubtitle = { ...labTextPresets.subtitle }
 
-export const labTextSubtitleAlt = {
-  size: 'S' as const,
-  weight: 'medium' as const,
-  color: 'high' as const,
-}
+export const labTextSubtitleAlt = { ...labTextPresets.subtitleAlt }
 
-export const labTextBodyLead = {
-  size: 'L' as const,
-  weight: 'low' as const,
-  color: 'low' as const,
-}
+export const labTextBodyLead = { ...labTextPresets.bodyLead }
+
+/** DS `Text` — secondary body (M / low / medium colour); asymmetric single column. */
+export const labTextBodyMedium = { ...labTextPresets.bodyMedium }
+
+/** DS `Text` — fine print / meta (smallest reading step used in lab). */
+export const labTextCaption = { ...labTextPresets.caption }
 
 /** DS `Label` — eyebrow */
-export const labLabelEyebrow = {
-  size: 'S' as const,
-  color: 'medium' as const,
-}
+export const labLabelEyebrow = { ...labLabelPreset }
 
 /** Plain `<p>` / `<span>` when DS typography components are not used */
 export function labPlainBodyStyle(overrides?: CSSProperties): CSSProperties {
@@ -106,6 +101,144 @@ export function labPlainSubtitleAltStyle(overrides?: CSSProperties): CSSProperti
     ...overrides,
   }
 }
+
+// --- Optional `style` on DS typography when token size overrides `size` prop (lab global settings) ---
+
+/** Stacked Media + Text — main column body (label-s; matches production `MEDIA_TEXT_SUBTITLE_BODY_STYLE.body`). */
+export const labStyleTextStackedMediaBody: CSSProperties = {
+  fontSize: LAB_TYPOGRAPHY_VARS.labelS,
+  lineHeight: LINE_HEIGHT_BODY,
+  fontWeight: LAB_TYPOGRAPHY_VARS.weightLow,
+}
+
+/** Section / block title at h2 token (e.g. proof points band title). */
+export const labStyleHeadlineBlockH2: CSSProperties = {
+  fontSize: LAB_TYPOGRAPHY_VARS.h2,
+  lineHeight: LINE_HEIGHT_BODY,
+}
+
+/** Lab variant rail / block helper title (h3). */
+export const labStyleHeadlineVariantRail: CSSProperties = {
+  fontSize: LAB_TYPOGRAPHY_VARS.h3,
+  lineHeight: LINE_HEIGHT_BODY,
+}
+
+/** `labHeadlineBlockTitleAlt` — prominent single section (50/50 single paragraph title). */
+export const labStyleHeadlineAltProminent: CSSProperties = {
+  fontSize: LAB_TYPOGRAPHY_VARS.h4,
+  lineHeight: LINE_HEIGHT_BODY,
+  fontWeight: LAB_TYPOGRAPHY_VARS.weightMedium,
+}
+
+/** `labHeadlineBlockTitleAlt` — default row / accordion header. */
+export const labStyleHeadlineAltDefault: CSSProperties = {
+  fontSize: LAB_TYPOGRAPHY_VARS.h5,
+  lineHeight: LINE_HEIGHT_BODY,
+  fontWeight: LAB_TYPOGRAPHY_VARS.weightMedium,
+}
+
+/** When `labTextSubtitle` is used but copy should resolve to h5 token (asymmetric rows). */
+export const labStyleTextSubtitleTokenH5: CSSProperties = {
+  fontSize: LAB_TYPOGRAPHY_VARS.h5,
+  lineHeight: LINE_HEIGHT_BODY,
+  fontWeight: LAB_TYPOGRAPHY_VARS.weightMedium,
+}
+
+/** Prominent in-column label (label-m + medium; asymmetric block title). */
+export const labStyleTextProminentLabelM: CSSProperties = {
+  fontSize: LAB_TYPOGRAPHY_VARS.labelM,
+  lineHeight: LINE_HEIGHT_BODY,
+  fontWeight: LAB_TYPOGRAPHY_VARS.weightMedium,
+}
+
+/** Link list row (label-m + medium + interactive ink). */
+export const labStyleTextInteractiveLink: CSSProperties = {
+  ...labStyleTextProminentLabelM,
+  color: 'var(--ds-color-text-interactive)',
+}
+
+/** Nav / dense UI links (body-xs + low). */
+export const labStyleNavDense: CSSProperties = {
+  fontSize: LAB_TYPOGRAPHY_VARS.bodyXs,
+  lineHeight: 1.5,
+  fontWeight: LAB_TYPOGRAPHY_VARS.weightLow,
+}
+
+/** Lab chrome — back link above block detail title. */
+export const labStyleLabBackLink: CSSProperties = {
+  fontSize: LAB_TYPOGRAPHY_VARS.bodyXs,
+  lineHeight: 1.5,
+  fontWeight: LAB_TYPOGRAPHY_VARS.weightLow,
+  color: 'var(--ds-color-text-low)',
+}
+
+/** Lab block detail page — page title (h2 + high weight). */
+export const labStyleLabPageTitle: CSSProperties = {
+  fontSize: LAB_TYPOGRAPHY_VARS.h2,
+  lineHeight: LINE_HEIGHT_BODY,
+  fontWeight: LAB_TYPOGRAPHY_VARS.weightHigh,
+}
+
+/** Lab block detail page — meta line under title. */
+export const labStyleLabPageMeta: CSSProperties = {
+  fontSize: LAB_TYPOGRAPHY_VARS.bodyM,
+  lineHeight: LINE_HEIGHT_BODY,
+}
+
+/** Feature / checklist rows (body-xs, compact line height). */
+export const labStyleTextDenseList: CSSProperties = {
+  fontSize: LAB_TYPOGRAPHY_VARS.bodyXs,
+  lineHeight: LINE_HEIGHT_BODY,
+}
+
+/** Editorial block `Title` headline — high weight only (level set in component). */
+export const labStyleEditorialTitleWeight: CSSProperties = {
+  fontWeight: LAB_TYPOGRAPHY_VARS.weightHigh,
+}
+
+/**
+ * Single registry for lab typography — use for imports when you want one object
+ * (Storybook, tooling, or gradual migration).
+ */
+export const LAB_BLOCK_TYPOGRAPHY = {
+  tokens: LAB_TYPOGRAPHY_VARS,
+  presets: {
+    text: labTextPresets,
+    headline: labHeadlinePresets,
+    display: labDisplayPreset,
+    label: labLabelPreset,
+  },
+  display: labDisplayRole,
+  headline: {
+    blockTitle: labHeadlineBlockTitle,
+    blockTitleAlt: labHeadlineBlockTitleAlt,
+  },
+  text: {
+    body: labTextBody,
+    bodyLead: labTextBodyLead,
+    bodyMedium: labTextBodyMedium,
+    subtitle: labTextSubtitle,
+    subtitleAlt: labTextSubtitleAlt,
+    caption: labTextCaption,
+  },
+  label: { eyebrow: labLabelEyebrow },
+  style: {
+    textStackedMediaBody: labStyleTextStackedMediaBody,
+    headlineBlockH2: labStyleHeadlineBlockH2,
+    headlineVariantRail: labStyleHeadlineVariantRail,
+    headlineAltProminent: labStyleHeadlineAltProminent,
+    headlineAltDefault: labStyleHeadlineAltDefault,
+    textSubtitleTokenH5: labStyleTextSubtitleTokenH5,
+    textProminentLabelM: labStyleTextProminentLabelM,
+    textInteractiveLink: labStyleTextInteractiveLink,
+    navDense: labStyleNavDense,
+    labPageTitle: labStyleLabPageTitle,
+    labPageMeta: labStyleLabPageMeta,
+    labBackLink: labStyleLabBackLink,
+    textDenseList: labStyleTextDenseList,
+    editorialTitleWeight: labStyleEditorialTitleWeight,
+  },
+} as const
 
 /** Overlay / on-image cards — use semantic local tokens where defined */
 export const LAB_OVERLAY_TEXT = {
