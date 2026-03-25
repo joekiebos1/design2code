@@ -12,14 +12,8 @@ import {
   normalizeHeadingLevel,
   type HeadingLevel,
 } from '../../../lib/utils/semantic-headline'
-import {
-  LAB_TYPOGRAPHY_VARS,
-  labHeadlineBlockTitleAlt,
-  labPlainBodyStyle,
-  labTextBody,
-  labTextBodyLead,
-  labTextSubtitle,
-} from '../../../lib/typography/block-typography'
+import { LAB_TYPOGRAPHY_VARS, labPlainBodyStyle } from '../../../lib/typography/block-typography'
+import { labHeadlinePresets, labTextPresets } from '../../../lib/typography/lab-typography-presets'
 import type {
   MediaTextAsymmetricBlockProps,
   MediaTextAsymmetricTextItem,
@@ -70,7 +64,7 @@ function ParagraphRow({
       {item.title && (
         <Text
           as={itemLevel}
-          {...labTextSubtitle}
+          {...labTextPresets.subtitle}
           style={{
             margin: 0,
             whiteSpace: 'pre-line',
@@ -83,7 +77,7 @@ function ParagraphRow({
       {item.body && (
         <Text
           as="p"
-          {...labTextBody}
+          {...labTextPresets.body}
           style={{
             margin: 0,
             whiteSpace: 'pre-line',
@@ -121,7 +115,8 @@ function MergedParagraphRow({
   router: ReturnType<typeof useRouter>
   openLinksInNewTab?: boolean
 }) {
-  const bodyTextProps = row.bodyTypography === 'large' ? labTextBodyLead : labTextBody
+  const bodyTextProps =
+    row.bodyTypography === 'large' ? labTextPresets.bodyLead : labTextPresets.body
   const hasLink = row.linkText && row.linkUrl
   const linkProps = hasLink
     ? openLinksInNewTab
@@ -139,7 +134,7 @@ function MergedParagraphRow({
       {row.title && String(row.title).trim().length > 0 && (
         <Text
           as={itemLevel}
-          {...labTextSubtitle}
+          {...labTextPresets.subtitle}
           style={{
             margin: 0,
             whiteSpace: 'pre-line',
@@ -238,7 +233,7 @@ function FaqItem({
               {item.title && (
                 <Text
                   as={itemLevel}
-                  {...labTextSubtitle}
+                  {...labTextPresets.subtitle}
                   style={{
                     margin: 0,
                     whiteSpace: 'pre-line',
@@ -267,7 +262,7 @@ function FaqItem({
           {item.body && (
             <Text
               as="p"
-              {...labTextBody}
+              {...labTextPresets.body}
               style={{
                 margin: 0,
                 whiteSpace: 'pre-line',
@@ -379,7 +374,7 @@ export function MediaTextAsymmetricBlock({
     <Headline
       size={headlineSize}
       as={blockTitleLevel}
-      {...labHeadlineBlockTitleAlt}
+      {...labHeadlinePresets.blockAlt}
       style={{ margin: 0, fontSize: LAB_TYPOGRAPHY_VARS.h3, whiteSpace: 'pre-line' }}
     >
       {blockTitle}
@@ -397,8 +392,8 @@ export function MediaTextAsymmetricBlock({
       {longFormParas_.map((para, i) => {
         const textProps =
           para.bodyTypography === 'large'
-            ? labTextBodyLead
-            : { ...labTextBody, size: 'M' as const, color: 'medium' as const }
+            ? labTextPresets.bodyLead
+            : { ...labTextPresets.body, size: 'M' as const, color: 'medium' as const }
         const key = para._key != null && para._key !== '' ? para._key : `lfp-${i}`
         return (
           <Text

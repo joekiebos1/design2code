@@ -17,10 +17,21 @@ import { WidthCap, SPACING_VAR } from '../WidthCap'
 import { BlockReveal } from '../BlockReveal'
 import { VideoWithControls } from '../../components/blocks/VideoWithControls'
 import { StreamImage } from '../../components/blocks/StreamImage'
-import { MEDIA_TEXT_SUBTITLE_BODY_STYLE, TYPOGRAPHY } from '../../../lib/utils/semantic-headline'
 import { getSurfaceProviderProps, useBlockBackgroundColor } from '../../../lib/utils/block-surface'
 import { EDGE_TO_EDGE_BREAKOUT, useEdgeToEdgeMediaStyles } from '../../../lib/utils/edge-to-edge'
 import type { MediaTextBlockProps } from './MediaTextBlock.types'
+import {
+  LAB_TYPOGRAPHY_VARS,
+  labPlainBodyStyle,
+  labPlainSubtitleStyle,
+  labStyleTextStackedMediaBody,
+} from '../../../lib/typography/block-typography'
+import {
+  labDisplayPreset,
+  labHeadlinePresets,
+  labLabelPreset,
+  labTextPresets,
+} from '../../../lib/typography/lab-typography-presets'
 
 const ASPECT_RATIOS: Record<string, string> = {
   '16:9': '16 / 9',
@@ -30,20 +41,6 @@ const ASPECT_RATIOS: Record<string, string> = {
   '2:1': '2 / 1',
   auto: 'auto',
 }
-
-/** Card-style typography for image description (matches Large Carousel 2:1 card) */
-const DESCRIPTION_TITLE_STYLE = {
-  fontSize: 'var(--ds-typography-h5)',
-  fontWeight: 'var(--ds-typography-weight-medium)',
-  color: 'var(--ds-color-text-high)',
-  lineHeight: 1.4,
-} as const
-const DESCRIPTION_BODY_STYLE = {
-  fontSize: 'var(--ds-typography-label-s)',
-  lineHeight: 1.4,
-  color: 'var(--ds-color-text-low)',
-  fontWeight: 'var(--ds-typography-weight-low)',
-} as const
 
 export function MediaTextBlock({
   size,
@@ -124,23 +121,27 @@ export function MediaTextBlock({
         }}
       >
         {eyebrow && (
-          <Label size="S" color="medium">
+          <Label {...labLabelPreset}>
             {eyebrow}
           </Label>
         )}
-        {size === 'hero' && <Display as="h1" style={{ textAlign, whiteSpace: 'pre-line' }}>{headline}</Display>}
+        {size === 'hero' && (
+          <Display as="h1" {...labDisplayPreset} style={{ textAlign, whiteSpace: 'pre-line' }}>
+            {headline}
+          </Display>
+        )}
         {size === 'feature' && (
           <Headline
             size="L"
-            weight="high"
             as="h2"
+            {...labHeadlinePresets.block}
             style={{
               fontSize:
                 variant === 'text-only'
-                  ? TYPOGRAPHY.h2
+                  ? LAB_TYPOGRAPHY_VARS.h2
                   : textAlign === 'center' || variant === 'full-bleed'
-                    ? TYPOGRAPHY.h1
-                    : TYPOGRAPHY.h2,
+                    ? LAB_TYPOGRAPHY_VARS.h1
+                    : LAB_TYPOGRAPHY_VARS.h2,
               textAlign,
               whiteSpace: 'pre-line',
             }}
@@ -148,13 +149,26 @@ export function MediaTextBlock({
             {headline}
           </Headline>
         )}
-        {size === 'editorial' && <Title level={2} style={{ textAlign, whiteSpace: 'pre-line' }}>{headline}</Title>}
+        {size === 'editorial' && (
+          <Title
+            level={2}
+            style={{
+              textAlign,
+              whiteSpace: 'pre-line',
+              fontWeight: LAB_TYPOGRAPHY_VARS.weightHigh,
+            }}
+          >
+            {headline}
+          </Title>
+        )}
         {size !== 'hero' && subhead && (
           <Title
             level={3}
             style={{
               textAlign,
-              ...MEDIA_TEXT_SUBTITLE_BODY_STYLE.subtitle,
+              fontSize: LAB_TYPOGRAPHY_VARS.h5,
+              fontWeight: LAB_TYPOGRAPHY_VARS.weightMedium,
+              lineHeight: 1.4,
             }}
           >
             {subhead}
@@ -182,20 +196,24 @@ export function MediaTextBlock({
           }}
         >
           {eyebrow && (
-            <Label size="S" color="medium">
+            <Label {...labLabelPreset}>
               {eyebrow}
             </Label>
           )}
           {headline && (
             <>
-              {size === 'hero' && <Display as="h1" style={{ textAlign, whiteSpace: 'pre-line' }}>{headline}</Display>}
+              {size === 'hero' && (
+                <Display as="h1" {...labDisplayPreset} style={{ textAlign, whiteSpace: 'pre-line' }}>
+                  {headline}
+                </Display>
+              )}
               {size === 'feature' && (
                 <Headline
                   size="L"
-                  weight="high"
                   as="h2"
+                  {...labHeadlinePresets.block}
                   style={{
-                    fontSize: TYPOGRAPHY.h2,
+                    fontSize: LAB_TYPOGRAPHY_VARS.h2,
                     textAlign,
                     whiteSpace: 'pre-line',
                   }}
@@ -204,7 +222,17 @@ export function MediaTextBlock({
                 </Headline>
               )}
               {size === 'editorial' && (
-                <Title level={2} style={{ textAlign, fontSize: TYPOGRAPHY.h3, whiteSpace: 'pre-line' }}>{headline}</Title>
+                <Title
+                  level={2}
+                  style={{
+                    textAlign,
+                    fontSize: LAB_TYPOGRAPHY_VARS.h3,
+                    whiteSpace: 'pre-line',
+                    fontWeight: LAB_TYPOGRAPHY_VARS.weightHigh,
+                  }}
+                >
+                  {headline}
+                </Title>
               )}
             </>
           )}
@@ -214,7 +242,9 @@ export function MediaTextBlock({
               style={{
                 textAlign,
                 whiteSpace: 'pre-line',
-                ...MEDIA_TEXT_SUBTITLE_BODY_STYLE.subtitle,
+                fontSize: LAB_TYPOGRAPHY_VARS.h5,
+                fontWeight: LAB_TYPOGRAPHY_VARS.weightMedium,
+                lineHeight: 1.4,
               }}
             >
               {subhead}
@@ -239,14 +269,12 @@ export function MediaTextBlock({
         >
           {size !== 'hero' && body && (
             <Text
-              size={variant === 'text-only' ? 'S' : variant === 'centered-media-below' ? 'S' : 'M'}
-              weight="low"
               as="p"
-              color="medium"
+              {...labTextPresets.body}
               style={{
                 textAlign,
                 whiteSpace: 'pre-line',
-                ...MEDIA_TEXT_SUBTITLE_BODY_STYLE.body,
+                ...labStyleTextStackedMediaBody,
               }}
             >
               {body}
@@ -284,9 +312,9 @@ export function MediaTextBlock({
       style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: MEDIA_TEXT_SUBTITLE_BODY_STYLE.gap,
+        gap: 'var(--ds-spacing-m)',
         alignItems: textAlign === 'center' ? 'center' : 'flex-start',
-        paddingRight: MEDIA_TEXT_SUBTITLE_BODY_STYLE.paddingRight,
+        paddingRight: 'var(--ds-spacing-l)',
       }}
     >
       {titleContent}
@@ -393,7 +421,7 @@ export function MediaTextBlock({
       <BlockReveal>
         <SurfaceProvider {...surfaceProps}>
           <Grid as="section">
-            <div style={{ ...cellMedia, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--ds-spacing-2xl)' }}>
+            <div style={{ ...cellMedia, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--ds-spacing-3xl)' }}>
               {titleContent}
               <WidthCap contentWidth="L">
                 {mediaContent}
@@ -553,7 +581,7 @@ export function MediaTextBlock({
       </div>
     )
 
-    /** Image description below: card-style typography (h5 + label-s). Same width as 2:1 Card (WidthCap S). */
+    /** Image description below: card-style typography (h5 + label-s). Same width as production stacked (WidthCap S). */
     const stackedTextBelow = hasTextBelow ? (
       <WidthCap
         contentWidth="S"
@@ -573,12 +601,26 @@ export function MediaTextBlock({
           }}
         >
           {descriptionTitle ? (
-            <p style={{ margin: 0, width: '100%', whiteSpace: 'pre-line', ...DESCRIPTION_TITLE_STYLE }}>
+            <p
+              style={{
+                margin: 0,
+                width: '100%',
+                whiteSpace: 'pre-line',
+                ...labPlainSubtitleStyle(),
+              }}
+            >
               {descriptionTitle}
             </p>
           ) : null}
           {descriptionBody ? (
-            <p style={{ margin: 0, width: '100%', whiteSpace: 'pre-line', ...DESCRIPTION_BODY_STYLE }}>
+            <p
+              style={{
+                margin: 0,
+                width: '100%',
+                whiteSpace: 'pre-line',
+                ...labPlainBodyStyle(),
+              }}
+            >
               {descriptionBody}
             </p>
           ) : null}

@@ -235,48 +235,64 @@ export function mapMediaTextAsymmetricBlockProps(
   }
 }
 
+function resolveMediaText5050MediaFromFields(fields: {
+  image?: string
+  video?: string
+  imageAspectRatio?: string
+}): MediaText5050BlockProps['media'] {
+  const imageUrl = fields.image
+  const videoUrl = fields.video
+  const hasVideo = videoUrl && typeof videoUrl === 'string' && videoUrl.trim() !== ''
+  const hasImage = imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== ''
+  const rawAspectRatio = fields.imageAspectRatio || undefined
+  const aspectRatio =
+    rawAspectRatio && ['5:4', '1:1', '4:5'].includes(rawAspectRatio)
+      ? (rawAspectRatio as '5:4' | '1:1' | '4:5')
+      : undefined
+  if (hasVideo)
+    return {
+      type: 'video',
+      src: videoUrl!,
+      poster: hasImage ? imageUrl : undefined,
+      alt: '',
+      aspectRatio,
+    }
+  if (hasImage) return { type: 'image', src: imageUrl!, alt: '', aspectRatio }
+  return undefined
+}
+
 export function mapMediaText5050BlockProps(
   block: BlockLike,
   images?: Record<string, ImageSlotState> | null,
 ): MediaText5050BlockProps {
-  const imageUrl = block.image as string | undefined
-  const videoUrl = block.video as string | undefined
-  const hasVideo = videoUrl && typeof videoUrl === 'string' && videoUrl.trim() !== ''
-  const hasImage = imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== ''
-  const aspectRatio = (block.imageAspectRatio as string) || undefined
-  const media =
-    hasVideo
-      ? {
-          type: 'video' as const,
-          src: videoUrl!,
-          poster: hasImage ? imageUrl : undefined,
-          alt: '',
-          aspectRatio: aspectRatio as '5:4' | '1:1' | '4:5',
-        }
-      : hasImage
-        ? { type: 'image' as const, src: imageUrl!, alt: '', aspectRatio: aspectRatio as '5:4' | '1:1' | '4:5' }
-        : undefined
-  const items = mapMediaText5050Items(block)
   const imageSlot = block.imageSlot as string | undefined
   const imageState = imageSlot && images?.[imageSlot] ? images[imageSlot] : undefined
   const rawVariant = block.variant as string
   const variant: MediaText5050BlockProps['variant'] = rawVariant === 'accordion' ? 'accordion' : 'paragraphs'
-  let paragraphColumnLayout: MediaText5050BlockProps['paragraphColumnLayout']
-  if (variant === 'paragraphs') {
-    const rawLayout = block.paragraphColumnLayout as string | undefined
-    paragraphColumnLayout =
-      rawLayout === 'single' || rawLayout === 'multi'
-        ? rawLayout
-        : items.length === 1
-          ? 'single'
-          : 'multi'
-  }
   const rawFramingAlign = block.blockFramingAlignment as string | undefined
   const blockFramingAlignment: MediaText5050BlockProps['blockFramingAlignment'] =
     rawFramingAlign === 'center' ? 'center' : 'left'
-  return {
-    variant,
-    paragraphColumnLayout,
+  const rawCtas = Array.isArray(block.callToActions) ? block.callToActions : null
+  const callToActions =
+    rawCtas && rawCtas.length > 0
+      ? (rawCtas as MediaText5050BlockProps['callToActions'])!.slice(0, 1)
+      : null
+
+  const base: Pick<
+    MediaText5050BlockProps,
+    | 'imagePosition'
+    | 'blockFramingAlignment'
+    | 'emphasis'
+    | 'minimalBackgroundStyle'
+    | 'surfaceColour'
+    | 'spacingTop'
+    | 'spacingBottom'
+    | 'headline'
+    | 'description'
+    | 'callToActions'
+    | 'imageSlot'
+    | 'imageState'
+  > = {
     imagePosition: (block.imagePosition as 'left' | 'right') ?? 'right',
     blockFramingAlignment,
     emphasis: block.emphasis as MediaText5050BlockProps['emphasis'],
@@ -290,10 +306,103 @@ export function mapMediaText5050BlockProps(
       : undefined,
     headline: block.headline as string | undefined,
     description: block.description as string | null | undefined,
-    callToActions: block.callToActions as MediaText5050BlockProps['callToActions'],
-    items,
-    media,
+    callToActions,
     imageSlot,
     imageState,
+  }
+
+  if (variant === 'accordion') {
+    const rawAccordion = Array.isArray(block.accordionItems) ? block.accordionItems : []
+    const sharedAspect = block.imageAspectRatio as string | undefined
+    if (rawAccordion.length > 0) {
+      const accordionItems = (
+        rawAccordion as { subtitle?: string; body?: string; image?: string; video?: string }[]
+      ).map((row) => ({
+        subtitle: (row.subtitle as string) ?? '',
+        body: (row.body as string) ?? '',
+        media: resolveMediaText5050MediaFromFields({
+          image: row.image,
+          video: row.video,
+          imageAspectRatio: sharedAspect,
+        }),
+      }))
+      return {
+        ...base,
+        variant: 'accordion',
+        accordionItems,
+        paragraphColumnLayout: undefined,
+        items: undefined,
+        singleSubtitle: undefined,
+        singleBody: undefined,
+        media: undefined,
+      }
+    }
+    const legacyItems = mapMediaText5050Items(block)
+    const accordionItems = legacyItems.map((row) => ({
+      subtitle: row.subtitle ?? '',
+      body: row.body ?? '',
+    }))
+    const media = resolveMediaText5050MediaFromFields({
+      image: block.image as string | undefined,
+      video: block.video as string | undefined,
+      imageAspectRatio: block.imageAspectRatio as string | undefined,
+    })
+    return {
+      ...base,
+      variant: 'accordion',
+      accordionItems,
+      paragraphColumnLayout: undefined,
+      items: undefined,
+      singleSubtitle: undefined,
+      singleBody: undefined,
+      media,
+    }
+  }
+
+  const rawLayout = block.paragraphColumnLayout as string | undefined
+  const paragraphColumnLayout: MediaText5050BlockProps['paragraphColumnLayout'] =
+    rawLayout === 'single' || rawLayout === 'multi' ? rawLayout : 'multi'
+  const media = resolveMediaText5050MediaFromFields({
+    image: block.image as string | undefined,
+    video: block.video as string | undefined,
+    imageAspectRatio: block.imageAspectRatio as string | undefined,
+  })
+
+  if (paragraphColumnLayout === 'single') {
+    let singleSubtitle = (block.singleSubtitle as string) ?? ''
+    let singleBody = (block.singleBody as string) ?? ''
+    if (!singleSubtitle && !singleBody) {
+      const first = Array.isArray(block.items) ? block.items[0] : undefined
+      if (first && typeof first === 'object') {
+        singleSubtitle = ((first as { subtitle?: string }).subtitle as string) ?? ''
+        singleBody = ((first as { body?: string }).body as string) ?? ''
+      }
+    }
+    return {
+      ...base,
+      variant: 'paragraphs',
+      paragraphColumnLayout: 'single',
+      singleSubtitle,
+      singleBody,
+      items: [],
+      accordionItems: undefined,
+      media,
+    }
+  }
+
+  const itemsRaw = Array.isArray(block.items) ? block.items : []
+  const items = (itemsRaw as { subtitle?: string; body?: string }[]).map((i) => ({
+    subtitle: (i.subtitle as string) ?? '',
+    body: (i.body as string) ?? '',
+  }))
+  return {
+    ...base,
+    variant: 'paragraphs',
+    paragraphColumnLayout: 'multi',
+    items,
+    singleSubtitle: undefined,
+    singleBody: undefined,
+    accordionItems: undefined,
+    media,
   }
 }

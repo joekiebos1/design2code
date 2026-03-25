@@ -63,6 +63,7 @@ const S_LAB_CALL_TO_ACTIONS = `callToActions[]{
     link,
     style
   }`
+/** 50/50: flat single fields, paragraph items, accordion items with per-panel media. */
 const S_MEDIA_TEXT_5050 = `{
     spacingTop,
     spacingBottom,
@@ -71,11 +72,21 @@ const S_MEDIA_TEXT_5050 = `{
     ${S_LAB_CALL_TO_ACTIONS},
     variant,
     paragraphColumnLayout,
+    singleSubtitle,
+    singleBody,
     imagePosition,
     blockFramingAlignment,
     items[]{
+      _key,
       subtitle,
       body
+    },
+    accordionItems[]{
+      _key,
+      subtitle,
+      body,
+      "image": coalesce(imageUrl, image.asset->url),
+      "video": coalesce(videoUrl, video.asset->url)
     },
     "image": coalesce(imageUrl, image.asset->url),
     "video": coalesce(videoUrl, video.asset->url),
@@ -297,6 +308,7 @@ const LAB_SECTIONS_PROJECTION = `{
   _type == "mediaTextStacked" => ${S_MEDIA_TEXT_STACKED},
   _type == "mediaTextBlock" => ${S_MEDIA_TEXT_BLOCK},
   _type == "mediaText5050" => ${S_MEDIA_TEXT_5050},
+  _type == "labMediaText5050" => ${S_MEDIA_TEXT_5050},
   _type == "cardGrid" => {
     spacingTop,
     spacingBottom,

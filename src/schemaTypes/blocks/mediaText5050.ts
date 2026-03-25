@@ -32,6 +32,52 @@ export const mediaText5050Item = defineType({
   },
 })
 
+export const mediaText5050AccordionItem = defineType({
+  name: 'mediaText5050AccordionItem',
+  type: 'object',
+  title: 'Accordion panel',
+  fields: [
+    defineField({
+      name: 'subtitle',
+      type: 'string',
+      title: 'Panel title',
+    }),
+    defineField({
+      name: 'body',
+      type: 'text',
+      title: 'Body',
+      rows: 3,
+    }),
+    defineField({
+      name: 'image',
+      type: 'image',
+      title: 'Image (upload)',
+      options: { hotspot: true },
+    }),
+    defineField({
+      name: 'imageUrl',
+      type: 'string',
+      title: 'Image URL',
+      description: 'External image URL when no image is uploaded.',
+    }),
+    defineField({
+      name: 'video',
+      type: 'file',
+      title: 'Video (upload)',
+      options: { accept: 'video/*' },
+    }),
+    defineField({
+      name: 'videoUrl',
+      type: 'string',
+      title: 'Video URL',
+    }),
+  ],
+  preview: {
+    select: { subtitle: 'subtitle' },
+    prepare: ({ subtitle }) => ({ title: subtitle || 'Panel' }),
+  },
+})
+
 export const mediaText5050Block = defineType({
   name: 'mediaText5050',
   type: 'object',
@@ -97,6 +143,8 @@ export const mediaText5050Block = defineType({
     defineField({
       ...labBlockCallToActionsField,
       group: 'content',
+      description: 'Optional. At most one button below the description.',
+      validation: (Rule) => Rule.max(1),
     }),
     defineField({
       name: 'variant',
@@ -130,15 +178,25 @@ export const mediaText5050Block = defineType({
       },
       initialValue: 'multi',
       hidden: ({ parent }) => parent?.variant !== 'paragraphs',
-      validation: (Rule) =>
-        Rule.custom((value, context) => {
-          const parent = context.parent as { variant?: string; items?: unknown[] }
-          if (parent?.variant !== 'paragraphs') return true
-          if (value !== 'single') return true
-          const n = Array.isArray(parent.items) ? parent.items.length : 0
-          if (n > 1) return 'Single layout: use one item, or switch to Multiple sections'
-          return true
-        }),
+    }),
+    defineField({
+      name: 'singleSubtitle',
+      type: 'string',
+      title: 'Section title',
+      group: 'content',
+      description: 'Only for Paragraphs · Single section.',
+      hidden: ({ parent }) =>
+        parent?.variant !== 'paragraphs' || parent?.paragraphColumnLayout !== 'single',
+    }),
+    defineField({
+      name: 'singleBody',
+      type: 'text',
+      title: 'Body',
+      group: 'content',
+      rows: 4,
+      description: 'Only for Paragraphs · Single section.',
+      hidden: ({ parent }) =>
+        parent?.variant !== 'paragraphs' || parent?.paragraphColumnLayout !== 'single',
     }),
     defineField({
       name: 'items',
@@ -146,7 +204,18 @@ export const mediaText5050Block = defineType({
       title: 'Sections',
       group: 'content',
       of: [{ type: 'mediaText5050Item' }],
-      description: 'Each section has a section title + body. Accordion: one panel per section.',
+      description: 'Only for Paragraphs · Multiple sections.',
+      hidden: ({ parent }) =>
+        parent?.variant !== 'paragraphs' || parent?.paragraphColumnLayout !== 'multi',
+    }),
+    defineField({
+      name: 'accordionItems',
+      type: 'array',
+      title: 'Accordion panels',
+      group: 'content',
+      of: [{ type: 'mediaText5050AccordionItem' }],
+      description: 'Each panel has title, body, and its own media (one block aspect ratio for all).',
+      hidden: ({ parent }) => parent?.variant !== 'accordion',
     }),
     defineField({
       name: 'theme',
@@ -178,6 +247,7 @@ export const mediaText5050Block = defineType({
       title: 'Image (upload)',
       group: 'media',
       options: { hotspot: true },
+      hidden: ({ parent }) => parent?.variant === 'accordion',
     }),
     defineField({
       name: 'imageUrl',
@@ -185,6 +255,7 @@ export const mediaText5050Block = defineType({
       title: 'Image URL',
       group: 'media',
       description: 'External image URL when no image is uploaded.',
+      hidden: ({ parent }) => parent?.variant === 'accordion',
     }),
     defineField({
       name: 'video',
@@ -192,18 +263,22 @@ export const mediaText5050Block = defineType({
       title: 'Video (upload)',
       group: 'media',
       options: { accept: 'video/*' },
+      hidden: ({ parent }) => parent?.variant === 'accordion',
     }),
     defineField({
       name: 'videoUrl',
       type: 'string',
       title: 'Video URL',
       group: 'media',
+      hidden: ({ parent }) => parent?.variant === 'accordion',
     }),
     defineField({
       name: 'imageAspectRatio',
       type: 'string',
       title: 'Aspect ratio',
       group: 'media',
+      description:
+        'Paragraphs: crop for the shared block image/video. Accordion: same crop for every panel’s image/video.',
       options: {
         list: [
           { value: '5:4', title: '5:4' },

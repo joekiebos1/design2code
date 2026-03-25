@@ -24,6 +24,11 @@ export interface MediaText5050Item {
   body?: string
 }
 
+/** Accordion panel: text plus optional per-panel media (shared aspect ratio on block). */
+export type MediaText5050AccordionRow = MediaText5050Item & {
+  media?: MediaText5050Media
+}
+
 export type MediaText5050CallToAction = {
   _key?: string
   label: string
@@ -49,8 +54,13 @@ export interface MediaText5050BlockProps {
   description?: string | null
   /** Optional section buttons below description */
   callToActions?: MediaText5050CallToAction[] | null
-  /** Unified items array – both variants use subtitle + body */
+  /** Paragraphs · multi */
   items?: MediaText5050Item[]
+  /** Paragraphs · single (flat CMS fields) */
+  singleSubtitle?: string
+  singleBody?: string
+  /** Accordion: per-panel media in media column */
+  accordionItems?: MediaText5050AccordionRow[]
   media?: MediaText5050Media
   /** JioKarna preview: progressive image stream slot and state */
   imageSlot?: string | null

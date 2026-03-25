@@ -1,7 +1,6 @@
 import { pageType } from './page'
 import { labBlockPageType } from './labBlockPage'
 import { labOverviewType } from './labOverview'
-import { blockInspirationCatalogueType } from './blockInspirationCatalogue'
 import { pageBuilderType } from './pageBuilder'
 import { labPageBuilderType } from './labPageBuilder'
 import { heroBlock } from './blocks/hero'
@@ -26,15 +25,22 @@ import {
   mediaTextAsymmetricBlock,
   mediaTextAsymmetricItem,
   mediaTextAsymmetricParagraph,
+  mediaTextAsymmetricParagraphRow,
 } from './blocks/mediaTextAsymmetricBlock'
+import {
+  mediaText5050AccordionItem,
+  mediaText5050Block,
+  mediaText5050Item,
+} from './blocks/mediaText5050'
+import {
+  labMediaText5050AccordionItem,
+  labMediaText5050Block,
+  labMediaText5050ParagraphItem,
+} from './blocks/labMediaText5050'
 import {
   labMediaTextAsymmetricParagraphRow,
   labMediaTextAsymmetricBlock,
 } from './blocks/labMediaTextAsymmetricBlock'
-import {
-  mediaText5050Block,
-  mediaText5050Item,
-} from './blocks/mediaText5050'
 
 /** Block types must be registered before pageBuilder / labPageBuilder (which reference them in of array) */
 export const schemaTypes = [
@@ -42,7 +48,6 @@ export const schemaTypes = [
   labPageBuilderType,
   labBlockPageType,
   labOverviewType,
-  blockInspirationCatalogueType,
   heroBlock,
   mediaTextStackedBlock,
   cardGridItem,
@@ -64,11 +69,16 @@ export const schemaTypes = [
   iconGridItem,
   iconGridBlock,
   mediaTextAsymmetricParagraph,
+  mediaTextAsymmetricParagraphRow,
   mediaTextAsymmetricItem,
   labMediaTextAsymmetricParagraphRow,
   labMediaTextAsymmetricBlock,
   mediaTextAsymmetricBlock,
   mediaText5050Item,
+  mediaText5050AccordionItem,
   mediaText5050Block,
+  labMediaText5050ParagraphItem,
+  labMediaText5050AccordionItem,
+  labMediaText5050Block,
   pageBuilderType,
 ]

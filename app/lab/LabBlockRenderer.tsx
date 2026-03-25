@@ -3,8 +3,7 @@
 import React from 'react'
 /**
  * Lab block renderer – renders blocks from Sanity lab page sections.
- * Uses Lab* block components only (app/lab/blocks). Production blocks in app/blocks/
- * are not imported here; promote experiments one-way into production when ready.
+ * Uses Lab* blocks from app/lab/blocks. Media + Text 50/50 uses the production component from app/blocks.
  */
 
 import {
@@ -14,7 +13,6 @@ import {
   LabFullBleedVerticalCarousel,
   LabCarouselBlock,
   LabRotatingMediaBlock,
-  LabMediaText5050Block,
   LabTopNavBlock,
   EditorialBlock,
   LabIconGridBlock,
@@ -22,13 +20,15 @@ import {
   LabProofPointsBlock,
   LabMediaTextAsymmetricBlock,
 } from './blocks'
+import { MediaText5050Block } from '../blocks'
 import { Headline, Text } from '@marcelinodzn/ds-react'
-import { LAB_TYPOGRAPHY_VARS, labHeadlineBlockTitle, labTextBody } from '../../lib/typography/block-typography'
+import { mapMediaText5050BlockProps } from '../../lib/blocks/map-media-text-blocks'
+import { labStyleHeadlineVariantRail } from '../../lib/typography/block-typography'
+import { labHeadlinePresets, labTextPresets } from '../../lib/typography/lab-typography-presets'
 import { WidthCap } from '../blocks/WidthCap'
 import { BlockShell } from '../blocks'
 import type { BlockPattern } from '../blocks/BlockShell'
 import type { LabHeroBlockProps } from './blocks/HeroBlock/LabHeroBlock'
-import type { MediaText5050BlockProps } from '../blocks'
 import type { MediaTextBlockProps } from './blocks/MediaTextBlock/MediaTextBlock.types'
 
 type LabBlock = {
@@ -159,6 +159,7 @@ function getBlockTypeTitle(_type: string): string {
     mediaTextStacked: 'Media + Text: Stacked',
     mediaTextBlock: 'Media + Text: Stacked',
     mediaText5050: 'Media + Text: 50/50',
+    labMediaText5050: 'Media + Text: 50/50 (Lab)',
     labCardGrid: 'Card grid',
     carousel: 'Carousel (responsive)',
     fullBleedVerticalCarousel: 'Full bleed vertical carousel',
@@ -218,11 +219,18 @@ export function getBlockLayoutTitle(block: LabBlock): string {
       const v = (block.variant as string) ?? 'icon'
       return v === 'stat' ? 'Stat' : 'Icon'
     }
-    case 'mediaText5050': {
+    case 'mediaText5050':
+    case 'labMediaText5050': {
       const variant = (block.variant as string) ?? 'paragraphs'
       const variantLabels: Record<string, string> = { paragraphs: 'Paragraphs', accordion: 'Accordion' }
       const imagePosition = (block.imagePosition as string) ?? 'right'
-      return `${variantLabels[variant] ?? variant} · Image ${imagePosition}`
+      const layout =
+        variant === 'paragraphs' && (block.paragraphColumnLayout as string) === 'single'
+          ? ' · Single'
+          : variant === 'paragraphs'
+            ? ' · Multi'
+            : ''
+      return `${variantLabels[variant] ?? variant}${layout} · Image ${imagePosition}`
     }
     case 'mediaTextStacked':
     case 'mediaTextBlock': {
@@ -286,6 +294,20 @@ export function getBlockOtherSettings(block: LabBlock): string {
       return `Emphasis: ${block.emphasis ?? ''} · Surface colour: ${block.surfaceColour ?? ''} · ${Array.isArray(block.items) ? block.items.length : 0} item(s)`
     case 'mediaText5050':
       return `Emphasis: ${block.emphasis ?? ''} · Surface colour: ${block.surfaceColour ?? ''} · ${Array.isArray(block.items) ? block.items.length : 0} item(s)`
+    case 'labMediaText5050': {
+      const v = (block.variant as string) ?? 'paragraphs'
+      const n =
+        v === 'accordion'
+          ? Array.isArray(block.accordionItems)
+            ? block.accordionItems.length
+            : 0
+          : (block.paragraphColumnLayout as string) === 'single'
+            ? 1
+            : Array.isArray(block.items)
+              ? block.items.length
+              : 0
+      return `Emphasis: ${block.emphasis ?? ''} · Surface colour: ${block.surfaceColour ?? ''} · ${n} section(s)`
+    }
     case 'mediaTextStacked':
     case 'mediaTextBlock':
       return `Emphasis: ${block.emphasis ?? ''} · Surface colour: ${block.surfaceColour ?? ''}`
@@ -367,7 +389,24 @@ function deriveLabPattern(block: LabBlock): BlockPattern {
   }
   const emphasis = (block.emphasis as string)?.toLowerCase?.()
   const hasBand = emphasis && !['ghost', 'none'].includes(emphasis)
-  const bandTypes = ['hero', 'mediaTextStacked', 'mediaTextBlock', 'mediaText5050', 'carousel', 'labCarousel', 'labCardGrid', 'cardGrid', 'proofPoints', 'iconGrid', 'mediaTextAsymmetric', 'labMediaTextAsymmetric', 'fullBleedVerticalCarousel', 'rotatingMedia', 'editorialBlock']
+  const bandTypes = [
+    'hero',
+    'mediaTextStacked',
+    'mediaTextBlock',
+    'mediaText5050',
+    'labMediaText5050',
+    'carousel',
+    'labCarousel',
+    'labCardGrid',
+    'cardGrid',
+    'proofPoints',
+    'iconGrid',
+    'mediaTextAsymmetric',
+    'labMediaTextAsymmetric',
+    'fullBleedVerticalCarousel',
+    'rotatingMedia',
+    'editorialBlock',
+  ]
   if (hasBand && bandTypes.includes(block._type)) {
     return 'band'
   }
@@ -467,82 +506,6 @@ function mapMediaTextBlock(block: LabBlock): MediaTextBlockProps {
   }
 }
 
-function mapMediaText5050Items(block: LabBlock): { subtitle?: string; body?: string }[] {
-  const items = Array.isArray(block.items)
-    ? (block.items as { subtitle?: string; body?: string }[]).map((i) => ({
-        subtitle: (i.subtitle as string) ?? '',
-        body: (i.body as string) ?? '',
-      }))
-    : []
-  if (items.length > 0) return items
-  if (block.variant === 'singleParagraph' && (block.headline || block.body)) {
-    return [{ subtitle: (block.headline as string) ?? '', body: (block.body as string) ?? '' }]
-  }
-  const accordionItems = Array.isArray(block.accordionItems)
-    ? (block.accordionItems as { title?: string; body?: string }[]).map((i) => ({
-        subtitle: (i.title as string) ?? '',
-        body: (i.body as string) ?? '',
-      }))
-    : []
-  if (accordionItems.length > 0) return accordionItems
-  const paragraphItems = Array.isArray(block.paragraphItems)
-    ? (block.paragraphItems as { headline?: string; body?: string }[]).map((i) => ({
-        subtitle: (i.headline as string) ?? '',
-        body: (i.body as string) ?? '',
-      }))
-    : []
-  return paragraphItems
-}
-
-function mapMediaText5050Block(block: LabBlock): MediaText5050BlockProps {
-  const imageUrl = block.image as string | undefined
-  const videoUrl = block.video as string | undefined
-  const hasVideo = videoUrl && typeof videoUrl === 'string' && videoUrl.trim() !== ''
-  const hasImage = imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== ''
-  const rawAspectRatio = (block.imageAspectRatio as string) || undefined
-  const aspectRatio = rawAspectRatio && ['5:4', '1:1', '4:5'].includes(rawAspectRatio)
-    ? (rawAspectRatio as '5:4' | '1:1' | '4:5')
-    : undefined
-  const media =
-    hasVideo
-      ? { type: 'video' as const, src: videoUrl!, poster: hasImage ? imageUrl : undefined, alt: '', aspectRatio }
-      : hasImage
-        ? { type: 'image' as const, src: imageUrl!, alt: '', aspectRatio }
-        : undefined
-  const rawVariant = block.variant as string
-  const variant: MediaText5050BlockProps['variant'] =
-    rawVariant === 'accordion' ? 'accordion' : 'paragraphs'
-  const items5050 = mapMediaText5050Items(block)
-  const rawFramingAlign = block.blockFramingAlignment as string | undefined
-  const blockFramingAlignment: MediaText5050BlockProps['blockFramingAlignment'] =
-    rawFramingAlign === 'center' ? 'center' : 'left'
-  const rawLayout = block.paragraphColumnLayout as string | undefined
-  const paragraphColumnLayout: MediaText5050BlockProps['paragraphColumnLayout'] | undefined =
-    variant === 'paragraphs'
-      ? rawLayout === 'single' || rawLayout === 'multi'
-        ? rawLayout
-        : items5050.length === 1
-          ? 'single'
-          : 'multi'
-      : undefined
-  return {
-    variant,
-    paragraphColumnLayout,
-    imagePosition: (block.imagePosition as 'left' | 'right') ?? 'right',
-    blockFramingAlignment,
-    emphasis: block.emphasis as MediaText5050BlockProps['emphasis'],
-    minimalBackgroundStyle: (block.minimalBackgroundStyle as 'block' | 'gradient') ?? 'block',
-    surfaceColour: block.surfaceColour as MediaText5050BlockProps['surfaceColour'],
-    spacingTop: block.spacingTop ? (normalizeSpacing(block.spacingTop) as MediaText5050BlockProps['spacingTop']) : undefined,
-    spacingBottom: block.spacingBottom ? (normalizeSpacing(block.spacingBottom) as MediaText5050BlockProps['spacingBottom']) : undefined,
-    headline: block.headline as string | undefined,
-    description: block.description as string | null | undefined,
-    callToActions: block.callToActions as MediaText5050BlockProps['callToActions'],
-    items: items5050,
-    media,
-  }
-}
-
 function mapHeroBlockProps(block: LabBlock) {
   const rawContentLayout = (block.contentLayout as string) ?? 'stacked'
   const contentLayout = rawContentLayout === 'fullscreen' ? 'mediaOverlay' : rawContentLayout
@@ -620,13 +583,13 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
           <Headline
             size="S"
             as="h2"
-            style={{ margin: 0, fontSize: LAB_TYPOGRAPHY_VARS.h3, whiteSpace: 'pre-line' }}
-            {...labHeadlineBlockTitle}
+            style={{ margin: 0, whiteSpace: 'pre-line', ...labStyleHeadlineVariantRail }}
+            {...labHeadlinePresets.block}
           >
             {layoutTitle}
           </Headline>
           {otherSettings && (
-            <Text as="p" style={{ margin: 0, whiteSpace: 'pre-line' }} {...labTextBody}>
+            <Text as="p" style={{ margin: 0, whiteSpace: 'pre-line' }} {...labTextPresets.body}>
               {otherSettings}
             </Text>
           )}
@@ -654,9 +617,10 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
             const mapped = mapMediaTextBlock(block)
             return wrapSection(<LabMediaTextBlock {...mapped} />, block, i)
           }
-          case 'mediaText5050': {
-            const mapped = mapMediaText5050Block(block)
-            return wrapSection(<LabMediaText5050Block {...mapped} />, block, i)
+          case 'mediaText5050':
+          case 'labMediaText5050': {
+            const mapped = mapMediaText5050BlockProps(block)
+            return wrapSection(<MediaText5050Block {...mapped} />, block, i)
           }
           case 'labCardGrid': {
             const cols = block.columns as string
