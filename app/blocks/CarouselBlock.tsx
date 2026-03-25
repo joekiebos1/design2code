@@ -49,6 +49,9 @@ const GAP_MOBILE = 'var(--ds-spacing-m)'
 const GAP_DESKTOP = 'var(--ds-spacing-l)'
 const CAROUSEL_FADED_OPACITY = 0.25
 
+/** Subpixel / rounding tolerance for scroll bounds and “next/prev changes position?”. */
+const SCROLL_EPS = 2
+
 const CARD_WIDTH_MOBILE_PX = 280
 const CARD_WIDTH_COMPACT_TABLET_PX = 360
 const CARD_WIDTH_MEDIUM_TABLET_PX = 550
@@ -229,16 +232,18 @@ export function CarouselBlock({
   const { ref: revealRef, containerVisible, prefersReducedMotion } = useCarouselReveal(items_.length)
   if (items_.length === 0) return null
 
-  const isMediumDesktop = isDesktop && config.cols === 2
-  const maxPage = isMediumDesktop
-    ? Math.max(0, items_.length - config.cols)
-    : Math.max(0, Math.min(items_.length - 1, items_.length - config.cols + 1))
   const pageIdx = isLargeLayout ? largeCenterIndex : pageIndex
-  const capScrollPos =
-    pageIndex >= maxPage ? maxScrollPx : (cumulativeScrollPx[pageIndex] ?? pageIndex * stepPx)
+
+  /** Clamped scroll if card `p` is aligned to the leading edge (compact/medium). */
+  const scrollTargetForPage = (p: number) =>
+    Math.min(cumulativeScrollPx[p] ?? p * stepPx, maxScrollPx)
+
+  const capScrollPos = capScrollAtGrid
+    ? scrollTargetForPage(pageIndex)
+    : Math.max(0, (largeCenterIndex + 1) * stepPx)
   const scrollPosition = capScrollAtGrid
     ? Math.min(capScrollPos, maxScrollPx)
-    : Math.max(0, (largeCenterIndex + 1) * stepPx)
+    : capScrollPos
 
   useEffect(() => {
     const track = trackRef.current
@@ -286,8 +291,9 @@ export function CarouselBlock({
   }, [items_.length, config.cols, capScrollAtGrid, isLargeLayout])
 
   useEffect(() => {
-    if (capScrollAtGrid) setPageIndex((p) => Math.min(p, maxPage))
-  }, [capScrollAtGrid, maxPage])
+    if (!capScrollAtGrid) return
+    setPageIndex((p) => Math.min(p, Math.max(0, items_.length - 1)))
+  }, [items_.length, capScrollAtGrid])
 
   const handleLargeTransitionEnd = (e: React.TransitionEvent) => {
     if (!isLargeLayout || e.target !== e.currentTarget) return
@@ -309,15 +315,37 @@ export function CarouselBlock({
     return () => cancelAnimationFrame(id)
   }, [isWrapping])
 
-  const canScrollLeft = isLargeLayout ? true : pageIndex > 0
-  const canScrollRight = isLargeLayout ? true : pageIndex < maxPage
+  const canScrollLeft = isLargeLayout
+    ? true
+    : capScrollAtGrid
+      ? scrollPosition > SCROLL_EPS
+      : pageIndex > 0
+  const canScrollRight = isLargeLayout
+    ? true
+    : capScrollAtGrid
+      ? scrollPosition < maxScrollPx - SCROLL_EPS
+      : pageIndex < items_.length - 1
 
   const scroll = (dir: 'left' | 'right') => {
     if (capScrollAtGrid) {
       if (dir === 'right') {
-        setPageIndex((p) => Math.min(maxPage, p + 1))
+        setPageIndex((p) => {
+          const cur = scrollTargetForPage(p)
+          for (let q = p + 1; q < items_.length; q++) {
+            const nxt = scrollTargetForPage(q)
+            if (nxt > cur + SCROLL_EPS) return q
+          }
+          return p
+        })
       } else {
-        setPageIndex((p) => Math.max(0, p - 1))
+        setPageIndex((p) => {
+          const cur = scrollTargetForPage(p)
+          for (let q = p - 1; q >= 0; q--) {
+            const prv = scrollTargetForPage(q)
+            if (prv < cur - SCROLL_EPS) return q
+          }
+          return p
+        })
       }
     } else {
       setLargeCenterIndex((i) => (dir === 'right' ? i + 1 : i - 1))
@@ -325,15 +353,20 @@ export function CarouselBlock({
   }
 
   const motionLevel = prefersReducedMotion ? 'subtle' : 'moderate'
+  /** Which slide indices count as “in view” for opacity, video pause, and controls. */
   const isCardInView = (i: number) => {
+    const pageRange =
+      i >= pageIdx && i < pageIdx + config.cols
     if (config.cols === 3 && cumulativeScrollPx.length > i + 1 && viewportWidthPx > 0) {
       const cardLeft = cumulativeScrollPx[i]
       const cardRight = cumulativeScrollPx[i + 1] - trackGapPx
       const vpLeft = scrollPosition
       const vpRight = scrollPosition + viewportWidthPx
-      return cardLeft < vpRight && cardRight > vpLeft
+      const pixelOverlap = cardLeft < vpRight && cardRight > vpLeft
+      /** OR page range: when card widths are still 0 (first layout) or cum/vp mismatch, overlap is false for every card → all videos stay paused (often black). */
+      return pixelOverlap || pageRange
     }
-    return i >= pageIdx && i < pageIdx + config.cols
+    return pageRange
   }
 
   const titleTransition = prefersReducedMotion
