@@ -520,7 +520,7 @@ function mapHeroBlockProps(block: LabBlock) {
     cta2Link: block.cta2Link as string | null,
     image: block.image as string | null,
     videoUrl: block.videoUrl as string | null,
-    contentLayout: (['stacked', 'sideBySide', 'category', 'mediaOverlay', 'textOnly'].includes(contentLayout) ? contentLayout : 'stacked') as LabHeroBlockProps['contentLayout'],
+    contentLayout: (['stacked', 'sideBySide', 'category', 'mediaOverlay', 'textOnly', 'fullscreen'].includes(contentLayout) ? contentLayout : 'stacked') as LabHeroBlockProps['contentLayout'],
     containerLayout: (containerLayout === 'contained' ? 'contained' : 'edgeToEdge') as LabHeroBlockProps['containerLayout'],
     imageAnchor: ((block.imageAnchor as string) === 'bottom' ? 'bottom' : 'center') as LabHeroBlockProps['imageAnchor'],
     textAlign: ((block.textAlign as string) === 'center' ? 'center' : 'left') as LabHeroBlockProps['textAlign'],

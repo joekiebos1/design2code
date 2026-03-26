@@ -42,7 +42,7 @@ export const SideBySide: Story = {
     ...defaultArgs,
     contentLayout: 'sideBySide',
     containerLayout: 'edgeToEdge',
-    emphasis: 'bold',
+    emphasis: 'minimal',
     headline: 'Side by side hero',
   },
 }
