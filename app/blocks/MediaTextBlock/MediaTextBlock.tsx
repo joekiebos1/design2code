@@ -96,6 +96,8 @@ export function MediaTextBlock({
 
   /** Text alignment must match container alignment. When align is set, use it; otherwise default center. */
   const textAlign = (align === 'center' || align === 'left') ? align : 'center'
+  /** DS Display / Headline use `align` for layout; CSS textAlign alone is not always enough. */
+  const dsTextAlign = textAlign === 'center' ? 'center' : 'left'
 
   /** Left = L grid width. Center = M (title) / XS (body) for centered content. */
   const titleContentWidth = align === 'left' ? 'L' : 'M'
@@ -126,7 +128,7 @@ export function MediaTextBlock({
           </Label>
         )}
         {size === 'hero' && (
-          <Display as="h1" {...labDisplayPreset} style={{ textAlign, whiteSpace: 'pre-line' }}>
+          <Display as="h1" align={dsTextAlign} {...labDisplayPreset} style={{ textAlign, whiteSpace: 'pre-line' }}>
             {headline}
           </Display>
         )}
@@ -134,6 +136,7 @@ export function MediaTextBlock({
           <Headline
             size="L"
             as="h2"
+            align={dsTextAlign}
             {...labHeadlinePresets.block}
             style={{
               fontSize:
@@ -203,7 +206,7 @@ export function MediaTextBlock({
           {headline && (
             <>
               {size === 'hero' && (
-                <Display as="h1" {...labDisplayPreset} style={{ textAlign, whiteSpace: 'pre-line' }}>
+                <Display as="h1" align={dsTextAlign} {...labDisplayPreset} style={{ textAlign, whiteSpace: 'pre-line' }}>
                   {headline}
                 </Display>
               )}
@@ -211,6 +214,7 @@ export function MediaTextBlock({
                 <Headline
                   size="L"
                   as="h2"
+                  align={dsTextAlign}
                   {...labHeadlinePresets.block}
                   style={{
                     fontSize: LAB_TYPOGRAPHY_VARS.h2,
@@ -563,8 +567,9 @@ export function MediaTextBlock({
 
   if (variant === 'centered-media-below' && hasMedia) {
     const stackedIsEdgeToEdge = width === 'edgeToEdge'
-    const stackedAlignItems = align === 'center' ? 'center' : 'flex-start'
-    const textAlignStacked = align ?? 'left'
+    /** Must match `textAlign` (default centre when CMS align is unset), not raw `align`. */
+    const stackedAlignItems = textAlign === 'center' ? 'center' : 'flex-start'
+    const textAlignStacked = textAlign
 
     /** Text above image: eyebrow, title, subhead, body. */
     const stackedTextAbove = hasTextAbove && (
@@ -668,7 +673,7 @@ export function MediaTextBlock({
             {stackedIsEdgeToEdge ? (
               <>
                 {stackedTextAbove &&
-                  (align !== 'center'
+                  (textAlign !== 'center'
                     ? gridWrappedSection(stackedTextAbove)
                     : stackedTextAbove)}
                 {stackedMediaBlock}
