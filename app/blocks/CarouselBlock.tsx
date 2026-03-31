@@ -43,7 +43,7 @@ type CarouselCardSize = 'compact' | 'medium' | 'large'
 
 type CarouselEmphasis = 'ghost' | 'minimal' | 'subtle' | 'bold'
 
-type CarouselSurfaceColour = 'primary' | 'secondary' | 'sparkle' | 'neutral'
+type CarouselAppearance = 'primary' | 'secondary' | 'sparkle' | 'neutral'
 
 type CarouselBlockProps = {
   title?: string | null
@@ -52,7 +52,7 @@ type CarouselBlockProps = {
   cardSize?: CarouselCardSize
   emphasis?: CarouselEmphasis
   minimalBackgroundStyle?: 'block' | 'gradient' | null
-  surfaceColour?: CarouselSurfaceColour
+  appearance?: CarouselAppearance
   items?: CarouselItem[] | null
   images?: Record<string, { url: string; alt: string; source: 'database' | 'generated'; ready: boolean }>
 }
@@ -367,18 +367,27 @@ export function CarouselBlock({
   }
 
   const motionLevel = prefersReducedMotion ? 'subtle' : 'moderate'
-  /** Which slide indices count as “in view” for opacity, video pause, and controls. */
+  /**
+   * Which slide indices count as “in view” for opacity, video pause, and controls.
+   * Compact (cols === 3): pixel overlap only — mixed 4:5 / 8:5 widths; an index window (three
+   * consecutive cards) is not the same as three cards in the viewport. Last card: right edge is
+   * cum[n] with no trailing gap; do not subtract trackGapPx.
+   */
   const isCardInView = (i: number) => {
-    const pageRange =
-      i >= pageIdx && i < pageIdx + config.cols
+    const pageRange = i >= pageIdx && i < pageIdx + config.cols
     if (config.cols === 3 && cumulativeScrollPx.length > i + 1 && viewportWidthPx > 0) {
+      const numCards = cumulativeScrollPx.length - 1
       const cardLeft = cumulativeScrollPx[i]
-      const cardRight = cumulativeScrollPx[i + 1] - trackGapPx
+      const cardRight =
+        i === numCards - 1
+          ? cumulativeScrollPx[i + 1]
+          : cumulativeScrollPx[i + 1] - trackGapPx
       const vpLeft = scrollPosition
       const vpRight = scrollPosition + viewportWidthPx
-      const pixelOverlap = cardLeft < vpRight && cardRight > vpLeft
-      /** OR page range: when card widths are still 0 (first layout) or cum/vp mismatch, overlap is false for every card → all videos stay paused (often black). */
-      return pixelOverlap || pageRange
+      return cardLeft < vpRight && cardRight > vpLeft
+    }
+    if (config.cols === 3) {
+      return false
     }
     return pageRange
   }

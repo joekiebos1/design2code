@@ -32,7 +32,7 @@ type CarouselCardSize = 'compact' | 'medium' | 'large'
 
 type CarouselEmphasis = 'ghost' | 'minimal' | 'subtle' | 'bold'
 
-type CarouselSurfaceColour = 'primary' | 'secondary' | 'sparkle' | 'neutral'
+type CarouselAppearance = 'primary' | 'secondary' | 'sparkle' | 'neutral'
 
 export type LabCarouselBlockProps = {
   title?: string | null
@@ -41,7 +41,7 @@ export type LabCarouselBlockProps = {
   cardSize?: CarouselCardSize
   emphasis?: CarouselEmphasis
   minimalBackgroundStyle?: 'block' | 'gradient' | null
-  surfaceColour?: CarouselSurfaceColour
+  appearance?: CarouselAppearance
   items?: CarouselItem[] | null
   images?: Record<string, { url: string; alt: string; source: 'database' | 'generated'; ready: boolean }>
 }
@@ -53,6 +53,18 @@ const CAROUSEL_FADED_OPACITY = 0.25
 
 /** Subpixel / rounding tolerance for scroll bounds and “next/prev changes position?”. */
 const SCROLL_EPS = 2
+
+/**
+ * Large carousel track is [last, ...items, first, second]. Map slide index → items_.index for stagger `isVisible`.
+ */
+function logicalItemIndexForLargeTrack(i: number, n: number): number {
+  if (n <= 0) return 0
+  if (i === 0) return n - 1
+  if (i >= 1 && i <= n) return i - 1
+  if (i === n + 1) return 0
+  if (i === n + 2) return 1
+  return 0
+}
 
 /** Fixed card widths (px) when useFixedCardWidth: mobile/tablet breakpoints. */
 const CARD_WIDTH_MOBILE_PX = 280
@@ -200,7 +212,7 @@ export function LabCarouselBlock({
   images,
 }: LabCarouselBlockProps) {
   const level = normalizeHeadingLevel('h2')
-  const { columns, contentMaxL, columnWidth, gutter, isMobile, isTablet, isDesktop } = useGridBreakpoint()
+  const { columns, contentMaxL, columnWidth, gutter, isMobile, isTablet } = useGridBreakpoint()
 
   const config = cardSize ? getCarouselConfig(cardSize, columns, { columnWidth, gutter }) : undefined
   if (!config || !cardSize) return null
@@ -240,7 +252,7 @@ export function LabCarouselBlock({
   }, [isLargeLayout, largeN])
   const displayItems = isLargeLayout ? largeDisplayItems : items_
 
-  const { ref: revealRef, containerVisible, prefersReducedMotion } = useCarouselReveal(items_.length)
+  const { ref: revealRef, isVisible, containerVisible, prefersReducedMotion } = useCarouselReveal(items_.length)
   if (items_.length === 0) return null
   if (isLargeLayout && items_.length < LARGE_VISIBLE) return null
 
@@ -370,14 +382,27 @@ export function LabCarouselBlock({
   }
 
   const motionLevel = prefersReducedMotion ? 'subtle' : 'moderate'
-  // Compact: pixel-based (variable card widths). Medium/Large: index-based.
+  /**
+   * Compact (cols === 3): visibility from pixel overlap only — card widths vary (4:5 vs 8:5).
+   * Do not use an index window (pageIdx … pageIdx+2): with mixed widths, three indices are not
+   * the same as “three cards in the viewport”, so the trailing card could stay full opacity when
+   * it should be faded.
+   * Last card: right edge is cum[n] (no gap after the final card); subtracting trackGapPx was wrong.
+   */
   const isCardInView = (i: number) => {
     if (config.cols === 3 && cumulativeScrollPx.length > i + 1 && viewportWidthPx > 0) {
+      const numCards = cumulativeScrollPx.length - 1
       const cardLeft = cumulativeScrollPx[i]
-      const cardRight = cumulativeScrollPx[i + 1] - trackGapPx
+      const cardRight =
+        i === numCards - 1
+          ? cumulativeScrollPx[i + 1]
+          : cumulativeScrollPx[i + 1] - trackGapPx
       const vpLeft = scrollPosition
       const vpRight = scrollPosition + viewportWidthPx
       return cardLeft < vpRight && cardRight > vpLeft
+    }
+    if (config.cols === 3) {
+      return false
     }
     return i >= pageIdx && i < pageIdx + config.cols
   }
@@ -385,12 +410,10 @@ export function LabCarouselBlock({
   const titleTransition = prefersReducedMotion
     ? undefined
     : createTransition(['opacity', 'transform'], 'xl', 'entrance', motionLevel)
-  const cardTransition = prefersReducedMotion
+  /** Staggered in-view entrance + scroll-driven opacity (same curve as other lab blocks). */
+  const cardEntranceTransition = prefersReducedMotion
     ? undefined
     : createTransition(['opacity', 'transform'], 'xl', 'entrance', motionLevel)
-  const fadeTransition = prefersReducedMotion
-    ? undefined
-    : createTransition('opacity', 'xl', 'transition', motionLevel)
 
   /** Vertically center nav buttons on media: marginTop = half media height − gap. Large (2:1): height = contentMax/2. Medium/Compact (4:5): half height = cardWidth × 5/8; cardWidth = (contentMax − gaps) / cols. */
   const buttonMediaCenterOffset =
@@ -456,7 +479,7 @@ export function LabCarouselBlock({
               style={{
                 ...labBlockFramingIntroStackStyle,
                 opacity: containerVisible ? 1 : 0,
-                transform: 'translateY(0)',
+                transform: containerVisible ? 'translateY(0)' : 'translateY(var(--ds-spacing-xl))',
                 transition: titleTransition,
               }}
             >
@@ -548,7 +571,10 @@ export function LabCarouselBlock({
                         const bufferCenter = largeCenterIndex + 1
                         const isInView = i === bufferCenter
                         const largeAspectRatio = cardSize === 'large' ? config.getEffectiveAspectRatio('2:1') : '4:5'
-                        const opacity = prefersReducedMotion ? 1 : (i === bufferCenter ? 1 : CAROUSEL_FADED_OPACITY)
+                        const logicalIdx = logicalItemIndexForLargeTrack(i, largeN)
+                        const revealed = prefersReducedMotion || isVisible(logicalIdx)
+                        const scrollTargetOpacity = prefersReducedMotion ? 1 : (i === bufferCenter ? 1 : CAROUSEL_FADED_OPACITY)
+                        const opacity = revealed ? scrollTargetOpacity : 0
                         return (
                           <div
                             key={i}
@@ -561,8 +587,8 @@ export function LabCarouselBlock({
                               flexDirection: 'column',
                               overflow: 'visible',
                               opacity,
-                              transform: 'translateY(0)',
-                              transition: isWrapping ? 'none' : fadeTransition,
+                              transform: revealed ? 'translateY(0)' : 'translateY(var(--ds-spacing-xl))',
+                              transition: isWrapping || prefersReducedMotion ? 'none' : cardEntranceTransition,
                             }}
                           >
                             <LabCardRenderer
@@ -589,7 +615,9 @@ export function LabCarouselBlock({
                       const textCardAspectRatio =
                         effectiveAspectRatio === '8:5' || effectiveAspectRatio === '2:1' ? '8:5' : '4:5'
                       const inGrid = noFade || isCardInView(i)
-                      const useFadeTransition = isDesktop
+                      const revealed = prefersReducedMotion || isVisible(i)
+                      const scrollTargetOpacity = inGrid ? 1 : CAROUSEL_FADED_OPACITY
+                      const opacity = revealed ? scrollTargetOpacity : 0
 
                       return (
                         <div
@@ -602,9 +630,9 @@ export function LabCarouselBlock({
                             display: 'flex',
                             flexDirection: 'column',
                             overflow: 'visible',
-                            opacity: inGrid ? 1 : CAROUSEL_FADED_OPACITY,
-                            transform: 'translateY(0)',
-                            transition: useFadeTransition ? fadeTransition : cardTransition,
+                            opacity,
+                            transform: revealed ? 'translateY(0)' : 'translateY(var(--ds-spacing-xl))',
+                            transition: cardEntranceTransition,
                           }}
                         >
                           <LabCardRenderer
