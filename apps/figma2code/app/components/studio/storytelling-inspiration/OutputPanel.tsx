@@ -508,10 +508,10 @@ export function OutputPanel({ state, productName }: OutputPanelProps) {
       <SurfaceProvider level={0}>
         <div style={{ padding: 'var(--ds-spacing-2xl)' }}>
           <Text
-            appearance="negative"
             style={{
               fontSize: 'var(--ds-typography-body-m)',
               fontWeight: 'var(--ds-typography-weight-medium)',
+              color: 'var(--ds-color-text-negative)',
             }}
           >
             {state.error}
