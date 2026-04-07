@@ -30,7 +30,7 @@ export function StudioHomeClient() {
       >
         <div style={{ maxWidth: 960, margin: '0 auto' }}>
           <Headline
-            level={1}
+            size="S" as="h1"
             style={{
               margin: 0,
               marginBottom: 'var(--ds-spacing-s)',
@@ -75,7 +75,7 @@ export function StudioHomeClient() {
                   >
                     <CardBody style={{ padding: 'var(--ds-spacing-xl)', display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-m)' }}>
                     <Headline
-                      level={2}
+                      size="S" as="h2"
                       style={{
                         margin: 0,
                         fontSize: 'var(--ds-typography-headline-s)',

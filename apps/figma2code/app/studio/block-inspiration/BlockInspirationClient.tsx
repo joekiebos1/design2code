@@ -154,7 +154,7 @@ function BlockListPanel({
       }}
     >
       <Headline
-        level={2}
+        size="S"
         as="h1"
         style={{
           margin: 0,

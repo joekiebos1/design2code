@@ -36,7 +36,7 @@ export default function HomePage() {
       >
         <div style={{ maxWidth: 960, margin: '0 auto' }}>
           <Headline
-            level={1}
+            size="S" as="h1"
             style={{
               margin: 0,
               marginBottom: 'var(--ds-spacing-s)',
@@ -88,7 +88,7 @@ export default function HomePage() {
                       }}
                     >
                       <Headline
-                        level={2}
+                        size="S" as="h2"
                         style={{
                           margin: 0,
                           fontSize: 'var(--ds-typography-headline-s)',
