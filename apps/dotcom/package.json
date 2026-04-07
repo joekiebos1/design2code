@@ -14,7 +14,7 @@
     "seed:pixel-10-pro": "node --env-file=../../.env scripts/seed-pixel-10-pro.mjs",
     "seed:jiogames": "node --env-file=../../.env scripts/seed-jiogames.mjs",
     "generate:icons": "node -e \"const icons=require('@marcelinodzn/ds-react/icons');const fs=require('fs');const names=icons.getAvailableIcons();fs.mkdirSync('src/lib',{recursive:true});fs.writeFileSync('src/lib/ds-icon-names.json',JSON.stringify(names));console.log('Wrote',names.length,'icon names');\"",
-    "postinstall": "patch-package",
+    "postinstall": "patch-package --patch-dir ../../patches",
     "prebuild": "npm run generate:tokens",
     "build": "next build",
     "start": "next start",
