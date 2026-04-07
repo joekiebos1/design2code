@@ -7,8 +7,6 @@
     "predev": "npm run generate:tokens",
     "dev": "next dev -p 3002",
     "generate:tokens": "node ../../apps/dotcom/scripts/generate-ds-tokens-css.mjs app/ds-tokens.generated.css",
-    "prebuild": "npm run generate:tokens",
-    "build": "next build",
     "start": "next start",
     "figma:import": "node --env-file=../../.env --experimental-strip-types scripts/import-figma-to-sanity.ts",
     "figma-design:create": "node --env-file=../../.env --experimental-strip-types scripts/create-figma-design-from-frame.ts"
