@@ -701,7 +701,7 @@ export function LabTopNavBlock() {
               {/* Helpful links column */}
               {showHelpfulLinks && (
                 <div style={{ textAlign: 'left' }}>
-                  <Label size="S" weight="low" color="low" as="h3" style={{ marginBottom: 'var(--ds-spacing-l)', fontFamily: 'var(--ds-font-family)' }}>
+                  <Label size="S" weight="low" color="low" as="span" style={{ marginBottom: 'var(--ds-spacing-l)', fontFamily: 'var(--ds-font-family)' }}>
                     Helpful links
                   </Label>
                   {openL1 === 'mobile' && (

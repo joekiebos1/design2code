@@ -62,7 +62,10 @@ export function ColourCard({
 }: ColourCardProps) {
   const ctx = useDsContextOptional()
   const tokenContext = ctx?.tokenContext
-  const bgColor = resolveCardBackgroundColor(backgroundColor ?? 'primary', tokenContext)
+  const bgColor = resolveCardBackgroundColor(
+    backgroundColor ?? 'primary',
+    tokenContext as Record<string, string> | undefined,
+  )
   const isDark = isDarkBackground(backgroundColor)
   const typography = TYPOGRAPHY[variant][cardSize]
   const isFeature = variant === 'feature'

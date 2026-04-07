@@ -14,8 +14,16 @@ import {
   mapMediaText5050BlockProps,
   mapMediaTextAsymmetricBlockProps,
 } from '@design2code/block-library'
-import type { BlockPattern } from '@design2code/block-library'
+import type { BlockPattern, LabBlockCallToAction } from '@design2code/block-library'
 import type { ImageSlotState } from '../hooks/useImageStream'
+
+function previewCtasToLab(
+  ctas: { label?: string; link?: string }[] | null | undefined
+): LabBlockCallToAction[] | undefined {
+  if (ctas == null) return undefined
+  const out = ctas.filter((c): c is { label: string; link?: string } => Boolean(c.label))
+  return out.length ? out : undefined
+}
 
 // ─── Debug placeholder ───────────────────────────────────────────────────────
 
@@ -182,7 +190,7 @@ export function BlockRenderer({ blocks, images }: BlockRendererProps) {
                 key={block._key || block._type}
                 title={block.title as string}
                 description={block.description as string | null | undefined}
-                callToActions={block.callToActions as { label?: string; link?: string }[] | null | undefined}
+                callToActions={previewCtasToLab(block.callToActions as { label?: string; link?: string }[] | null | undefined)}
                 cardSize={block.cardSize as 'compact' | 'medium' | 'large'}
                 emphasis={block.emphasis as 'ghost' | 'minimal' | 'subtle' | 'bold'}
                 minimalBackgroundStyle={(block.minimalBackgroundStyle as string)?.toLowerCase?.() === 'gradient' ? 'gradient' : 'block'}
@@ -214,7 +222,7 @@ export function BlockRenderer({ blocks, images }: BlockRendererProps) {
                 key={block._key || block._type}
                 title={block.title as string}
                 description={block.description as string | null | undefined}
-                callToActions={block.callToActions as { label?: string; link?: string }[] | null | undefined}
+                callToActions={previewCtasToLab(block.callToActions as { label?: string; link?: string }[] | null | undefined)}
                 variant={block.variant as 'icon' | 'stat'}
                 emphasis={block.emphasis as 'ghost' | 'minimal' | 'subtle' | 'bold'}
                 minimalBackgroundStyle={(block.minimalBackgroundStyle as string)?.toLowerCase?.() === 'gradient' ? 'gradient' : 'block'}
@@ -240,7 +248,7 @@ export function BlockRenderer({ blocks, images }: BlockRendererProps) {
                 key={block._key || block._type}
                 title={block.title as string | null | undefined}
                 description={block.description as string | null | undefined}
-                callToActions={block.callToActions as { label?: string; link?: string }[] | null | undefined}
+                callToActions={previewCtasToLab(block.callToActions as { label?: string; link?: string }[] | null | undefined)}
                 items={items}
                 columns={block.columns as 3 | 4 | 5 | 6 | undefined}
                 emphasis={block.emphasis as 'ghost' | 'minimal' | 'subtle' | 'bold'}

@@ -66,12 +66,12 @@ export function getClient(draftMode: boolean): SanityClient {
 
 /** @deprecated Use getClient() directly */
 export const client = new Proxy({} as SanityClient, {
-  get(_, prop) { return (getClient(false) as Record<string | symbol, unknown>)[prop] },
+  get(_, prop) { return (getClient(false) as unknown as Record<string | symbol, unknown>)[prop] },
 })
 
 /** @deprecated Use getClient() directly */
 export const previewClient = new Proxy({} as SanityClient, {
-  get(_, prop) { return (getClient(true) as Record<string | symbol, unknown>)[prop] },
+  get(_, prop) { return (getClient(true) as unknown as Record<string | symbol, unknown>)[prop] },
 })
 
 export function getClientWithoutStega(draftMode: boolean): SanityClient {

@@ -5,7 +5,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  typescript: { ignoreBuildErrors: true },
   transpilePackages: ['@design2code/ds', '@design2code/block-library', '@design2code/sanity', '@design2code/cms-schema'],
   turbopack: {
     // Stop Turbopack walking up past the monorepo root.

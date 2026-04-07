@@ -13,7 +13,7 @@ export type ConversationStep = 'idle' | 'generating' | 'reviewing' | 'publishing
 
 type SanityMedia = { urls: string[]; videoUrls: string[] }
 
-type PageBuilderState = {
+export type PageBuilderState = {
   step: ConversationStep
   input: StoryCoachInput | null
   brief: PageBrief | null

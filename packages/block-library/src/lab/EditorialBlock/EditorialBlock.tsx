@@ -124,7 +124,8 @@ export function EditorialBlock({
     </Headline>
   ) : (
     <Title
-      level={2}
+      size="M"
+      as="h2"
       style={{
         textAlign: textAlignStyle,
         whiteSpace: 'pre-line',

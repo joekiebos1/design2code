@@ -11,7 +11,11 @@ export type { MediaTextBlockProps } from './MediaTextBlock/MediaTextBlock.types'
 export { MediaText5050Block } from './MediaText5050Block/MediaText5050Block'
 export type { MediaText5050BlockProps } from './MediaText5050Block/MediaText5050Block.types'
 export { CardGridBlock } from './CardGridBlock/CardGridBlock'
-export type { BlockInteraction } from './CardGridBlock/CardGridBlock.types'
+export type {
+  BlockInteraction,
+  CardGridBlockItem,
+  CardGridItem,
+} from './CardGridBlock/CardGridBlock.types'
 export { CarouselBlock } from './CarouselBlock'
 export { ProofPointsBlock } from './ProofPointsBlock'
 export { IconGridBlock } from './IconGridBlock/IconGridBlock'

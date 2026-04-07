@@ -238,7 +238,7 @@ export function HeroBlock({
     </div>
   )
 
-  const textAlignProp = (a: 'left' | 'center') => (a === 'center' ? 'center' as const : 'start' as const)
+  const textAlignProp = (a: 'left' | 'center') => (a === 'center' ? 'center' as const : 'left' as const)
   const textContentOverlay = (align: 'left' | 'center') => (
     <div
       style={{

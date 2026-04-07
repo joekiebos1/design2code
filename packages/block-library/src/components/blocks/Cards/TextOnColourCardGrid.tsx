@@ -52,7 +52,10 @@ export function TextOnColourCardGrid({
   const router = useRouter()
   const ctx = useDsContextOptional()
   const tokenContext = ctx?.tokenContext
-  const bgColor = resolveCardBackgroundColor(backgroundColor ?? 'primary', tokenContext)
+  const bgColor = resolveCardBackgroundColor(
+    backgroundColor ?? 'primary',
+    tokenContext as Record<string, string> | undefined,
+  )
   const isDark = isDarkBackground(backgroundColor)
   const isLarge = size === 'large'
   const typography = CARD_SIZE_TYPOGRAPHY[cardSize]

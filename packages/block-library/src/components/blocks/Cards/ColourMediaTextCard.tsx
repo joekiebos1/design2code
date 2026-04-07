@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { Button } from '@marcelinodzn/ds-react'
 
 export type ColourMediaTextCardProps = {
@@ -32,8 +33,16 @@ export function ColourMediaTextCard({
   ctaLink,
   cardSize = 'medium',
 }: ColourMediaTextCardProps) {
+  const router = useRouter()
   const typography = TYPOGRAPHY[cardSize]
   const hasValidImage = isValidImageSrc(image)
+
+  const handleCtaPress = () => {
+    if (!ctaLink?.trim()) return
+    const href = ctaLink.trim()
+    if (href.startsWith('/')) router.push(href)
+    else window.location.href = href
+  }
 
   return (
     <div
@@ -112,15 +121,14 @@ export function ColourMediaTextCard({
 
       {ctaText && (
         <div style={{ padding: 'var(--ds-spacing-m)' }}>
-          {ctaLink ? (
-            <Button as="a" href={ctaLink} emphasis="low" size="S">
-              {ctaText}
-            </Button>
-          ) : (
-            <Button emphasis="low" size="S">
-              {ctaText}
-            </Button>
-          )}
+          <Button
+            size="S"
+            attention="low"
+            appearance="primary"
+            onPress={ctaLink?.trim() ? handleCtaPress : () => {}}
+          >
+            {ctaText}
+          </Button>
         </div>
       )}
 

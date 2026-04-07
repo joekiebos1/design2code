@@ -96,8 +96,8 @@ function IconGridCard({ item }: { item: IconGridItem }) {
         />
       </div>
       <Headline
-        size="XS"
-        weight="low"
+        size="S"
+        weight="medium"
         as="h3"
         align="center"
         style={{

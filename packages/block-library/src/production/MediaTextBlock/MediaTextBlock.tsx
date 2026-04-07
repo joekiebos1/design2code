@@ -154,7 +154,8 @@ export function MediaTextBlock({
         )}
         {size === 'editorial' && (
           <Title
-            level={2}
+            size="S"
+            as="h2"
             style={{
               textAlign,
               whiteSpace: 'pre-line',
@@ -166,7 +167,8 @@ export function MediaTextBlock({
         )}
         {size !== 'hero' && subhead && (
           <Title
-            level={3}
+            size="S"
+            as="h3"
             style={{
               textAlign,
               fontSize: LAB_TYPOGRAPHY_VARS.h5,
@@ -227,7 +229,8 @@ export function MediaTextBlock({
               )}
               {size === 'editorial' && (
                 <Title
-                  level={2}
+                  size="S"
+                  as="h2"
                   style={{
                     textAlign,
                     fontSize: LAB_TYPOGRAPHY_VARS.h3,
@@ -242,7 +245,8 @@ export function MediaTextBlock({
           )}
           {size !== 'hero' && subhead && (
             <Title
-              level={3}
+              size="S"
+              as="h3"
               style={{
                 textAlign,
                 whiteSpace: 'pre-line',

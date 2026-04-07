@@ -2,19 +2,21 @@
 
 import { useRef, useEffect, useState } from 'react'
 import type { PageBuilderState, ConversationStep } from '../page'
-import type { PageBrief } from '../lib/types'
 
 const STEP_LABELS: Record<ConversationStep, string> = {
   idle: '',
-  clarifying: 'Clarifying...',
-  structuring: 'Building structure...',
+  generating: 'Generating...',
   reviewing: 'Ready to review',
   publishing: 'Publishing...',
   done: 'Published',
 }
 
+type ChatMessage = { role: 'user' | 'assistant'; content: string }
+
+type ChatPanelPageState = PageBuilderState & { messages: ChatMessage[] }
+
 type ChatPanelProps = {
-  state: PageBuilderState
+  state: ChatPanelPageState
   onSendMessage: (message: string) => Promise<void>
   onApprove: () => Promise<void>
   onReset: () => void
@@ -39,7 +41,7 @@ export function ChatPanel({ state, onSendMessage, onApprove, onReset }: ChatPane
     setLoading(false)
   }
 
-  const isInputDisabled = loading || step === 'structuring' || step === 'publishing' || step === 'done'
+  const isInputDisabled = loading || step === 'generating' || step === 'publishing' || step === 'done'
 
   return (
     <div style={{
@@ -78,7 +80,7 @@ export function ChatPanel({ state, onSendMessage, onApprove, onReset }: ChatPane
             Describe the page you want to build. Tell me the product, audience, and what you want people to do.
           </div>
         )}
-        {messages.map((msg, i) => (
+        {messages.map((msg: ChatMessage, i: number) => (
           <div key={i} style={{
             alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
             maxWidth: '85%',

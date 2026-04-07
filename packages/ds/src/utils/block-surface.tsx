@@ -120,7 +120,12 @@ export function useBlockBackgroundColor(
 ): string | undefined {
   const { tokenContext } = useDsContext()
   return useMemo(
-    () => resolveBlockBackgroundColor(emphasis, appearance, tokenContext),
+    () =>
+      resolveBlockBackgroundColor(
+        emphasis,
+        appearance,
+        tokenContext as Record<string, string>
+      ),
     [emphasis, appearance, tokenContext]
   )
 }

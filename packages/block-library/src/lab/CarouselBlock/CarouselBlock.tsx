@@ -494,8 +494,8 @@ export function LabCarouselBlock({
               {eyebrow && (
                 <Label
                   size="M"
-                  appearance="secondary"
-                  attention="low"
+                  color="medium"
+                  weight="low"
                   align="center"
                   style={labBlockFramingEyebrowStyle}
                 >

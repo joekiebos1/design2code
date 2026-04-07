@@ -33,6 +33,7 @@ import type {
   MediaText5050BlockProps,
   MediaText5050Item,
   MediaText5050Media,
+  MediaText5050Variant,
 } from './MediaText5050Block.types'
 import {
   labStyleHeadlineAltDefault,
@@ -410,11 +411,16 @@ export function MediaText5050Block({
 
   const aspectRatio = displayMedia?.aspectRatio ? ASPECT_RATIOS[displayMedia.aspectRatio] : undefined
   const isVideo = displayMedia?.type === 'video'
+  const isParagraphLikeVariant =
+    variant === 'paragraphs' || variant === 'singleParagraph' || variant === 'multiParagraph'
+
   const useStreamImage =
-    variant === 'paragraphs' &&
+    isParagraphLikeVariant &&
     Boolean(imageState && imageSlot && displayMedia?.type === 'image' && displayMedia === media)
 
-  const useSingleParagraphColumn = variant === 'paragraphs' && paragraphColumnLayout === 'single'
+  const useSingleParagraphColumn =
+    variant === 'singleParagraph' ||
+    (variant === 'paragraphs' && paragraphColumnLayout === 'single')
   const paragraphItemGap = 'var(--ds-spacing-m)'
   const showBlockFraming = hasLabBlockFraming(headline, description, callToActions)
   const framingTextAlign = blockFramingAlignment === 'center' ? 'center' : 'left'
@@ -748,8 +754,10 @@ export function MediaText5050Block({
     </div>
   )
 
-  const textContentByVariant = {
+  const textContentByVariant: Record<MediaText5050Variant, JSX.Element> = {
     paragraphs: paragraphsContent,
+    singleParagraph: paragraphsContent,
+    multiParagraph: paragraphsContent,
     accordion: accordionContent,
   }
 

@@ -6,7 +6,7 @@
 
 export { LabHeroBlock } from './HeroBlock/LabHeroBlock'
 export type { LabHeroBlockProps } from './HeroBlock/LabHeroBlock'
-export type { MediaTextBlockProps } from './MediaTextBlock/MediaTextBlock.types'
+export type { MediaTextBlockProps as LabMediaTextBlockProps } from './MediaTextBlock/MediaTextBlock.types'
 export { LabIconGridBlock } from './IconGridBlock/IconGridBlock'
 export { LabTopNavBlock } from './TopNavBlock/TopNavBlock'
 export { LabMediaZoomOutOnScroll } from './MediaZoomOutOnScroll/MediaZoomOutOnScroll'

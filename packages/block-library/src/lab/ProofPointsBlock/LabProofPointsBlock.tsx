@@ -9,10 +9,7 @@ import { getProofPointIcon } from '../../lib/proof-point-icons'
 import { normalizeHeadingLevel, type HeadingLevel } from '@design2code/ds'
 import { labHeadlinePresets, labTextPresets } from '@design2code/ds'
 import { LabBlockFramingCallToActions } from '../../components/LabBlockFramingCallToActions'
-import {
-  labBlockFramingDescriptionStyle,
-  labBlockFramingIntroStackStyle,
-} from '../../lab-utils/lab-block-framing-typography'
+import { labBlockFramingDescriptionStyle } from '../../lab-utils/lab-block-framing-typography'
 import { hasLabBlockFraming } from '../../lab-utils/has-lab-block-framing'
 import type { LabProofPointsBlockProps, LabProofPointItem } from './LabProofPointsBlock.types'
 

@@ -81,7 +81,8 @@ function ModalityRow({ label, value }: { label: string; value: string }) {
     >
       <div style={{ flex: 1, minWidth: 0 }}>
         <Headline
-          level={2}
+          size="S"
+          as="h2"
           style={{
             margin: 0,
             marginBottom: 'var(--ds-spacing-s)',
@@ -217,7 +218,8 @@ function ResultView({ result, productName }: { result: StoryCoachResult; product
     >
       <header style={{ marginBottom: 'var(--ds-spacing-m)' }}>
         <Headline
-          level={1}
+          size="M"
+          as="h1"
           style={{
             margin: 0,
             marginBottom: 'var(--ds-spacing-s)',
@@ -281,7 +283,7 @@ function ResultView({ result, productName }: { result: StoryCoachResult; product
             marginBottom: 'var(--ds-spacing-xl)',
           }}
         >
-          <Headline level={2} style={{ margin: 0, ...sectionTitleStyle }}>
+          <Headline size="S" as="h2" style={{ margin: 0, ...sectionTitleStyle }}>
             Block structure
           </Headline>
           <div style={{ display: 'flex', gap: 'var(--ds-spacing-s)' }}>
@@ -506,10 +508,10 @@ export function OutputPanel({ state, productName }: OutputPanelProps) {
       <SurfaceProvider level={0}>
         <div style={{ padding: 'var(--ds-spacing-2xl)' }}>
           <Text
-            appearance="negative"
             style={{
               fontSize: 'var(--ds-typography-body-m)',
               fontWeight: 'var(--ds-typography-weight-medium)',
+              color: 'var(--ds-color-text-negative)',
             }}
           >
             {state.error}
