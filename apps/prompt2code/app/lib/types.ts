@@ -54,8 +54,8 @@ export type BlockOptions = {
   variant?: string | null
   size?: 'hero' | 'feature' | 'editorial' | null
   template?: 'textOnly' | 'stacked' | 'overlay' | null
-  alignment?: 'left' | 'center'
-  mediaSize?: 'edgeToEdge' | 'default'
+  alignment?: 'left' | 'center' | null
+  mediaSize?: 'edgeToEdge' | 'default' | null
   imagePosition?: 'left' | 'right' | null
   mediaStyle?: 'contained' | 'overflow' | null
   imageAspectRatio?: string | null
