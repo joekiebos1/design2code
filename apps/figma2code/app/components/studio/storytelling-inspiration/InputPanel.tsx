@@ -142,7 +142,7 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
             padding: 'var(--ds-spacing-2xl)',
           }}
         >
-          <Headline level={2} style={{ marginBottom: CHUNK_GAP, fontWeight: 'var(--ds-typography-weight-medium)', color: 'var(--ds-color-text-high)', letterSpacing: '-0.02em' }}>
+          <Headline size="S" as="h2" style={{ marginBottom: CHUNK_GAP, fontWeight: 'var(--ds-typography-weight-medium)', color: 'var(--ds-color-text-high)', letterSpacing: '-0.02em' }}>
             Storytelling Inspiration
           </Headline>
           <Text
