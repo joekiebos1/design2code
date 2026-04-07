@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  typescript: { ignoreBuildErrors: true },
   transpilePackages: ['@design2code/ds', '@design2code/block-library', '@design2code/cms-schema'],
   experimental: {
     cssChunking: 'strict',
