@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@sanity/client'
 import { createImageUrlBuilder } from '@sanity/image-url'
-import { buildImageManifest } from '../../../lib/imageManifest'
-import type { PageBrief } from '../../../lib/types'
+import { buildImageManifest } from '../../lib/imageManifest'
+import type { PageBrief } from '../../lib/types'
 import { registerStream } from '../stream-store'
 
 type StreamEvent = {

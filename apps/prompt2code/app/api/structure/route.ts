@@ -3,7 +3,7 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 import JSON5 from 'json5'
 import Anthropic from '@anthropic-ai/sdk'
-import type { PageBrief } from '../../../lib/types'
+import type { PageBrief } from '../../lib/types'
 import '../_startup'
 
 /** Product page storytelling and structure rules. Shared with Storytelling Inspiration (Studio). */

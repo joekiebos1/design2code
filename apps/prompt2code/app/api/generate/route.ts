@@ -13,7 +13,7 @@
 import { NextRequest } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import JSON5 from 'json5'
-import type { PageBrief, Section } from '../../../lib/types'
+import type { PageBrief, Section } from '../../lib/types'
 import { getTemplate, templateToPrompt, applyTemplateOverrides } from '../../lib/templates'
 import '../_startup'
 
