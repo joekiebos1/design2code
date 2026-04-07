@@ -3,7 +3,7 @@
 import { useMemo } from 'react'
 import type { StringInputProps } from 'sanity'
 import { useFormValue } from 'sanity'
-import { labCardAspectRatioListForPath } from '../../schemaTypes/shared/labCarouselCardContext'
+import { labCardAspectRatioListForPath } from '@design2code/cms-schema'
 
 /**
  * Aspect ratio options depend on parent block: lab carousel size vs lab card grid.

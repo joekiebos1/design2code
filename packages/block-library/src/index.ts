@@ -9,6 +9,9 @@ export * from './shared/media-text-asymmetric-shared.types'
 export * from './shared/map-media-text-blocks'
 export type { ImageSlotState } from './shared/image-slot-state'
 
+// Lab utilities
+export type { LabBlockCallToAction } from './lab-utils/lab-block-framing-typography'
+
 // Shared UI components
 export { Grid, useCell } from './components/blocks/Grid'
 export { StreamImage } from './components/blocks/StreamImage'

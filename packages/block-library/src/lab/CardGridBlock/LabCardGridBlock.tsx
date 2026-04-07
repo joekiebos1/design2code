@@ -36,7 +36,7 @@ export type LabCardGridBlockProps = {
   minimalBackgroundStyle?: 'block' | 'gradient' | null
   appearance?: 'primary' | 'secondary' | 'sparkle' | 'neutral'
   items?: LabCardItem[] | null
-  images?: Record<string, import('../../../shared/image-slot-state').ImageSlotState>
+  images?: Record<string, import('../../shared/image-slot-state').ImageSlotState>
 }
 
 const MAX_ITEMS = 12

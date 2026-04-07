@@ -24,7 +24,7 @@ import {
   BlockShell,
   mapMediaText5050BlockProps,
 } from '@design2code/block-library'
-import type { BlockPattern, LabHeroBlockProps, MediaTextBlockProps } from '@design2code/block-library'
+import type { BlockPattern, LabHeroBlockProps, MediaTextBlockProps, LabCardItem, LabBlockCallToAction } from '@design2code/block-library'
 import { Headline, Text } from '@marcelinodzn/ds-react'
 import { labStyleHeadlineVariantRail } from '@design2code/ds'
 import { labHeadlinePresets, labTextPresets } from '@design2code/ds'
@@ -664,7 +664,7 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
           }
           case 'labCardGrid': {
             const cols = block.columns as string
-            const items = (block.items ?? []) as import('./blocks/LabCardRenderer').LabCardItem[]
+            const items = (block.items ?? []) as LabCardItem[]
             return wrapSection(
               <LabCardGridBlock
                 columns={parseInt(cols, 10) as 2 | 3 | 4}
@@ -672,7 +672,7 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
                 cardSurface={block.cardSurface as 'minimal' | 'subtle' | 'moderate' | 'bold' | 'inverted' | undefined}
                 title={block.title as string}
                 description={block.description as string | null | undefined}
-                callToActions={block.callToActions as import('../../lib/lab/lab-block-framing-typography').LabBlockCallToAction[] | undefined}
+                callToActions={block.callToActions as LabBlockCallToAction[] | undefined}
                 emphasis={block.emphasis as 'ghost' | 'minimal' | 'subtle' | 'bold'}
                 minimalBackgroundStyle={(block.minimalBackgroundStyle as string)?.toLowerCase?.() === 'gradient' ? 'gradient' : 'block'}
                 appearance={(block.appearance ?? block.surfaceColour) as 'primary' | 'secondary' | 'sparkle' | 'neutral'}
@@ -697,13 +697,13 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
               aspectRatio: (it.aspectRatio as '4:5' | '8:5' | '2:1') ?? '4:5',
               imageSlot: it.imageSlot,
               backgroundColor: (it as { backgroundColor?: string | null }).backgroundColor,
-            })) as import('./blocks/LabCardRenderer').LabCardItem[]
+            })) as LabCardItem[]
             return wrapSection(
               <LabCarouselBlock
                 eyebrow={block.eyebrow as string | null | undefined}
                 title={block.title as string}
                 description={block.description as string | null | undefined}
-                callToActions={block.callToActions as import('../../lib/lab/lab-block-framing-typography').LabBlockCallToAction[] | undefined}
+                callToActions={block.callToActions as LabBlockCallToAction[] | undefined}
                 interaction={(block.interaction as 'information' | 'navigation') ?? 'information'}
                 cardSurface={block.cardSurface as 'minimal' | 'subtle' | 'moderate' | 'bold' | 'inverted' | undefined}
                 cardSize={(block.cardSize as 'compact' | 'medium' | 'large') ?? 'medium'}
@@ -722,7 +722,7 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
               <LabFullBleedVerticalCarousel
                 title={block.title as string | null | undefined}
                 description={block.description as string | null | undefined}
-                callToActions={block.callToActions as import('../../lib/lab/lab-block-framing-typography').LabBlockCallToAction[] | undefined}
+                callToActions={block.callToActions as LabBlockCallToAction[] | undefined}
                 emphasis={block.emphasis as 'ghost' | 'minimal' | 'subtle' | 'bold'}
                 appearance={(block.appearance ?? block.surfaceColour) as 'primary' | 'secondary' | 'sparkle' | 'neutral'}
                 items={block.items as { title?: string; description?: string; image?: string; video?: string }[]}
@@ -737,7 +737,7 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
               <LabRotatingMediaBlock
                 title={block.title as string | null | undefined}
                 description={block.description as string | null | undefined}
-                callToActions={block.callToActions as import('../../lib/lab/lab-block-framing-typography').LabBlockCallToAction[] | undefined}
+                callToActions={block.callToActions as LabBlockCallToAction[] | undefined}
                 variant={(block.variant as 'small' | 'large' | 'combined') ?? 'small'}
                 emphasis={block.emphasis as 'ghost' | 'minimal' | 'subtle' | 'bold'}
                 appearance={(block.appearance ?? block.surfaceColour) as 'primary' | 'secondary' | 'sparkle' | 'neutral'}
@@ -767,7 +767,7 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
               <LabIconGridBlock
                 title={block.title as string | null | undefined}
                 description={block.description as string | null | undefined}
-                callToActions={block.callToActions as import('../../lib/lab/lab-block-framing-typography').LabBlockCallToAction[] | undefined}
+                callToActions={block.callToActions as LabBlockCallToAction[] | undefined}
                 items={items}
                 columns={(block.columns as 3 | 4 | 5 | 6) ?? undefined}
                 emphasis={block.emphasis as 'ghost' | 'minimal' | 'subtle' | 'bold'}
@@ -788,7 +788,7 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
               <LabProofPointsBlock
                 title={block.title as string | null}
                 description={block.description as string | null | undefined}
-                callToActions={block.callToActions as import('../../lib/lab/lab-block-framing-typography').LabBlockCallToAction[] | undefined}
+                callToActions={block.callToActions as LabBlockCallToAction[] | undefined}
                 variant={ppVariant}
                 emphasis={ppSurfValid as 'ghost' | 'minimal' | 'subtle' | 'bold'}
                 minimalBackgroundStyle={(block.minimalBackgroundStyle as string)?.toLowerCase?.() === 'gradient' ? 'gradient' : 'block'}
@@ -805,7 +805,7 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
               <LabMediaZoomOutOnScroll
                 title={block.title as string | null | undefined}
                 description={block.description as string | null | undefined}
-                callToActions={block.callToActions as import('../../lib/lab/lab-block-framing-typography').LabBlockCallToAction[] | undefined}
+                callToActions={block.callToActions as LabBlockCallToAction[] | undefined}
                 image={(block.image as string) || '/placeholder-preview.svg'}
                 videoUrl={block.videoUrl as string | null}
                 alt={block.alt as string | null}
@@ -825,7 +825,7 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
               <EditorialBlock
                 headline={block.headline as string | null}
                 description={block.description as string | null | undefined}
-                callToActions={block.callToActions as import('../../lib/lab/lab-block-framing-typography').LabBlockCallToAction[] | undefined}
+                callToActions={block.callToActions as LabBlockCallToAction[] | undefined}
                 body={block.body as string | null}
                 backgroundImage={block.backgroundImage as string | null}
                 backgroundImagePositionX={block.backgroundImagePositionX as number | null}

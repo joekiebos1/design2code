@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import type { PageBrief } from '../jiokarna/types'
-import { extractImageSlots } from '../jiokarna/briefToBlocks'
 
 type Block = { slot: string }
 
@@ -15,8 +13,7 @@ export type ImageSlotState = {
 
 export function useImageStream(
   jobId: string | null,
-  /** Blocks array (legacy) or brief (sends full Art Director payload). */
-  blocksOrBrief: Block[] | PageBrief | null
+  blocks: Block[] | null
 ): {
   images: Record<string, ImageSlotState>
   readyCount: number
@@ -25,19 +22,10 @@ export function useImageStream(
 } {
   const [images, setImages] = useState<Record<string, ImageSlotState>>({})
 
-  const blocks = useMemo(() => {
-    if (!blocksOrBrief) return []
-    if (Array.isArray(blocksOrBrief)) return blocksOrBrief
-    return extractImageSlots(blocksOrBrief)
-  }, [blocksOrBrief])
-
   const body = useMemo(() => {
-    if (!jobId) return null
-    if (blocksOrBrief && !Array.isArray(blocksOrBrief) && blocksOrBrief?.sections) {
-      return JSON.stringify({ jobId, brief: blocksOrBrief })
-    }
+    if (!jobId || !blocks?.length) return null
     return JSON.stringify({ jobId, blocks })
-  }, [jobId, blocksOrBrief, blocks])
+  }, [jobId, blocks])
 
   useEffect(() => {
     if (!jobId || !blocks?.length || !body) {

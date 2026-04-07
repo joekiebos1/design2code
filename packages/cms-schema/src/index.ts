@@ -1,3 +1,5 @@
+export { labCardAspectRatioListForPath } from './shared/labCarouselCardContext'
+
 import { pageType } from './page'
 import { figmaDesignType } from './figmaDesign'
 import { labBlockPageType } from './labBlockPage'

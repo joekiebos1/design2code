@@ -57,5 +57,5 @@ export interface MediaTextBlockProps {
   media?: MediaTextBlockMedia
   /** JioKarna preview: progressive image stream slot and state. */
   imageSlot?: string | null
-  imageState?: import('../../../shared/image-slot-state').ImageSlotState | null
+  imageState?: import('../../shared/image-slot-state').ImageSlotState | null
 }
