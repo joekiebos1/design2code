@@ -804,3 +804,168 @@ export function getPageSectionRoots(frame: FigmaFileNode): FigmaFileNode[] {
   }
   return kids.filter((c) => c.type === 'INSTANCE' || c.type === 'COMPONENT')
 }
+
+// ---------------------------------------------------------------------------
+// Image slot collection — identifies Figma nodes that represent media areas
+// ---------------------------------------------------------------------------
+
+export type ImageSlot = {
+  nodeId: string
+  slotName: string
+  blockType: FigmaMappedSanityBlockType
+  blockIndex: number
+  cardIndex?: number
+}
+
+const MIN_IMAGE_AREA = 2000
+
+const MEDIA_NAME_RE = /^(image|media|photo|background|hero image|card image|thumbnail|cover|poster|visual|artwork)$/i
+
+function nodeArea(n: FigmaFileNode): number {
+  const b = n.absoluteBoundingBox
+  if (!b) return 0
+  return (b.width ?? 0) * (b.height ?? 0)
+}
+
+/** Count real text nodes (excluding alt text / accessibility labels). */
+function countSignificantTextNodes(n: FigmaFileNode): number {
+  let count = 0
+  function walk(node: FigmaFileNode) {
+    if (node.type === 'TEXT' && typeof node.characters === 'string') {
+      const name = norm(node.name)
+      if (!/alt|alt text|image description|accessibility/i.test(name)) count++
+    }
+    for (const ch of node.children ?? []) walk(ch)
+  }
+  walk(n)
+  return count
+}
+
+/**
+ * Find the Figma node that represents the media area within a block or card.
+ *
+ * Strategy (in priority order):
+ * 1. Name match: INSTANCE/FRAME named "Image", "Media", etc. (common in DS libraries)
+ * 2. Largest non-text node: any node type with few text descendants and large area
+ */
+function findMediaNode(root: FigmaFileNode): FigmaFileNode | null {
+  let byName: FigmaFileNode | null = null
+  let byNameArea = 0
+  let bySize: FigmaFileNode | null = null
+  let bySizeArea = 0
+
+  function walk(n: FigmaFileNode, isRoot: boolean) {
+    if (!isRoot) {
+      const a = nodeArea(n)
+      if (a >= MIN_IMAGE_AREA) {
+        if (MEDIA_NAME_RE.test(n.name.trim())) {
+          if (a > byNameArea) { byName = n; byNameArea = a }
+        }
+        const textCount = countSignificantTextNodes(n)
+        if (textCount <= 1 && a > bySizeArea) {
+          bySize = n
+          bySizeArea = a
+        }
+      }
+    }
+    for (const ch of n.children ?? []) walk(ch, false)
+  }
+  walk(root, true)
+  return byName ?? bySize
+}
+
+/**
+ * For carousel/cardGrid, find the media node inside each card root.
+ */
+function imageSlotForCard(
+  cardRoot: FigmaFileNode,
+  blockType: FigmaMappedSanityBlockType,
+  blockIndex: number,
+  cardIndex: number,
+): ImageSlot | null {
+  const imgNode = findMediaNode(cardRoot)
+  if (!imgNode) return null
+  return {
+    nodeId: imgNode.id,
+    slotName: `${blockType}-${blockIndex}-card-${cardIndex}`,
+    blockType,
+    blockIndex,
+    cardIndex,
+  }
+}
+
+function collectHeroImageSlots(root: FigmaFileNode, blockIndex: number): ImageSlot[] {
+  const img = findMediaNode(root)
+  if (!img) return []
+  return [{ nodeId: img.id, slotName: `hero-${blockIndex}-media`, blockType: 'hero', blockIndex }]
+}
+
+function collectCarouselImageSlots(root: FigmaFileNode, blockIndex: number): ImageSlot[] {
+  const swapSlots = parseCarouselSwapSlots(
+    root.componentProperties as Record<string, unknown> | undefined,
+  )
+  const swapRoots = swapSlots.length > 0 ? resolveCarouselCardRootsFromSwaps(root, swapSlots) : null
+  const cardRoots = swapRoots ?? getCarouselCardRoots(root)
+  const slots: ImageSlot[] = []
+  for (let i = 0; i < cardRoots.length; i++) {
+    const slot = imageSlotForCard(cardRoots[i], 'carousel', blockIndex, i)
+    if (slot) slots.push(slot)
+  }
+  return slots
+}
+
+function collectCardGridImageSlots(root: FigmaFileNode, blockIndex: number): ImageSlot[] {
+  const cardRoots = getCarouselCardRoots(root)
+  const slots: ImageSlot[] = []
+  for (let i = 0; i < cardRoots.length; i++) {
+    const slot = imageSlotForCard(cardRoots[i], 'cardGrid', blockIndex, i)
+    if (slot) slots.push(slot)
+  }
+  return slots
+}
+
+function collectMediaText5050ImageSlots(root: FigmaFileNode, blockIndex: number): ImageSlot[] {
+  const img = findMediaNode(root)
+  if (!img) return []
+  return [{ nodeId: img.id, slotName: `mediaText5050-${blockIndex}-media`, blockType: 'mediaText5050', blockIndex }]
+}
+
+function collectMediaTextStackedImageSlots(root: FigmaFileNode, blockIndex: number): ImageSlot[] {
+  const img = findMediaNode(root)
+  if (!img) return []
+  return [{ nodeId: img.id, slotName: `mediaTextStacked-${blockIndex}-media`, blockType: 'mediaTextStacked', blockIndex }]
+}
+
+function collectMediaTextAsymmetricImageSlots(root: FigmaFileNode, blockIndex: number): ImageSlot[] {
+  const img = findMediaNode(root)
+  if (!img) return []
+  return [{ nodeId: img.id, slotName: `mediaTextAsymmetric-${blockIndex}-media`, blockType: 'mediaTextAsymmetric', blockIndex }]
+}
+
+/**
+ * Collects all image slots for a given block section root.
+ * Each slot represents one media area that should be rendered from Figma.
+ */
+export function collectImageSlots(
+  blockType: FigmaMappedSanityBlockType,
+  sectionRoot: FigmaFileNode,
+  blockIndex: number,
+): ImageSlot[] {
+  switch (blockType) {
+    case 'hero':
+      return collectHeroImageSlots(sectionRoot, blockIndex)
+    case 'carousel':
+      return collectCarouselImageSlots(sectionRoot, blockIndex)
+    case 'cardGrid':
+      return collectCardGridImageSlots(sectionRoot, blockIndex)
+    case 'mediaText5050':
+      return collectMediaText5050ImageSlots(sectionRoot, blockIndex)
+    case 'mediaTextStacked':
+      return collectMediaTextStackedImageSlots(sectionRoot, blockIndex)
+    case 'mediaTextAsymmetric':
+      return collectMediaTextAsymmetricImageSlots(sectionRoot, blockIndex)
+    case 'proofPoints':
+    case 'iconGrid':
+      return []
+  }
+}

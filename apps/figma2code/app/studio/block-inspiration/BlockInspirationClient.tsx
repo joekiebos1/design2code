@@ -343,8 +343,6 @@ function BlockPreviewPanel({
     )
   }
 
-  const labUrl = `/lab/${selectedEntry.labSlug}`
-
   return (
     <div
       style={{
@@ -423,7 +421,7 @@ function BlockPreviewPanel({
             borderRadius: 'var(--ds-radius-m)',
             border: `1px solid ${grey.border}`,
             overflow: 'hidden',
-            background: 'var(--ds-color-background-minimal)',
+            background: 'var(--ds-color-background-ghost)',
           }}
         >
           <div
@@ -432,18 +430,10 @@ function BlockPreviewPanel({
               height: iframeHeight,
               transform: scale < 1 ? `scale(${scale})` : 'none',
               transformOrigin: 'top left',
+              overflow: 'auto',
             }}
           >
-            <iframe
-              src={labUrl}
-              title={`${selectedEntry.name} – Lab (${previewSize})`}
-              style={{
-                width: iframeWidth,
-                height: iframeHeight,
-                border: 'none',
-                display: 'block',
-              }}
-            />
+            <selectedEntry.PreviewFull />
           </div>
           <div
             role="button"

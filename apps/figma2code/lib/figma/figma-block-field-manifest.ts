@@ -5,8 +5,7 @@
  */
 
 import type { FigmaMappedSanityBlockType } from './figma-block-types.ts'
-import { BLOCK_ACCENT_OPTIONS, EMPHASIS_OPTIONS } from '../../src/schemaTypes/shared/blockColourFields.ts'
-import { DS_THEMES } from '../../src/schemaTypes/shared/dsThemes.ts'
+import { BLOCK_ACCENT_OPTIONS, EMPHASIS_OPTIONS, DS_THEMES } from '@design2code/cms-schema'
 import {
   collectFigmaStringComponentProperties,
   figmaPropertyKeyMatchesFieldName,

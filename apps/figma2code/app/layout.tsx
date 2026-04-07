@@ -5,8 +5,8 @@ import { Providers } from '@design2code/ds'
 
 export const metadata: Metadata = {
   title: {
-    default: 'Page Architect',
-    template: '%s | Page Architect',
+    default: 'Figma2Code',
+    template: '%s | Figma2Code',
   },
 }
 

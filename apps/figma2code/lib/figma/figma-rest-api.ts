@@ -62,6 +62,47 @@ export async function fetchFigmaFileNodes(
   return res.json() as Promise<FigmaNodesResponse>
 }
 
+export type FigmaImagesResponse = {
+  err: string | null
+  images: Record<string, string | null>
+}
+
+/**
+ * Render Figma nodes as PNG images.
+ * @see https://www.figma.com/developers/api#get-images-endpoint
+ * Returns a Map from node ID → temporary CDN URL (PNG).
+ * Node IDs that failed to render are omitted from the map.
+ */
+export async function fetchFigmaRenderedImages(
+  fileKey: string,
+  nodeIds: string[],
+  accessToken: string,
+  scale = 2,
+): Promise<Map<string, string>> {
+  if (nodeIds.length === 0) return new Map()
+
+  const ids = nodeIds.map((id) => encodeURIComponent(id)).join(',')
+  const url = `${FIGMA_API}/images/${encodeURIComponent(fileKey)}?ids=${ids}&format=png&scale=${scale}`
+  const res = await fetch(url, {
+    cache: 'no-store',
+    headers: { 'X-Figma-Token': accessToken },
+    signal: AbortSignal.timeout(120_000),
+  })
+  if (!res.ok) {
+    const body = await res.text()
+    throw new Error(`Figma Images API ${res.status}: ${body.slice(0, 500)}`)
+  }
+
+  const data = (await res.json()) as FigmaImagesResponse
+  const map = new Map<string, string>()
+  if (data.images) {
+    for (const [id, imgUrl] of Object.entries(data.images)) {
+      if (imgUrl) map.set(id, imgUrl)
+    }
+  }
+  return map
+}
+
 export function getDocumentRoot(response: FigmaNodesResponse, nodeId: string): FigmaFileNode | null {
   const withColon = nodeId.includes(':') ? nodeId : nodeId.replace(/-/g, ':')
   const withHyphen = withColon.replace(/:/g, '-')

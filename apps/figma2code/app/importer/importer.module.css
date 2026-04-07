@@ -1,0 +1,85 @@
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--ds-spacing-2xl);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-l);
+}
+
+.fieldGroup {
+  display: flex;
+  gap: var(--ds-spacing-m);
+}
+
+.fieldGroup > * {
+  flex: 1;
+}
+
+.actions {
+  display: flex;
+  gap: var(--ds-spacing-m);
+  align-items: center;
+}
+
+.resultCard {
+  margin-top: var(--ds-spacing-xl);
+}
+
+.blockList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-spacing-s);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.blockChip {
+  padding: var(--ds-spacing-xs) var(--ds-spacing-m);
+  border-radius: var(--ds-spacing-s);
+  background: rgba(0, 0, 0, 0.04);
+  font-size: var(--ds-typography-label-s);
+  color: var(--ds-color-text-high);
+}
+
+.warningList {
+  margin: var(--ds-spacing-m) 0 0;
+  padding: 0 0 0 var(--ds-spacing-l);
+  color: rgba(0, 0, 0, 0.48);
+  font-size: var(--ds-typography-label-s);
+}
+
+.downloadActions {
+  display: flex;
+  gap: var(--ds-spacing-m);
+  margin-top: var(--ds-spacing-l);
+}
+
+.errorBox {
+  margin-top: var(--ds-spacing-l);
+  padding: var(--ds-spacing-m);
+  border-radius: var(--ds-spacing-s);
+  background: rgba(220, 38, 38, 0.06);
+  color: rgba(180, 30, 30, 1);
+  font-size: var(--ds-typography-body-s);
+}
+
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0, 0, 0, 0.12);
+  border-top-color: var(--ds-color-text-high);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

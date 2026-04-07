@@ -1,4 +1,6 @@
 export { labCardAspectRatioListForPath } from './shared/labCarouselCardContext'
+export { BLOCK_ACCENT_OPTIONS, EMPHASIS_OPTIONS } from './shared/blockColourFields'
+export { DS_THEMES, DS_THEME_DEFAULT } from './shared/dsThemes'
 
 import { pageType } from './page'
 import { figmaDesignType } from './figmaDesign'

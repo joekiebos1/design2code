@@ -30,18 +30,18 @@ export default function StudioLayout({ children }: { children: React.ReactNode }
               fontSize: 'var(--ds-typography-label-m)',
             }}
           >
-            Page Architect
+            Figma2Code
           </Link>
           <nav style={{ display: 'flex', gap: 'var(--ds-spacing-m)', alignItems: 'center' }}>
             <Link
-              href="/studio"
+              href="/"
               style={{
                 color: 'rgba(0, 0, 0, 0.48)',
                 textDecoration: 'none',
                 fontSize: 'var(--ds-typography-label-s)',
               }}
             >
-              Studio home
+              All tools
             </Link>
             <Link
               href="/studio/storytelling-inspiration"
@@ -51,7 +51,7 @@ export default function StudioLayout({ children }: { children: React.ReactNode }
                 fontSize: 'var(--ds-typography-label-s)',
               }}
             >
-              Storytelling Inspiration
+              Storytelling
             </Link>
             <Link
               href="/studio/block-inspiration"
@@ -61,18 +61,18 @@ export default function StudioLayout({ children }: { children: React.ReactNode }
                 fontSize: 'var(--ds-typography-label-s)',
               }}
             >
-              Block Inspiration
+              Blocks
             </Link>
             <Link
-              href="/jiokarna"
+              href="/importer"
               style={{
                 color: 'rgba(0, 0, 0, 0.48)',
                 textDecoration: 'none',
                 fontSize: 'var(--ds-typography-label-s)',
               }}
             >
-            JioKarna
-          </Link>
+              Importer
+            </Link>
         </nav>
       </header>
       <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', overflowX: 'hidden' }}>{children}</div>

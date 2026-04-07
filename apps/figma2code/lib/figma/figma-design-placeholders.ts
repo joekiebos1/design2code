@@ -4,7 +4,13 @@ import type { FigmaImportedContent } from './figma-import-types'
 type ImageRef = { _type: 'image'; asset: { _type: 'reference'; _ref: string } }
 
 export type FigmaDesignPlaceholderCtx = {
+  /** Default asset ID for single-image blocks */
   assetId: string
+  /**
+   * Per-card asset ID for carousel/cardGrid blocks.
+   * Returns undefined when no image was detected for that card.
+   */
+  cardAssetId?: (cardIndex: number) => string | undefined
   imageRef: (id: string) => ImageRef
   newKey: () => string
 }
@@ -43,6 +49,7 @@ export function expandFigmaSectionForSanity(
         ...(h?.body != null && h.body !== '' ? { body: h.body } : {}),
         ...(h?.ctaText != null && h.ctaText !== '' ? { ctaText: h.ctaText } : {}),
         ...(h?.cta2Text != null && h.cta2Text !== '' ? { cta2Text: h.cta2Text } : {}),
+        image: img,
         theme: DS.theme,
         ...(contentLayout === 'category' || contentLayout === 'mediaOverlay'
           ? {}
@@ -84,19 +91,23 @@ export function expandFigmaSectionForSanity(
         theme: DS.theme,
         emphasis: DS.emphasis,
         appearance: DS.appearance,
-        items: cardData.map((it) => ({
-          _type: 'cardItem' as const,
-          _key: k(),
-          cardType: cardTypeFor(it),
-          ...(it.aspectRatio ? { aspectRatio: it.aspectRatio } : {}),
-          title: it.title,
-          description: it.description ?? '',
-          ...(cardTypeFor(it) === 'colourFeatured'
-            ? { backgroundColor: (it as { backgroundColor?: string }).backgroundColor ?? 'primary-bold' }
-            : { image: img }),
-          ...(it.ctaText ? { ctaText: it.ctaText } : {}),
-          ...(it.link ? { link: it.link } : {}),
-        })),
+        items: cardData.map((it, i) => {
+          const cardRef = ctx.cardAssetId?.(i)
+          const cardImg = cardRef ? ctx.imageRef(cardRef) : img
+          return {
+            _type: 'cardItem' as const,
+            _key: k(),
+            cardType: cardTypeFor(it),
+            ...(it.aspectRatio ? { aspectRatio: it.aspectRatio } : {}),
+            title: it.title,
+            description: it.description ?? '',
+            ...(cardTypeFor(it) === 'colourFeatured'
+              ? { backgroundColor: (it as { backgroundColor?: string }).backgroundColor ?? 'primary-bold' }
+              : { image: cardImg }),
+            ...(it.ctaText ? { ctaText: it.ctaText } : {}),
+            ...(it.link ? { link: it.link } : {}),
+          }
+        }),
       }
     }
     case 'mediaText5050': {
@@ -202,7 +213,7 @@ export function expandFigmaSectionForSanity(
             cardType: 'mediaTextBelow',
             title: 'Card title',
             description: 'Description — replace from design.',
-            image: img,
+            image: ctx.cardAssetId?.(0) ? ctx.imageRef(ctx.cardAssetId(0)!) : img,
           },
         ],
       }
