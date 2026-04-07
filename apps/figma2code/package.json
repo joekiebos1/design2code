@@ -1,0 +1,39 @@
+{
+  "name": "@design2code/figma2code",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "predev": "npm run generate:tokens",
+    "dev": "next dev -p 3002",
+    "generate:tokens": "node ../../apps/dotcom/scripts/generate-ds-tokens-css.mjs app/ds-tokens.generated.css",
+    "prebuild": "npm run generate:tokens",
+    "build": "next build",
+    "start": "next start",
+    "figma:import": "node --env-file=../../.env --experimental-strip-types scripts/import-figma-to-sanity.ts",
+    "figma-design:create": "node --env-file=../../.env --experimental-strip-types scripts/create-figma-design-from-frame.ts"
+  },
+  "dependencies": {
+    "@design2code/block-library": "*",
+    "@design2code/sanity": "*",
+    "@design2code/ds": "*",
+    "@marcelinedzn/ds-react": "^1.0.6",
+    "@sanity/client": "^7.16.0",
+    "next": "^16.1.6",
+    "next-sanity": "^12.1.0",
+    "react": "^19.2.4",
+    "react-compiler-runtime": "^1.0.0",
+    "react-dom": "^19.2.4",
+    "styled-components": "^6.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "^5.6.0"
+  },
+  "peerDependencies": {
+    "@marcelinodzn/ds-react": "^1.0.6",
+    "@marcelinodzn/ds-tokens": "^1.0.1"
+  }
+}

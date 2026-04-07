@@ -1,0 +1,40 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@design2code/block-library": ["../../packages/block-library/src/index.ts"],
+      "@design2code/block-library/*": ["../../packages/block-library/src/*"],
+      "@design2code/ds": ["../../packages/ds/src/index.ts"],
+      "@design2code/ds/*": ["../../packages/ds/src/*"],
+      "@design2code/sanity": ["../../packages/sanity/src/index.ts"],
+      "@design2code/cms-schema": ["../../packages/cms-schema/src/index.ts"],
+      "@marcelinodzn/ds-react": ["../../node_modules/@marcelinodzn/ds-react"],
+      "@marcelinodzn/ds-react/*": ["../../node_modules/@marcelinodzn/ds-react/*"],
+      "@marcelinodzn/ds-tokens": ["../../node_modules/@marcelinodzn/ds-tokens"],
+      "@marcelinodzn/ds-tokens/*": ["../../node_modules/@marcelinodzn/ds-tokens/*"],
+      "use-debounce": ["../../node_modules/use-debounce"],
+      "use-debounce/*": ["../../node_modules/use-debounce/*"],
+      "html2canvas": ["../../node_modules/html2canvas"],
+      "json5": ["../../node_modules/json5"],
+      "styled-components": ["../../node_modules/styled-components"],
+      "styled-components/*": ["../../node_modules/styled-components/*"]
+    }
+  },
+  "include": [
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "lib/**/*.ts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

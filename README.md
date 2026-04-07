@@ -13,7 +13,7 @@ Sanity-based page builder with 3 Blocks: Hero, Feature Grid, and Text + Image. A
 ### 2. Install and configure
 
 ```bash
-cd page-architect
+cd design2code
 npm install
 cp .env.example .env
 ```

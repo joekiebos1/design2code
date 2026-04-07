@@ -1,0 +1,26 @@
+/**
+ * Storybook only: JioType is normally injected by `next/font/local` in app/layout.tsx.
+ * The iframe never mounts RootLayout, so `--font-jiotype` is undefined and
+ * `--ds-font-family` falls through to Inter. Define faces + variable here to match the app.
+ *
+ * Keep paths in sync with app/layout.tsx `localFont` src.
+ */
+@font-face {
+  font-family: 'JioType Var';
+  src: url('../app/fonts/JioTypeVarW05-Regular.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JioType Var';
+  src: url('../app/fonts/JioTypeVarW05-Italic.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+  --font-jiotype: 'JioType Var', ui-sans-serif, system-ui, sans-serif;
+}

@@ -1,0 +1,125 @@
+/**
+ * Design System tokens - generated from @marcelinodzn/ds-tokens
+ * Do not edit. Run: node scripts/generate-ds-tokens-css.mjs
+ */
+:root {
+  --ds-font-family: var(--font-jiotype), "Inter", system-ui, sans-serif;
+  --ds-spacing-3xs: 4px;
+  --ds-spacing-2xs: 7px;
+  --ds-spacing-xs: 9px;
+  --ds-spacing-s: 14px;
+  --ds-spacing-m: 19px;
+  --ds-spacing-l: 26px;
+  --ds-spacing-xl: 35px;
+  --ds-spacing-2xl: 47px;
+  --ds-spacing-3xl: 64px;
+  --ds-spacing-4xl: 88px;
+  --ds-breakpoint-mobile: 360px;
+  --ds-breakpoint-tablet: 768px;
+  --ds-breakpoint-tablet-landscape: 1024px;
+  --ds-breakpoint-desktop: 1440px;
+  --ds-breakpoint-desktop-lg: 1920px;
+  --ds-color-background-subtle: rgb(237, 237, 240);
+  --ds-color-background-ghost: rgba(255, 255, 255, 0.01);
+  --ds-color-background-minimal: rgb(245, 245, 245);
+  --ds-color-text-high: rgb(13, 13, 15);
+  --ds-color-text-medium: rgb(26, 28, 31);
+  --ds-color-text-low: rgb(26, 28, 31);
+  --ds-color-surface-bold: rgb(56, 0, 173);
+  --ds-color-surface-secondary: rgb(250, 125, 26);
+  --ds-color-neutral-bold: rgb(13, 13, 15);
+  --ds-color-neutral-subtle: rgb(237, 237, 240);
+  --ds-color-stroke-subtle: rgba(255, 255, 255, 0.01);
+  --ds-color-block-background-subtle: rgb(232, 232, 255);
+  --ds-color-block-background-bold: rgb(56, 0, 173);
+  --ds-color-card-tertiary: rgb(232, 232, 255);
+  --ds-color-stroke-divider: rgba(0, 0, 0, 0.08);
+  --ds-typography-weight-high: 700;
+  --ds-typography-weight-low: 400;
+  --ds-typography-weight-medium: 500;
+  --ds-typography-label-s: 14px;
+  --ds-typography-label-m: 16px;
+  --ds-typography-body-xs: 12px;
+  --ds-typography-h1: 36px;
+  --ds-typography-h2: 32px;
+  --ds-typography-h3: 26px;
+  --ds-typography-h4: 20px;
+  --ds-typography-h5: 16px;
+  --ds-typography-headline-m: 20px;
+  --ds-typography-headline-s: 16px;
+  --ds-typography-headline-xs: 14px;
+  --ds-typography-display-hero: 36px;
+  --ds-typography-display-2xl: 32px;
+  --ds-spacing-hero-sides: 61px;
+  --ds-spacing-hero-overlap: 12.5vw;
+  --ds-spacing-hero-panel-trim: 25vw;
+  --ds-radius-card: 35px;
+  --ds-radius-card-l: 26px;
+  --ds-radius-card-m: 19px;
+  --ds-radius-card-s: 14px;
+  --ds-radius-full: 999px;
+  --ds-grid-columns: 4;
+  --ds-grid-margin: 16px;
+  --ds-grid-gutter: 8px;
+}
+@media (min-width: 768px) {
+  :root {
+  --ds-grid-columns: 8;
+  --ds-grid-margin: 37px;
+  --ds-grid-gutter: 17px;
+  --ds-typography-label-s: 15px;
+  --ds-typography-label-m: 17px;
+  --ds-typography-body-xs: 13px;
+  --ds-typography-h1: 43px;
+  --ds-typography-h2: 38px;
+  --ds-typography-h3: 29px;
+  --ds-typography-h4: 22px;
+  --ds-typography-h5: 17px;
+  --ds-typography-headline-m: 22px;
+  --ds-typography-headline-s: 17px;
+  --ds-typography-headline-xs: 15px;
+  --ds-typography-display-hero: 43px;
+  --ds-typography-display-2xl: 38px;
+  }
+}
+@media (min-width: 1440px) {
+  :root {
+  --ds-grid-columns: 12;
+  --ds-grid-margin: 47px;
+  --ds-grid-gutter: 19px;
+  --ds-typography-label-s: 16px;
+  --ds-typography-label-m: 19px;
+  --ds-typography-body-xs: 14px;
+  --ds-typography-h1: 64px;
+  --ds-typography-h2: 47px;
+  --ds-typography-h3: 35px;
+  --ds-typography-h4: 26px;
+  --ds-typography-h5: 19px;
+  --ds-typography-headline-m: 26px;
+  --ds-typography-headline-s: 19px;
+  --ds-typography-headline-xs: 18px;
+  --ds-typography-display-hero: 64px;
+  --ds-typography-display-2xl: 47px;
+  }
+}
+@media (min-width: 1920px) {
+  :root {
+  --ds-grid-columns: 12;
+  --ds-grid-margin: 47px;
+  --ds-grid-gutter: 19px;
+  --ds-typography-label-s: 17px;
+  --ds-typography-label-m: 20px;
+  --ds-typography-body-xs: 15px;
+  --ds-typography-h1: 66px;
+  --ds-typography-h2: 55px;
+  --ds-typography-h3: 39px;
+  --ds-typography-h4: 28px;
+  --ds-typography-h5: 20px;
+  --ds-typography-headline-m: 28px;
+  --ds-typography-headline-s: 20px;
+  --ds-typography-headline-xs: 20px;
+  --ds-typography-display-hero: 66px;
+  --ds-typography-display-2xl: 55px;
+  }
+}
+
