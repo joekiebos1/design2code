@@ -1,3 +1,4 @@
+import type { UserConfig } from 'vite'
 import { defineConfig } from 'sanity'
 import { presentationTool } from 'sanity/presentation'
 import { structureTool } from 'sanity/structure'
@@ -39,7 +40,7 @@ export default defineConfig({
   schema: {
     types: schemaTypes,
   },
-  vite: (config) => ({
+  vite: (config: UserConfig) => ({
     ...config,
     server: {
       ...config.server,
