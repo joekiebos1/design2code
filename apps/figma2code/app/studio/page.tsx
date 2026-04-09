@@ -1,10 +1,5 @@
-import type { Metadata } from 'next'
-import { StudioHomeClient } from './StudioHomeClient'
-
-export const metadata: Metadata = {
-  title: 'Jio.com Design Studio',
-}
+import { redirect } from 'next/navigation'
 
 export default function StudioPage() {
-  return <StudioHomeClient />
+  redirect('/studio/storytelling-inspiration')
 }

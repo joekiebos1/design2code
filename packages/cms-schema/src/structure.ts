@@ -6,6 +6,7 @@ import {
   ImagesIcon,
   VideoIcon,
   ComponentIcon,
+  StarIcon,
 } from '@sanity/icons'
 import type { StructureResolver } from 'sanity/structure'
 import { MediaLibraryUpload } from './components/sanity/MediaLibraryUpload'
@@ -71,6 +72,35 @@ export const structure: StructureResolver = (S) =>
                 ),
             ]),
         ),
+      S.listItem()
+        .title('Inspiration')
+        .icon(StarIcon)
+        .child(
+          S.list()
+            .title('Inspiration')
+            .items([
+              S.listItem()
+                .title('Benchmarks')
+                .icon(StarIcon)
+                .child(
+                  S.documentList()
+                    .id('studio-inspiration-benchmarks')
+                    .title('Benchmarks')
+                    .filter('_type == "studioInspiration" && inspirationType == "benchmark"')
+                    .apiVersion('2024-01-01'),
+                ),
+              S.listItem()
+                .title('Jio Designs')
+                .icon(StarIcon)
+                .child(
+                  S.documentList()
+                    .id('studio-inspiration-jio-designs')
+                    .title('Jio Designs')
+                    .filter('_type == "studioInspiration" && inspirationType == "jioDesign"')
+                    .apiVersion('2024-01-01'),
+                ),
+            ]),
+        ),
       ...S.documentTypeListItems().filter(
         (item) =>
           item.getId() !== 'page' &&
@@ -78,6 +108,7 @@ export const structure: StructureResolver = (S) =>
           item.getId() !== 'labBlockPage' &&
           item.getId() !== 'labOverview' &&
           item.getId() !== 'sanity.imageAsset' &&
-          item.getId() !== 'sanity.fileAsset',
+          item.getId() !== 'sanity.fileAsset' &&
+          item.getId() !== 'studioInspiration',
       ),
     ])

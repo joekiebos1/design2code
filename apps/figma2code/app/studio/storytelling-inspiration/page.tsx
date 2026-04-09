@@ -1,11 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Grid } from '@design2code/block-library'
-import { useGridBreakpoint } from '@design2code/ds'
 import { InputPanel } from '../../components/studio/storytelling-inspiration/InputPanel'
 import { OutputPanel } from '../../components/studio/storytelling-inspiration/OutputPanel'
 import type { StoryCoachInput, StoryCoachState } from '../../components/studio/storytelling-inspiration/types'
+import { studioPreviewColumn, studioToolInputColumn } from '../studio-ui'
 
 const initialState: StoryCoachState = {
   status: 'idle',
@@ -14,13 +13,8 @@ const initialState: StoryCoachState = {
 }
 
 export default function StorytellingInspirationPage() {
-  const { columns } = useGridBreakpoint()
   const [state, setState] = useState<StoryCoachState>(initialState)
   const [productName, setProductName] = useState<string>('')
-
-  const isSideBySide = columns >= 8
-  const asideCol = isSideBySide ? '1 / span 4' : '1 / -1'
-  const outputCol = isSideBySide ? '5 / -1' : '1 / -1'
 
   const handleSubmit = async (input: StoryCoachInput) => {
     setProductName(input.productName)
@@ -44,27 +38,18 @@ export default function StorytellingInspirationPage() {
   }
 
   return (
-    <Grid as="main" style={{ height: '100%', minHeight: 0, alignContent: 'stretch' }}>
-      <aside
-        style={{
-          gridColumn: asideCol,
-          gridRow: isSideBySide ? undefined : 1,
-          borderLeft: '1px solid rgba(0, 0, 0, 0.06)',
-          borderRight: isSideBySide ? '1px solid rgba(0, 0, 0, 0.06)' : undefined,
-          overflowY: 'auto',
-        }}
-      >
+    <main className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden bg-white">
+      <aside className={`${studioToolInputColumn} border-r border-gray-200 overflow-y-auto studio-scrollbar bg-white`}>
         <InputPanel onSubmit={handleSubmit} isLoading={state.status === 'loading'} />
       </aside>
-      <div
-        style={{
-          gridColumn: outputCol,
-          gridRow: isSideBySide ? undefined : 2,
-          overflowY: 'auto',
-        }}
-      >
-        <OutputPanel state={state} productName={productName} />
+      <div className={`${studioPreviewColumn} bg-white`}>
+        <div className="shrink-0 px-4 py-3 border-b border-gray-200">
+          <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Preview</span>
+        </div>
+        <div className="flex-1 min-h-0 overflow-y-auto studio-scrollbar">
+          <OutputPanel state={state} productName={productName} />
+        </div>
       </div>
-    </Grid>
+    </main>
   )
 }

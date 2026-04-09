@@ -5,9 +5,13 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./sanity-color-picker": "./src/colors/ds-color-picker-options.ts"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@marcelinodzn/ds-react": "^1.0.6",
+    "@marcelinodzn/ds-tokens": "^1.0.1"
+  },
   "peerDependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

@@ -61,7 +61,6 @@ export function LabMediaTextBlock({
   descriptionTitle,
   descriptionBody,
   cta,
-  ctaSecondary,
   media,
   imageSlot,
   imageState,
@@ -263,7 +262,7 @@ export function LabMediaTextBlock({
     ) : null
 
   const bodyContent =
-    (size !== 'hero' && body) || (cta || ctaSecondary) ? (
+    (size !== 'hero' && body) || cta ? (
         <WidthCap contentWidth={bodyContentWidth} style={{ ...(variant === 'centered-media-below' ? stackedBlockStyle : undefined), ...textOnlyLeftContainerStyle }}>
         <div
           style={{
@@ -288,29 +287,22 @@ export function LabMediaTextBlock({
               {body}
             </Text>
           )}
-          {(cta || ctaSecondary) && (
-            <div style={{ display: 'flex', gap: 'var(--ds-spacing-s)', flexWrap: 'wrap', marginTop: 'var(--ds-spacing-l)' }}>
-              {cta && (() => {
-                const appearance = cta.appearance ?? 'primary'
-                const isGhost = appearance === 'ghost'
-                return (
-                  <Button
-                    appearance={isGhost ? 'secondary' : appearance}
-                    contained={!isGhost}
-                    size="S"
-                    onPress={() => handleCtaPress(cta.href)}
-                  >
-                    {cta.label}
-                  </Button>
-                )
-              })()}
-              {ctaSecondary && (
-                <Button appearance="secondary" contained={false} size="S" onPress={() => handleCtaPress(ctaSecondary.href)}>
-                  {ctaSecondary.label}
+          {cta && (() => {
+            const appearance = cta.appearance ?? 'primary'
+            const isGhost = appearance === 'ghost'
+            return (
+              <div style={{ marginTop: 'var(--ds-spacing-l)' }}>
+                <Button
+                  appearance={isGhost ? 'secondary' : appearance}
+                  contained={!isGhost}
+                  size="S"
+                  onPress={() => handleCtaPress(cta.href)}
+                >
+                  {cta.label}
                 </Button>
-              )}
-            </div>
-          )}
+              </div>
+            )
+          })()}
         </div>
       </WidthCap>
     ) : null

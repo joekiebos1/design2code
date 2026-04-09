@@ -277,6 +277,57 @@ navigation
 
 ---
 
+## Media + Text: Stacked — Design2Code contract
+
+### CMS Schema
+
+```
+Variant
+──────────────────────────────────────────────────────
+variant          textOnly · stacked · overlay            default: stacked
+
+                         textOnly    stacked    overlay
+─────────────────────────────────────────────────────────────────────────
+mediaSize        edgeToEdge · default          —          required  required    media size hidden in textOnly
+headingAlignment left · center                 required   required  required    text alignment
+eyebrow          text                          optional   optional  optional
+title            text                          optional   optional  optional
+subhead          text                          optional   optional  optional
+body             text                          optional   optional  optional
+descriptionTitle text                          —          optional  —           below image, stacked only
+descriptionBody  text                          —          optional  —           below image, stacked only
+ctaText          text                          optional   optional  optional
+ctaLink          url                           optional   optional  optional
+image            asset                         —          optional  optional    hidden in textOnly
+imageUrl         url                           —          optional  optional    hidden in textOnly
+video            asset                         —          optional  optional    hidden in textOnly
+videoUrl         url                           —          optional  optional    hidden in textOnly
+```
+
+### CMS Schema shared across blocks
+
+```
+spacingTop       none · medium · large
+spacingBottom    none · medium · large
+```
+
+### CMS Schema DS specific
+
+```
+theme            MyJio · Jio · …                         default: MyJio
+emphasis         ghost · minimal · subtle · bold          default: ghost
+appearance       primary · secondary · sparkle · neutral  only when emphasis ≠ ghost
+minimalBgStyle   block · gradient                         only when emphasis = minimal
+```
+
+### Figma workarounds
+
+```
+—
+```
+
+---
+
 ## Template (copy for new blocks)
 
 ```

@@ -547,3 +547,13 @@ export const labBlockPageBySlugQuery = `*[_type == "labBlockPage" && slug == $sl
   title,
   sections[]${LAB_SECTIONS_PROJECTION}
 }`
+
+/** figma2code Studio — Benchmarks / Jio Designs (assets in Sanity). */
+export const studioInspirationByTypeQuery = `*[_type == "studioInspiration" && inspirationType == $inspirationType] | order(_updatedAt desc) {
+  _id,
+  title,
+  inspirationType,
+  linkUrl,
+  "mediaUrl": coalesce(media.asset->url, thumbnail.asset->url, mediaVideo.asset->url),
+  "mimeType": coalesce(media.asset->mimeType, thumbnail.asset->mimeType, mediaVideo.asset->mimeType)
+}`

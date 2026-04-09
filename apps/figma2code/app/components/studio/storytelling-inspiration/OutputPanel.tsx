@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import html2canvas from 'html2canvas'
-import { Headline, Text, SurfaceProvider, Button, Icon, IcCopyDocument, IcImage } from '@marcelinodzn/ds-react'
 import type { StoryCoachState, StoryCoachResult, Block } from './types'
 
 const LOADING_MESSAGES = [
@@ -18,22 +17,7 @@ type OutputPanelProps = {
   productName?: string
 }
 
-const grey = {
-  label: 'rgba(0, 0, 0, 0.65)',
-  secondary: 'rgba(0, 0, 0, 0.48)',
-  tertiary: 'rgba(0, 0, 0, 0.36)',
-}
-
-function formatBlockStructureAsText(blocks: Block[]): string {
-  return blocks
-    .map(
-      (b) =>
-        `${b.num}. [${b.type}] ${b.section} (${b.role})\n   ${b.headline}${b.proof ? `\n   ${b.proof}` : ''}\n   ${b.job}`,
-    )
-    .join('\n\n')
-}
-
-function CopyIconButton({ text, ariaLabel = 'Copy' }: { text: string; ariaLabel?: string }) {
+function CopyButton({ text, ariaLabel = 'Copy' }: { text: string; ariaLabel?: string }) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = useCallback(async () => {
@@ -47,114 +31,85 @@ function CopyIconButton({ text, ariaLabel = 'Copy' }: { text: string; ariaLabel?
   }, [text])
 
   return (
-    <Button
-      single
-      size="S"
-      appearance="secondary"
-      contained={false}
-      onPress={handleCopy}
+    <button
+      type="button"
+      onClick={handleCopy}
       aria-label={ariaLabel}
-      content={
-        <Icon
-          asset={<IcCopyDocument />}
-          size="S"
-          appearance="secondary"
-          style={{ opacity: copied ? 0.5 : 1 }}
-        />
-      }
-      style={{ flexShrink: 0, padding: 'var(--ds-spacing-s)' }}
-    />
+      className="shrink-0 p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer bg-transparent border-none"
+    >
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ opacity: copied ? 0.5 : 1 }}>
+        <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.25" />
+        <path d="M10.5 5.5V4a1.5 1.5 0 00-1.5-1.5H4A1.5 1.5 0 002.5 4v5A1.5 1.5 0 004 10.5h1.5" stroke="currentColor" strokeWidth="1.25" />
+      </svg>
+    </button>
   )
 }
 
 function ModalityRow({ label, value }: { label: string; value: string }) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'space-between',
-        gap: 'var(--ds-spacing-m)',
-        padding: 'var(--ds-spacing-l)',
-        border: '1px solid rgba(0, 0, 0, 0.06)',
-      }}
-    >
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <Headline
-          size="S"
-          as="h2"
-          style={{
-            margin: 0,
-            marginBottom: 'var(--ds-spacing-s)',
-            fontSize: 'var(--ds-typography-headline-s)',
-            fontWeight: 'var(--ds-typography-weight-medium)',
-            color: 'var(--ds-color-text-high)',
-          }}
-        >
-          {label}
-        </Headline>
-        <Text
-          size="M"
-          as="p"
-          style={{
-            margin: 0,
-            fontSize: 'var(--ds-typography-body-m)',
-            fontWeight: 'var(--ds-typography-weight-low)',
-            color: grey.secondary,
-            lineHeight: 1.5,
-          }}
-        >
-          {value}
-        </Text>
+    <div className="flex items-start justify-between gap-4 p-5 border border-gray-200 rounded-lg">
+      <div className="flex-1 min-w-0">
+        <h3 className="text-sm font-semibold text-gray-900 mb-1">{label}</h3>
+        <p className="text-sm text-gray-500 leading-relaxed m-0">{value}</p>
       </div>
-      <CopyIconButton text={value} ariaLabel={`Copy ${label}`} />
+      <CopyButton text={value} ariaLabel={`Copy ${label}`} />
     </div>
   )
 }
 
 function NarrativeParagraph({ label, text }: { label: string; text: string }) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'space-between',
-        gap: 'var(--ds-spacing-m)',
-      }}
-    >
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <Text
-          size="XS"
-          as="span"
-          style={{
-            display: 'block',
-            fontWeight: 'var(--ds-typography-weight-medium)',
-            color: grey.tertiary,
-            marginBottom: 'var(--ds-spacing-s)',
-            fontSize: 'var(--ds-typography-label-s)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.06em',
-          }}
-        >
+    <div className="flex items-start justify-between gap-4">
+      <div className="flex-1 min-w-0">
+        <span className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
           {label}
-        </Text>
-        <Text
-          size="S"
-          as="p"
-          style={{
-            margin: 0,
-            fontWeight: 'var(--ds-typography-weight-low)',
-            color: grey.secondary,
-            lineHeight: 1.6,
-            fontSize: 'var(--ds-typography-body-m)',
-          }}
-        >
-          {text}
-        </Text>
+        </span>
+        <p className="text-sm text-gray-500 leading-relaxed m-0">{text}</p>
       </div>
-      <CopyIconButton text={text} ariaLabel={`Copy ${label}`} />
+      <CopyButton text={text} ariaLabel={`Copy ${label}`} />
     </div>
   )
+}
+
+function BlockRow({ block }: { block: Block }) {
+  const blockText = `${block.num}. [${block.type}] ${block.section} (${block.role})\n${block.headline}${block.proof ? `\n${block.proof}` : ''}\n${block.job}`
+  const isChapter = block.role === 'chapter'
+
+  return (
+    <div
+      className={`flex items-start justify-between gap-4 border-b border-gray-200 ${
+        isChapter ? 'p-4 mb-3 bg-gray-50 rounded-lg' : 'py-3'
+      }`}
+    >
+      <div className="flex-1 min-w-0 flex gap-3">
+        <div className="flex flex-col gap-0.5 shrink-0">
+          <span className="text-sm font-medium text-gray-500">{block.num}</span>
+          <span className={`text-xs font-medium uppercase tracking-wider ${isChapter ? 'text-gray-900' : 'text-gray-500'}`}>
+            {block.role}
+          </span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className={`m-0 mb-0.5 ${isChapter ? 'text-sm font-bold text-gray-900' : 'text-sm font-medium text-gray-900'}`}>
+            {block.headline}
+          </p>
+          {block.proof && (
+            <p className="m-0 mb-0.5 text-sm text-gray-600 italic leading-snug">{block.proof}</p>
+          )}
+          <p className="m-0 text-sm text-gray-500 leading-snug">{block.job}</p>
+        </div>
+      </div>
+      <CopyButton text={blockText} ariaLabel={`Copy block ${block.num}`} />
+    </div>
+  )
+}
+
+function formatBlockStructureAsText(blocks: Block[]): string {
+  return blocks
+    .map(
+      (b) =>
+        `${b.num}. [${b.type}] ${b.section} (${b.role})\n   ${b.headline}${b.proof ? `\n   ${b.proof}` : ''}\n   ${b.job}`,
+    )
+    .join('\n\n')
 }
 
 function ResultView({ result, productName }: { result: StoryCoachResult; productName?: string }) {
@@ -170,11 +125,7 @@ function ResultView({ result, productName }: { result: StoryCoachResult; product
     if (!el) return
     setCopyingPng(true)
     try {
-      const canvas = await html2canvas(el, {
-        backgroundColor: '#ffffff',
-        scale: 2,
-        useCORS: true,
-      })
+      const canvas = await html2canvas(el, { backgroundColor: '#ffffff', scale: 2, useCORS: true })
       await new Promise<void>((resolve) => {
         canvas.toBlob(
           async (blob) => {
@@ -196,58 +147,20 @@ function ResultView({ result, productName }: { result: StoryCoachResult; product
     }
   }, [])
 
-  const sectionTitleStyle: React.CSSProperties = {
-    fontSize: 'var(--ds-typography-headline-m)',
-    fontWeight: 'var(--ds-typography-weight-medium)',
-    color: 'var(--ds-color-text-high)',
-    letterSpacing: '-0.02em',
-    marginBottom: 'var(--ds-spacing-xl)',
-  }
-
-  const sectionHeaderStyle: React.CSSProperties = {
-    ...sectionTitleStyle,
-  }
-
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 'var(--ds-spacing-3xl)',
-      }}
-    >
-      <header style={{ marginBottom: 'var(--ds-spacing-m)' }}>
-        <Headline
-          size="M"
-          as="h1"
-          style={{
-            margin: 0,
-            marginBottom: 'var(--ds-spacing-s)',
-            fontSize: 'var(--ds-typography-display-m)',
-            fontWeight: 'var(--ds-typography-weight-medium)',
-            color: 'var(--ds-color-text-high)',
-            letterSpacing: '-0.02em',
-          }}
-        >
+    <div className="flex flex-col gap-12">
+      <header className="mb-2">
+        <h1 className="text-2xl font-semibold text-gray-900 mb-2">
           {productName || result.primaryEmotion}
-        </Headline>
-        <Text
-          size="M"
-          style={{
-            fontSize: 'var(--ds-typography-body-m)',
-            fontWeight: 'var(--ds-typography-weight-low)',
-            color: grey.secondary,
-          }}
-        >
+        </h1>
+        <p className="text-sm text-gray-500">
           {result.blocks.length} blocks — {setup.length} setup · {engage.length} engage · {resolve.length} resolve
-        </Text>
+        </p>
       </header>
 
-      <section style={{ marginTop: 'var(--ds-spacing-2xl)' }}>
-        <div style={{ ...sectionHeaderStyle, marginBottom: 'var(--ds-spacing-xl)' }}>
-          Buyer modalities
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--ds-spacing-xl)' }}>
+      <section>
+        <h2 className="text-xl font-semibold text-gray-900 mb-5">Buyer modalities</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <ModalityRow label="Emotional" value={result.modalities.emotional} />
           <ModalityRow label="Rational" value={result.modalities.rational} />
           <ModalityRow label="Social" value={result.modalities.social} />
@@ -255,185 +168,55 @@ function ResultView({ result, productName }: { result: StoryCoachResult; product
         </div>
       </section>
 
-      <section style={{ marginTop: 'var(--ds-spacing-2xl)' }}>
-        <div style={{ ...sectionHeaderStyle, marginBottom: 'var(--ds-spacing-xl)' }}>
-          Narrative arc
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--ds-spacing-xl)',
-            paddingBlock: 'var(--ds-spacing-l)',
-          }}
-        >
+      <section>
+        <h2 className="text-xl font-semibold text-gray-900 mb-5">Narrative arc</h2>
+        <div className="flex flex-col gap-6 py-3">
           <NarrativeParagraph label="Setup" text={`${result.hook.openingTension} ${result.hook.mustFeel}`} />
           <NarrativeParagraph label="Engage" text={`${result.middle.centralDesire} ${result.middle.emotional} ${result.middle.rational} ${result.middle.social} ${result.middle.security}`} />
           <NarrativeParagraph label="Resolve" text={`${result.close.barrier} ${result.close.ctaFraming}`} />
         </div>
       </section>
 
-      <section style={{ marginTop: 'var(--ds-spacing-2xl)' }}>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 'var(--ds-spacing-m)',
-            marginBottom: 'var(--ds-spacing-xl)',
-          }}
-        >
-          <Headline size="S" as="h2" style={{ margin: 0, ...sectionTitleStyle }}>
-            Block structure
-          </Headline>
-          <div style={{ display: 'flex', gap: 'var(--ds-spacing-s)' }}>
-            <Button
-              single
-              size="S"
-              appearance="secondary"
-              contained={false}
-              onPress={handleCopyAsPng}
+      <section>
+        <div className="flex items-center justify-between gap-4 mb-5">
+          <h2 className="text-xl font-semibold text-gray-900 m-0">Block structure</h2>
+          <div className="flex gap-1.5">
+            <button
+              type="button"
+              onClick={handleCopyAsPng}
+              disabled={copyingPng}
               aria-label="Copy as PNG"
-              isDisabled={copyingPng}
-              content={
-                <Icon
-                  asset={<IcImage />}
-                  size="S"
-                  appearance="secondary"
-                  style={{ opacity: copyingPng ? 0.5 : 1 }}
-                />
-              }
-              style={{ padding: 'var(--ds-spacing-s)' }}
-            />
-            <Button
-              single
-              size="S"
-              appearance="secondary"
-              contained={false}
-              aria-label="Copy as text"
-              content={<Icon asset={<IcCopyDocument />} size="S" appearance="secondary" />}
-              style={{ padding: 'var(--ds-spacing-s)' }}
-              onPress={async () => {
-                try {
-                  await navigator.clipboard.writeText(fullBlockText)
-                } catch {
-                  // ignore
-                }
+              className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-50 cursor-pointer bg-transparent border-none"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="4" width="12" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.25" />
+                <circle cx="5.5" cy="7.5" r="1.25" stroke="currentColor" strokeWidth="1" />
+                <path d="M2 11l3-2.5L7.5 11l3-4L14 11" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                try { await navigator.clipboard.writeText(fullBlockText) } catch { /* ignore */ }
               }}
-            />
+              aria-label="Copy as text"
+              className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer bg-transparent border-none"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.25" />
+                <path d="M10.5 5.5V4a1.5 1.5 0 00-1.5-1.5H4A1.5 1.5 0 002.5 4v5A1.5 1.5 0 004 10.5h1.5" stroke="currentColor" strokeWidth="1.25" />
+              </svg>
+            </button>
           </div>
         </div>
-        <div ref={blockStructureRef} style={{ padding: 'var(--ds-spacing-l)', background: 'var(--ds-color-background-subtle)' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+        <div ref={blockStructureRef} className="p-4 bg-gray-50 rounded-lg">
+          <div className="flex flex-col">
             {result.blocks.map((block) => (
               <BlockRow key={block.num} block={block} />
             ))}
           </div>
         </div>
       </section>
-    </div>
-  )
-}
-
-function BlockRow({ block }: { block: Block }) {
-  const blockText = `${block.num}. [${block.type}] ${block.section} (${block.role})\n${block.headline}${block.proof ? `\n${block.proof}` : ''}\n${block.job}`
-
-  const isChapter = block.role === 'chapter'
-
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'space-between',
-        gap: 'var(--ds-spacing-m)',
-        paddingBlock: isChapter ? 'var(--ds-spacing-l)' : 'var(--ds-spacing-m)',
-        paddingInline: isChapter ? 'var(--ds-spacing-m)' : 0,
-        marginBlockEnd: isChapter ? 'var(--ds-spacing-l)' : 0,
-        borderBlockEnd: '1px solid rgba(0, 0, 0, 0.06)',
-        ...(isChapter && {
-          background: 'rgba(0, 0, 0, 0.03)',
-          borderRadius: 'var(--ds-spacing-s)',
-          paddingInline: 'var(--ds-spacing-m)',
-        }),
-      }}
-    >
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', gap: 'var(--ds-spacing-m)' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flexShrink: 0 }}>
-          <Text
-            size="S"
-            as="span"
-            style={{
-              fontWeight: 'var(--ds-typography-weight-medium)',
-              color: grey.tertiary,
-              fontSize: 'var(--ds-typography-label-s)',
-            }}
-          >
-            {block.num}
-          </Text>
-          <Text
-            size="XS"
-            as="span"
-            style={{
-              color: block.role === 'chapter' ? 'var(--ds-color-text-high)' : grey.tertiary,
-              fontSize: '10px',
-              fontWeight: 'var(--ds-typography-weight-medium)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-            }}
-          >
-            {block.role}
-          </Text>
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <Text
-            size="S"
-            as="p"
-            style={{
-              margin: '0 0 var(--ds-spacing-xs)',
-              fontWeight:
-                block.role === 'chapter'
-                  ? 'var(--ds-typography-weight-high)'
-                  : 'var(--ds-typography-weight-medium)',
-              fontSize:
-                block.role === 'chapter'
-                  ? 'var(--ds-typography-label-m)'
-                  : 'var(--ds-typography-label-s)',
-              color: 'var(--ds-color-text-high)',
-            }}
-          >
-            {block.headline}
-          </Text>
-          {block.proof && (
-            <Text
-              size="XS"
-              as="p"
-              style={{
-                margin: '0 0 var(--ds-spacing-xs)',
-                color: grey.label,
-                fontWeight: 'var(--ds-typography-weight-low)',
-                lineHeight: 1.45,
-                fontStyle: 'italic',
-              }}
-            >
-              {block.proof}
-            </Text>
-          )}
-          <Text
-            size="XS"
-            as="p"
-            style={{
-              margin: 0,
-              color: grey.secondary,
-              fontWeight: 'var(--ds-typography-weight-low)',
-              lineHeight: 1.45,
-            }}
-          >
-            {block.job}
-          </Text>
-        </div>
-      </div>
-      <CopyIconButton text={blockText} ariaLabel={`Copy block ${block.num}`} />
     </div>
   )
 }
@@ -453,81 +236,33 @@ export function OutputPanel({ state, productName }: OutputPanelProps) {
 
   if (state.status === 'idle') {
     return (
-      <SurfaceProvider level={0}>
-        <div
-          style={{
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 'var(--ds-spacing-2xl)',
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 'var(--ds-typography-body-m)',
-              fontWeight: 'var(--ds-typography-weight-low)',
-              color: grey.secondary,
-            }}
-          >
-            Enter a product name and generate to see the narrative arc.
-          </Text>
-        </div>
-      </SurfaceProvider>
+      <div className="h-full flex items-center justify-center p-8">
+        <p className="text-sm text-gray-500">Enter a product name and generate to see the narrative arc.</p>
+      </div>
     )
   }
 
   if (state.status === 'loading') {
     return (
-      <SurfaceProvider level={0}>
-        <div
-          style={{
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 'var(--ds-spacing-2xl)',
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 'var(--ds-typography-body-m)',
-              fontWeight: 'var(--ds-typography-weight-low)',
-              color: grey.secondary,
-            }}
-          >
-            {loadingMessage}
-          </Text>
-        </div>
-      </SurfaceProvider>
+      <div className="h-full flex items-center justify-center p-8">
+        <p className="text-sm text-gray-500">{loadingMessage}</p>
+      </div>
     )
   }
 
   if (state.status === 'error') {
     return (
-      <SurfaceProvider level={0}>
-        <div style={{ padding: 'var(--ds-spacing-2xl)' }}>
-          <Text
-            style={{
-              fontSize: 'var(--ds-typography-body-m)',
-              fontWeight: 'var(--ds-typography-weight-medium)',
-              color: 'var(--ds-color-text-negative)',
-            }}
-          >
-            {state.error}
-          </Text>
-        </div>
-      </SurfaceProvider>
+      <div className="p-8">
+        <p className="text-sm font-medium text-red-600">{state.error}</p>
+      </div>
     )
   }
 
   if (state.status === 'success' && state.result) {
     return (
-      <SurfaceProvider level={0}>
-        <div style={{ padding: 'var(--ds-spacing-2xl)', maxWidth: 720 }}>
-          <ResultView result={state.result} productName={productName} />
-        </div>
-      </SurfaceProvider>
+      <div className="p-8 max-w-3xl">
+        <ResultView result={state.result} productName={productName} />
+      </div>
     )
   }
 

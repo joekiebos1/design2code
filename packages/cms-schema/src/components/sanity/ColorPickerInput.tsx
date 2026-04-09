@@ -4,7 +4,8 @@ import { useCallback, useState } from 'react'
 import { Box, Dialog, Flex, Text, Button, Stack } from '@sanity/ui'
 import type { StringInputProps } from 'sanity'
 import { set, unset } from 'sanity'
-import { COLOR_PICKER_OPTIONS, getColorPickerOption } from '@design2code/ds'
+/** Subpath avoids loading `ContentDsProvider` / `@marcelinodzn/ds-react` via the ds package barrel (Sanity Vite). */
+import { COLOR_PICKER_OPTIONS, getColorPickerOption } from '@design2code/ds/sanity-color-picker'
 
 const PRIORITY_COUNT = 9
 const COLS = 9

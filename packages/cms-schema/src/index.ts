@@ -4,6 +4,7 @@ export { DS_THEMES, DS_THEME_DEFAULT } from './shared/dsThemes'
 
 import { pageType } from './page'
 import { figmaDesignType } from './figmaDesign'
+import { studioInspirationType } from './studioInspiration'
 import { labBlockPageType } from './labBlockPage'
 import { labOverviewType } from './labOverview'
 import { pageBuilderType } from './pageBuilder'
@@ -72,6 +73,7 @@ export const schemaTypes = [
   // Document types
   pageType,
   figmaDesignType,
+  studioInspirationType,
   labBlockPageType,
   labOverviewType,
 

@@ -1,12 +1,10 @@
-/**
- * Block Inspiration – Next.js Studio tool (not a Sanity document). Block list lives in code.
- */
-
+import type { Metadata } from 'next'
 import BlockInspirationClient from './BlockInspirationClient'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
+export const metadata: Metadata = {
+  title: 'Jio Blocks',
+}
 
-export default async function BlockInspirationPage() {
-  return <BlockInspirationClient thumbnailsMap={{}} />
+export default function BlockInspirationPage() {
+  return <BlockInspirationClient />
 }

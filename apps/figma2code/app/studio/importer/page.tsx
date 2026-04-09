@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { ImporterClient } from './ImporterClient'
 
 export const metadata: Metadata = {
-  title: 'Figma Importer',
+  title: 'Figma2CMS',
 }
 
 export default function ImporterPage() {

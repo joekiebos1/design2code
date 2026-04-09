@@ -213,3 +213,49 @@ Examples:
 |---|---|
 | `IMAGE_SERVICE_URL` | URL of the Content Manager endpoint. When unset, D2C uses mock mode (Sanity library images). |
 | `CALLBACK_BASE_URL` | Public URL of the D2C app (for callbacks). Falls back to `NEXTAUTH_URL` or `localhost:3000`. |
+
+---
+
+## Future improvement — Simplified request format
+
+> **Do not implement yet.** The Content Manager team is using the format above. This section documents a proposed simplification for the next iteration of the flow.
+
+The current request leaks page architecture concerns (block types, block indices, image roles, narrative roles) that the art director agent does not need. The proposed format strips everything back to what an art director actually needs: what the product is, what the image should show, what text it sits next to, and what crops are required.
+
+### Proposed request shape
+
+```json
+{
+  "jobId": "abc-123",
+  "callbackUrl": "https://d2c.example.com/api/images/ready",
+  "product": "Jio AirFiber",
+  "images": [
+    {
+      "id": "img-1",
+      "aspectRatios": ["16:9", "4:5"],
+      "headline": "Internet that keeps up with your family",
+      "brief": "Candid shot of a family streaming and working together at home"
+    }
+  ]
+}
+```
+
+### What changed and why
+
+| Current field | Proposed | Reason |
+|---|---|---|
+| `page.product` | `product` (top level) | Simpler — no nested `page` wrapper needed |
+| `page.intent`, `page.audience`, `page.keyMessage`, `page.pageType` | removed | Art director doesn't need page strategy — the `brief` encodes this |
+| `slots[].blockType`, `blockIndex`, `imageRole`, `cardType`, `cardIndex` | removed | Layout/structure concerns — art director is layout-agnostic |
+| `slots[].narrativeRole` | removed | Page architecture — not relevant to image selection |
+| `slots[].required` | removed | D2C-internal concern, not for the art director |
+| `slots[].visualDirection` | removed | Folded into `brief` |
+| `slots[].aspectRatio` (string) | `images[].aspectRatios` (string[]) | Same image must work across multiple crops (e.g. `16:9` desktop, `4:5` mobile) |
+| `slots[].adjacentText.headline` | `images[].headline` | Flattened — description sub-field was never used |
+| `slots[].adjacentText.description` | removed | Headline is sufficient for art direction context |
+| `slots[].imageBrief` | `images[].brief` | Renamed for clarity |
+| `slots[].slotId` | `images[].id` | Renamed for clarity |
+
+### Callback response
+
+The callback response stays the same — no changes needed on that side.

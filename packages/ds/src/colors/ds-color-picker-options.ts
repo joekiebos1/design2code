@@ -1,36 +1,14 @@
 /**
  * DS colour picker options for Sanity.
- * First row: Primary, Secondary, Sparkle × Minimal, Subtle, Bold (theme tokens).
+ * First row: Primary, Secondary, Sparkle × Minimal, Subtle, Bold — swatches from
+ * official jioColours labels (reliance / gold / violet) so Studio does not need
+ * `@marcelinodzn/ds-tokens` at build time. Values are the same semantic keys as before.
  * Below: Full spectrum from jioColors.json (spectrum.primaryShade).
  */
 
-import {
-  colors,
-  getVariableByName,
-  createTokenContext,
-  COLLECTION_NAMES,
-  PLATFORM_MODES,
-  DENSITY_MODES,
-  COLOR_MODE_MODES,
-} from '@marcelinodzn/ds-tokens'
 import { getJioColor, getPrimaryShade, SPECTRUM_NAMES } from './jio-colors'
 
 export type DsColorPickerValue = string
-
-const DS_CTX = createTokenContext({
-  [COLLECTION_NAMES.PLATFORM]: PLATFORM_MODES.DESKTOP_1440,
-  [COLLECTION_NAMES.DENSITY]: DENSITY_MODES.DEFAULT,
-  [COLLECTION_NAMES.COLOR_MODE]: COLOR_MODE_MODES.LIGHT,
-  [COLLECTION_NAMES.THEME]: '↓Pack1',
-  [COLLECTION_NAMES.THEME_PACK1]: 'MyJio',
-})
-
-function resolveDsToken(appearance: string, variant: string): string | null {
-  if (appearance === 'Sparkle') {
-    return getVariableByName(`Sparkle/Background/${variant}`, DS_CTX) as string | null
-  }
-  return colors.appearance(appearance as 'Primary' | 'Secondary', `Background/${variant}`, DS_CTX) as string | null
-}
 
 export type ColorPickerOption = {
   value: string
@@ -38,35 +16,25 @@ export type ColorPickerOption = {
   hex: string
 }
 
+/** Official jioColours labels approximating Primary / Secondary / Sparkle surface ramps. */
+const PRIORITY_SPECS = [
+  { value: 'primary-minimal', title: 'Primary Minimal', jioLabel: 'reliance.2500' },
+  { value: 'primary-subtle', title: 'Primary Subtle', jioLabel: 'reliance.2300' },
+  { value: 'primary-bold', title: 'Primary Bold', jioLabel: 'reliance.800' },
+  { value: 'secondary-minimal', title: 'Secondary Minimal', jioLabel: 'gold.2500' },
+  { value: 'secondary-subtle', title: 'Secondary Subtle', jioLabel: 'gold.2300' },
+  { value: 'secondary-bold', title: 'Secondary Bold', jioLabel: 'gold.1600' },
+  { value: 'sparkle-minimal', title: 'Sparkle Minimal', jioLabel: 'violet.2500' },
+  { value: 'sparkle-subtle', title: 'Sparkle Subtle', jioLabel: 'violet.2300' },
+  { value: 'sparkle-bold', title: 'Sparkle Bold', jioLabel: 'violet.1200' },
+] as const
+
 /** First row: Primary, Secondary, Sparkle × Minimal, Subtle, Bold */
-const PRIORITY_OPTIONS: ColorPickerOption[] = (() => {
-  const appearances = [
-    { key: 'primary', label: 'Primary', ds: 'Primary' as const },
-    { key: 'secondary', label: 'Secondary', ds: 'Secondary' as const },
-    { key: 'sparkle', label: 'Sparkle', ds: 'Sparkle' as const },
-  ]
-  const variants = [
-    { key: 'minimal', label: 'Minimal' },
-    { key: 'subtle', label: 'Subtle' },
-    { key: 'bold', label: 'Bold' },
-  ]
-  const options: ColorPickerOption[] = []
-  for (const a of appearances) {
-    for (const v of variants) {
-      const hex = a.ds === 'Sparkle'
-        ? resolveDsToken('Sparkle', v.label)
-        : resolveDsToken(a.ds, v.label)
-      if (hex) {
-        options.push({
-          value: `${a.key}-${v.key}`,
-          title: `${a.label} ${v.label}`,
-          hex,
-        })
-      }
-    }
-  }
-  return options
-})()
+const PRIORITY_OPTIONS: ColorPickerOption[] = PRIORITY_SPECS.map((spec) => ({
+  value: spec.value,
+  title: spec.title,
+  hex: getJioColor(spec.jioLabel) ?? '#000000',
+}))
 
 /** Full spectrum from jioColors (spectrum.primaryShade) */
 const SPECTRUM_OPTIONS: ColorPickerOption[] = SPECTRUM_NAMES.map((spectrum) => {

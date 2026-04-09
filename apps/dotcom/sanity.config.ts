@@ -5,6 +5,9 @@ import { schemaTypes } from '@design2code/cms-schema'
 import { structure } from '@design2code/cms-schema/structure'
 import { resolve } from '@design2code/sanity/presentation'
 
+/** Monorepo root relative to this app (`apps/dotcom`). Do not use `node:path` / `node:url` here — Sanity ships this config to the browser bundle. */
+const MONOREPO_ROOT_RELATIVE = '../..'
+
 export default defineConfig({
   name: 'design2code',
   title: 'Design2Code',
@@ -36,4 +39,14 @@ export default defineConfig({
   schema: {
     types: schemaTypes,
   },
+  vite: (config) => ({
+    ...config,
+    server: {
+      ...config.server,
+      fs: {
+        ...config.server?.fs,
+        allow: [...(config.server?.fs?.allow ?? []), MONOREPO_ROOT_RELATIVE],
+      },
+    },
+  }),
 })
