@@ -15,7 +15,7 @@ import {
 } from '@design2code/block-library'
 import type { BlockPattern } from '@design2code/block-library'
 import type { ImageSlotState } from '@design2code/block-library'
-import { stegaClean } from '@sanity/client/stega'
+
 
 type BlockSpacingValue = 'none' | 'medium' | 'large'
 
@@ -69,7 +69,7 @@ export function BlockRenderer({ blocks, images }: BlockRendererProps) {
   return (
     <div className="block-stack">
       {blocks_.map((raw) => {
-        const block = stegaClean(raw as Record<string, unknown>) as Block
+        const block = raw as Block
         const spacingTop =
           block._type === 'hero'
             ? undefined
