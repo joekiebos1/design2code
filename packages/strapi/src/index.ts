@@ -3,6 +3,9 @@ export {
   fetchStrapiPageBySlug,
   fetchStrapiPageByDocumentId,
   fetchStrapiPageSummaries,
+  fetchStrapiLabBlockPageBySlug,
+  fetchStrapiLabBlockPageSummaries,
+  fetchStrapiLabOverview,
   type StrapiPageEntry,
   type StrapiPageSummary,
 } from './fetch-pages'

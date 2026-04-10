@@ -117,6 +117,40 @@ export async function fetchStrapiPageBySlug(
   return entryToPage(cfg.baseUrl, first)
 }
 
+// ---------------------------------------------------------------------------
+// Lab block pages
+// ---------------------------------------------------------------------------
+
+export async function fetchStrapiLabBlockPageSummaries(cfg: StrapiClientConfig): Promise<StrapiPageSummary[]> {
+  const qs = new URLSearchParams()
+  qs.set('pagination[pageSize]', '100')
+  const url = `${cfg.baseUrl}/api/lab-block-pages?${qs.toString()}`
+  const res = await fetch(url, { headers: authHeaders(cfg), next: { revalidate: 0 } })
+  if (!res.ok) throw new Error(`Strapi fetch lab pages failed: ${res.status}`)
+  const json = (await res.json()) as StrapiCollectionResponse<unknown>
+  return (json.data ?? []).map(unwrapSummary).filter(Boolean) as StrapiPageSummary[]
+}
+
+export async function fetchStrapiLabBlockPageBySlug(
+  cfg: StrapiClientConfig,
+  slug: string
+): Promise<StrapiPageEntry | null> {
+  const qs = new URLSearchParams()
+  qs.set('filters[slug][$eq]', slug)
+  qs.append('populate[blocks][populate]', '*')
+  const url = `${cfg.baseUrl}/api/lab-block-pages?${qs.toString()}`
+  const res = await fetch(url, { headers: authHeaders(cfg), next: { revalidate: 0 } })
+  if (!res.ok) throw new Error(`Strapi fetch lab page failed: ${res.status}`)
+  const json = (await res.json()) as StrapiCollectionResponse<unknown>
+  const first = json.data?.[0]
+  if (!first) return null
+  return entryToPage(cfg.baseUrl, first)
+}
+
+export async function fetchStrapiLabOverview(cfg: StrapiClientConfig): Promise<StrapiPageEntry | null> {
+  return fetchStrapiLabBlockPageBySlug(cfg, 'overview')
+}
+
 export async function fetchStrapiPageByDocumentId(
   cfg: StrapiClientConfig,
   documentId: string
