@@ -71,6 +71,26 @@ function NarrativeParagraph({ label, text }: { label: string; text: string }) {
   )
 }
 
+const BLOCK_NAMES: Record<string, string> = {
+  hero: 'Hero',
+  proofPoints: 'Proof Points',
+  mediaTextStacked: 'Media + Text: Stacked',
+  mediaTextBlock: 'Media + Text: Stacked',
+  mediaText5050: 'Media + Text: 50/50',
+  carousel: 'Carousel',
+  cardGrid: 'Card Grid',
+  iconGrid: 'Icon Grid',
+  mediaTextAsymmetric: 'Media + Text Asymmetric',
+  editorial: 'Editorial',
+  fullBleedVerticalCarousel: 'Full Bleed Carousel',
+  rotatingMedia: 'Rotating Media',
+  topNav: 'Top Nav',
+}
+
+function getBlockName(type: string): string {
+  return BLOCK_NAMES[type] ?? type
+}
+
 function BlockRow({ block }: { block: Block }) {
   const blockText = `${block.num}. [${block.type}] ${block.section} (${block.role})\n${block.headline}${block.proof ? `\n${block.proof}` : ''}\n${block.job}`
   const isChapter = block.role === 'chapter'
@@ -89,6 +109,7 @@ function BlockRow({ block }: { block: Block }) {
           </span>
         </div>
         <div className="flex-1 min-w-0">
+          <span className="text-xs font-medium text-indigo-600 uppercase tracking-wider mb-1 block">{getBlockName(block.type)}</span>
           <p className={`m-0 mb-0.5 ${isChapter ? 'text-sm font-bold text-gray-900' : 'text-sm font-medium text-gray-900'}`}>
             {block.headline}
           </p>
