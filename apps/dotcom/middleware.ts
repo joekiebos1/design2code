@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const EXCLUDED = ['/login', '/api/auth', '/_next', '/favicon.ico']
+const EXCLUDED = ['/login', '/api/auth', '/_next', '/favicon.ico', '/lab']
 
 function isExcluded(pathname: string): boolean {
   return EXCLUDED.some((prefix) => pathname.startsWith(prefix))
