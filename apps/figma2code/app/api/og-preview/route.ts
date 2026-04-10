@@ -66,7 +66,7 @@ export async function GET(req: Request) {
 
     const screenshot = await page.screenshot({ type: 'jpeg', quality: 85 })
 
-    return new Response(screenshot, {
+    return new Response(new Uint8Array(screenshot), {
       headers: {
         'Content-Type': 'image/jpeg',
         'Cache-Control': 'public, max-age=86400',
