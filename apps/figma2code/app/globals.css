@@ -29,6 +29,12 @@ html, body {
   border-radius: 9999px;
 }
 
+@keyframes uploading {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0%); }
+  100% { transform: translateX(100%); }
+}
+
 @keyframes studio-lightbox-in {
   from {
     opacity: 0;

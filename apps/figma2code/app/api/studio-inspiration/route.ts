@@ -136,8 +136,9 @@ export async function POST(req: Request) {
 
   // Upload file to Strapi media library if present
   if (hasFile && file instanceof File) {
+    const safeName = (file.name || 'upload').replace(/[^a-zA-Z0-9._-]/g, '-')
     const uploadForm = new FormData()
-    uploadForm.append('files', file, file.name || 'upload')
+    uploadForm.append('files', file, safeName)
 
     const uploadRes = await fetch(`${cfg.baseUrl}/api/upload`, {
       method: 'POST',
@@ -146,20 +147,23 @@ export async function POST(req: Request) {
     })
 
     if (!uploadRes.ok) {
-      return Response.json({ error: 'Failed to upload media to Strapi' }, { status: 502 })
+      const errText = await uploadRes.text().catch(() => '')
+      let detail = `HTTP ${uploadRes.status}`
+      try { detail = (JSON.parse(errText) as { error?: { message?: string } })?.error?.message ?? detail } catch { detail = errText.slice(0, 200) || detail }
+      return Response.json({ error: `Failed to upload media to Strapi: ${detail}` }, { status: 502 })
     }
 
     const uploaded = await uploadRes.json() as Array<Record<string, unknown>>
     uploadedFile = uploaded[0] ?? null
   }
 
-  // Build Strapi entry data
+  // Build Strapi entry data — only include fields that exist in the schema
   const entryData: Record<string, unknown> = {
     title,
     category,
     ...(linkUrl ? { linkUrl } : {}),
-    ...(description ? { description } : {}),
-    ...(viewport ? { viewport } : {}),
+    // viewport only applies to URL entries, not media
+    ...(linkUrl && viewport ? { viewport } : {}),
     ...(uploadedFile ? { media: uploadedFile.id, mimeType: String(uploadedFile.mime ?? '') } : {}),
   }
 
@@ -173,7 +177,9 @@ export async function POST(req: Request) {
   })
 
   if (!createRes.ok) {
-    return Response.json({ error: 'Failed to create entry in Strapi' }, { status: 502 })
+    const errBody = await createRes.json().catch(() => ({})) as { error?: { message?: string } }
+    const strapiMsg = errBody?.error?.message ?? `HTTP ${createRes.status}`
+    return Response.json({ error: `Failed to create entry in Strapi: ${strapiMsg}` }, { status: 502 })
   }
 
   const created = await createRes.json() as { data: Record<string, unknown> }

@@ -25,13 +25,11 @@ export function BenchmarkAddMediaModal({ onClose, onAdd }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const dropRef = useRef<HTMLDivElement>(null)
 
-  // Revoke object URLs on unmount
   useEffect(() => {
     return () => files.forEach((f) => URL.revokeObjectURL(f.objectUrl))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Close on Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     window.addEventListener('keydown', handler)
@@ -56,7 +54,6 @@ export function BenchmarkAddMediaModal({ onClose, onAdd }: Props) {
     }))
 
     setFiles((prev) => {
-      URL.revokeObjectURL // keep for cleanup reference
       const updated = [...prev, ...newSelected]
       setActiveIndex(updated.length - 1)
       return updated
@@ -96,22 +93,17 @@ export function BenchmarkAddMediaModal({ onClose, onAdd }: Props) {
     if (!name.trim()) return setError('Name is required.')
 
     setSaving(true)
-    try {
-      const tempEntries: BenchmarkEntry[] = files.map((sf, i) => ({
-        id: `pending-${Date.now()}-${i}`,
-        title: name.trim(),
-        description: description.trim() || undefined,
-        mediaUrl: sf.objectUrl,
-        mimeType: sf.file.type,
-        pending: true,
-        _file: sf.file as unknown as undefined, // carry file for upload
-      } as BenchmarkEntry & { _file: File }))
-      await onAdd(tempEntries)
-      onClose()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong.')
-      setSaving(false)
-    }
+    const tempEntries: BenchmarkEntry[] = files.map((sf, i) => ({
+      id: `pending-${Date.now()}-${i}`,
+      title: name.trim(),
+      description: description.trim() || undefined,
+      mediaUrl: sf.objectUrl,
+      mimeType: sf.file.type,
+      pending: true,
+      _file: sf.file,
+    }))
+    void onAdd(tempEntries) // fire and forget — progress shown in gallery
+    onClose()
   }, [files, name, description, onAdd, onClose])
 
   const hasFiles = files.length > 0

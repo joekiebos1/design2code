@@ -21,6 +21,8 @@ export type BenchmarkEntry = {
   whatToSteal?: string
   /** Optimistic pending state — not yet confirmed by the server */
   pending?: boolean
+  /** Client-only: file to upload (stripped before API submission) */
+  _file?: File
 }
 
 export function benchmarkThumbnailSrc(entry: BenchmarkEntry): string | undefined {

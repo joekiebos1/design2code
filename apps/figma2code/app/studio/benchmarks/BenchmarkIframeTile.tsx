@@ -1,86 +1,43 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
 import type { BenchmarkEntry } from '../../../lib/benchmarks/types'
+import { extractDomain } from '../utils/extract-domain'
 
 type Props = {
   entry: BenchmarkEntry
-  onClick: () => void
 }
 
-const VIEWPORT_HEIGHT: Record<string, number> = {
-  '360': 780,
-  '1440': 900,
-}
+export function BenchmarkIframeTile({ entry }: Props) {
+  const domain = extractDomain(entry.url)
 
-/**
- * Scaled-down iframe thumbnail for the benchmarks gallery.
- * Renders the URL at its native viewport width, then CSS-scales it to fit the card.
- * pointer-events: none so the tile is a non-interactive thumbnail.
- * Hover dims the tile slightly. Clicking calls onClick.
- */
-export function BenchmarkIframeTile({ entry, onClick }: Props) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [scale, setScale] = useState(0)
-
-  const iframeWidth = entry.viewport === '360' ? 360 : 1440
-  const iframeHeight = VIEWPORT_HEIGHT[entry.viewport ?? '1440'] ?? 900
-  const aspectRatio = iframeHeight / iframeWidth
-
-  useEffect(() => {
-    const el = containerRef.current
-    if (!el) return
-    const ro = new ResizeObserver((entries) => {
-      const w = entries[0].contentRect.width
-      if (w > 0) setScale(w / iframeWidth)
-    })
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [iframeWidth])
-
-  const containerHeight = scale > 0 ? Math.round(iframeHeight * scale) : undefined
+  const title = entry.title ?? domain
+  // 1440px desktop: 16:9 — 360px phone: 9:19.5 (modern tall phone proportions)
+  const aspectRatio = entry.viewport === '360' ? 9 / 19.5 : 16 / 9
+  const screenshotUrl = entry.url
+    ? `/api/og-preview?url=${encodeURIComponent(entry.url)}&viewport=${entry.viewport ?? '1440'}`
+    : null
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="group relative block w-full overflow-hidden rounded-xl border-0 bg-gray-100 p-0 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 cursor-pointer"
-      style={{ aspectRatio: scale > 0 ? undefined : `${iframeWidth} / ${iframeHeight}`, height: containerHeight }}
-    >
-      {/* Outer clipping container */}
-      <div
-        ref={containerRef}
-        className="absolute inset-0 overflow-hidden"
-      >
-        {scale > 0 && entry.url && (
-          <iframe
-            src={entry.url}
-            title={entry.title ?? entry.url}
-            width={iframeWidth}
-            height={iframeHeight}
-            style={{
-              transform: `scale(${scale})`,
-              transformOrigin: 'top left',
-              pointerEvents: 'none',
-              display: 'block',
-              border: 'none',
-              flexShrink: 0,
-            }}
-            sandbox="allow-same-origin allow-scripts"
-            loading="lazy"
-            aria-hidden="true"
-            tabIndex={-1}
-          />
-        )}
-      </div>
+    <div className="relative w-full overflow-hidden rounded-xl bg-gray-100" style={{ aspectRatio }}>
+      {screenshotUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={screenshotUrl} alt={title} className="h-full w-full object-cover object-top" />
+      ) : (
+        <div className="h-full w-full animate-pulse bg-gray-100" />
+      )}
 
-      {/* Hover dim overlay — also captures all pointer events so iframe stays inert */}
-      <div className="absolute inset-0 rounded-xl bg-black/0 transition-colors duration-150 group-hover:bg-black/20" />
+      {/* Overlay label */}
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/50 to-transparent px-3 pb-3 pt-8">
+        <p className="m-0 truncate text-xs font-medium text-white">{title}</p>
+        {domain !== title && <p className="m-0 truncate text-xs text-white/60">{domain}</p>}
+      </div>
 
       {/* Viewport badge */}
-      <div className="absolute bottom-2.5 right-2.5 rounded-full bg-black/50 px-2 py-0.5 text-xs font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
-        {entry.viewport ?? '1440'}px
-      </div>
-    </button>
+      {entry.viewport && (
+        <div className="absolute right-2.5 top-2.5 rounded-full bg-black/40 px-2 py-0.5 text-xs font-medium text-white">
+          {entry.viewport}px
+        </div>
+      )}
+    </div>
   )
 }
