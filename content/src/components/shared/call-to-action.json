@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_shared_call_to_actions",
+  "info": {
+    "displayName": "Call to Action",
+    "icon": "cursor"
+  },
+  "options": {},
+  "attributes": {
+    "label": { "type": "string" },
+    "link": { "type": "string" },
+    "style": { "type": "string" }
+  }
+}

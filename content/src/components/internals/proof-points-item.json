@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_blocks_proof_points_items",
+  "info": {
+    "displayName": "Proof Points Item",
+    "icon": "check"
+  },
+  "options": {},
+  "attributes": {
+    "title": { "type": "string" },
+    "description": { "type": "text" },
+    "icon": { "type": "string" }
+  }
+}

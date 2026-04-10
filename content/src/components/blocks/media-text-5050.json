@@ -1,0 +1,42 @@
+{
+  "collectionName": "components_blocks_media_text_5050s",
+  "info": {
+    "displayName": "Media Text 50/50",
+    "icon": "layout"
+  },
+  "options": {},
+  "attributes": {
+    "spacingTop": { "type": "string" },
+    "spacingBottom": { "type": "string" },
+    "headline": { "type": "string" },
+    "description": { "type": "text" },
+    "callToActions": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.call-to-action"
+    },
+    "variant": { "type": "string" },
+    "paragraphColumnLayout": { "type": "string" },
+    "singleSubtitle": { "type": "string" },
+    "singleBody": { "type": "text" },
+    "imagePosition": { "type": "string" },
+    "headingAlignment": { "type": "string" },
+    "blockFramingAlignment": { "type": "string" },
+    "items": {
+      "type": "component",
+      "repeatable": true,
+      "component": "internals.media-text-5050-item"
+    },
+    "accordionItems": {
+      "type": "component",
+      "repeatable": true,
+      "component": "internals.media-text-5050-accordion-item"
+    },
+    "imageUrl": { "type": "string" },
+    "videoUrl": { "type": "string" },
+    "imageAspectRatio": { "type": "string" },
+    "emphasis": { "type": "string" },
+    "minimalBackgroundStyle": { "type": "boolean" },
+    "appearance": { "type": "string" }
+  }
+}

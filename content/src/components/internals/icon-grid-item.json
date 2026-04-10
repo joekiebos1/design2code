@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_blocks_icon_grid_items",
+  "info": {
+    "displayName": "Icon Grid Item",
+    "icon": "grid"
+  },
+  "options": {},
+  "attributes": {
+    "title": { "type": "string" },
+    "body": { "type": "text" },
+    "icon": { "type": "string" },
+    "accentColor": { "type": "string" },
+    "spectrum": { "type": "string" }
+  }
+}

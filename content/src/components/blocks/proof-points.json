@@ -1,0 +1,28 @@
+{
+  "collectionName": "components_blocks_proof_points",
+  "info": {
+    "displayName": "Proof Points",
+    "icon": "check-circle"
+  },
+  "options": {},
+  "attributes": {
+    "spacingTop": { "type": "string" },
+    "spacingBottom": { "type": "string" },
+    "title": { "type": "string" },
+    "description": { "type": "text" },
+    "callToActions": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.call-to-action"
+    },
+    "variant": { "type": "string" },
+    "emphasis": { "type": "string" },
+    "minimalBackgroundStyle": { "type": "boolean" },
+    "appearance": { "type": "string" },
+    "items": {
+      "type": "component",
+      "repeatable": true,
+      "component": "internals.proof-points-item"
+    }
+  }
+}

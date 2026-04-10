@@ -27,6 +27,7 @@
     "@design2code/ds": "*",
     "@design2code/cms-schema": "*",
     "@design2code/sanity": "*",
+    "@design2code/strapi": "*",
     "@design2code/block-library": "*",
     "@marcelinodzn/ds-react": "^1.0.6",
     "@marcelinodzn/ds-tokens": "^1.0.1",

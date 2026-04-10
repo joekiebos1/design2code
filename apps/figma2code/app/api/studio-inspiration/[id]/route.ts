@@ -1,70 +1,58 @@
-import { createClient, type SanityClient } from '@sanity/client'
-
 export const runtime = 'nodejs'
 
-const MEDIA_PROJECTION = `
-  "mediaUrl": coalesce(media.asset->url, thumbnail.asset->url, mediaVideo.asset->url),
-  "mimeType": coalesce(media.asset->mimeType, thumbnail.asset->mimeType, mediaVideo.asset->mimeType)
-`
+function getStrapiConfig() {
+  const baseUrl = process.env.STRAPI_URL
+  const apiToken = process.env.STRAPI_API_TOKEN
+  if (!baseUrl || !apiToken) return null
+  return { baseUrl, apiToken }
+}
 
-function getWriteClient(): SanityClient | null {
-  const projectId =
-    process.env.SANITY_STUDIO_PROJECT_ID || process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || ''
-  const dataset =
-    process.env.SANITY_STUDIO_DATASET || process.env.NEXT_PUBLIC_SANITY_DATASET || 'production'
-  const token = process.env.SANITY_API_TOKEN
-  if (!projectId || !token) return null
-  return createClient({
-    projectId,
-    dataset,
-    apiVersion: '2024-01-01',
-    token,
-    useCdn: false,
-  })
+function resolveMediaUrl(baseUrl: string, media: Record<string, unknown> | null): { mediaUrl: string; mimeType: string } {
+  if (!media) return { mediaUrl: '', mimeType: '' }
+  const url = media.url as string | null
+  const mime = media.mime as string | null
+  if (!url) return { mediaUrl: '', mimeType: '' }
+  const mediaUrl = url.startsWith('http') ? url : `${baseUrl}${url}`
+  return { mediaUrl, mimeType: mime ?? '' }
 }
 
 export async function GET(
   _req: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  const client = getWriteClient()
-  if (!client) {
+  const cfg = getStrapiConfig()
+  if (!cfg) {
     return Response.json(
-      { error: 'Sanity is not configured (set SANITY_STUDIO_PROJECT_ID and SANITY_API_TOKEN).' },
+      { error: 'Strapi is not configured (set STRAPI_URL and STRAPI_API_TOKEN).' },
       { status: 503 }
     )
   }
-  const { id: rawId } = await context.params
-  const id = decodeURIComponent(rawId)
 
-  const row = await client.fetch<{
-    _id: string
-    title: string | null
-    linkUrl: string | null
-    mediaUrl: string | null
-    mimeType: string | null
-    inspirationType: string | null
-  } | null>(
-    `*[_type == "studioInspiration" && _id == $id][0]{
-      _id,
-      title,
-      linkUrl,
-      inspirationType,
-      ${MEDIA_PROJECTION}
-    }`,
-    { id }
-  )
+  const { id } = await context.params
 
-  if (!row) {
+  const qs = new URLSearchParams({ 'populate': 'media' })
+  const res = await fetch(`${cfg.baseUrl}/api/studio-inspirations/${id}?${qs}`, {
+    headers: { Authorization: `Bearer ${cfg.apiToken}` },
+  })
+
+  if (res.status === 404) {
     return Response.json({ error: 'Not found' }, { status: 404 })
   }
+  if (!res.ok) {
+    return Response.json({ error: 'Failed to fetch from Strapi' }, { status: 502 })
+  }
+
+  const json = await res.json() as { data: Record<string, unknown> }
+  const e = json.data
+  const media = (e.media ?? null) as Record<string, unknown> | null
+  const { mediaUrl, mimeType } = resolveMediaUrl(cfg.baseUrl, media)
 
   return Response.json({
-    id: row._id,
-    title: row.title ?? '',
-    url: row.linkUrl ?? '',
-    mediaUrl: row.mediaUrl ?? '',
-    mimeType: row.mimeType ?? '',
-    inspirationType: row.inspirationType,
+    id: String(e.documentId ?? e.id ?? ''),
+    title: String(e.title ?? ''),
+    url: String(e.linkUrl ?? ''),
+    mediaUrl: mediaUrl || String(e.mediaUrl ?? ''),
+    mimeType: mimeType || String(e.mimeType ?? ''),
+    inspirationType: String(e.category ?? ''),
   })
 }

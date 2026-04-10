@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_blocks_fbvc_items",
+  "info": {
+    "displayName": "Full Bleed Vertical Carousel Item",
+    "icon": "slideshow"
+  },
+  "options": {},
+  "attributes": {
+    "title": { "type": "string" },
+    "description": { "type": "text" },
+    "imageUrl": { "type": "string" },
+    "videoUrl": { "type": "string" }
+  }
+}

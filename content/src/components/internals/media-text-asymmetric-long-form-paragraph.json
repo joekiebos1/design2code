@@ -1,0 +1,12 @@
+{
+  "collectionName": "components_blocks_mta_long_form_paragraphs",
+  "info": {
+    "displayName": "Long Form Paragraph",
+    "icon": "feather"
+  },
+  "options": {},
+  "attributes": {
+    "text": { "type": "text" },
+    "bodyTypography": { "type": "string" }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_blocks_rotating_media_items",
+  "info": {
+    "displayName": "Rotating Media Item",
+    "icon": "picture"
+  },
+  "options": {},
+  "attributes": {
+    "imageUrl": { "type": "string" },
+    "title": { "type": "string" },
+    "label": { "type": "string" }
+  }
+}

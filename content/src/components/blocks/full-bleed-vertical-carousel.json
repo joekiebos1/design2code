@@ -1,0 +1,27 @@
+{
+  "collectionName": "components_blocks_full_bleed_vertical_carousels",
+  "info": {
+    "displayName": "Full Bleed Vertical Carousel",
+    "icon": "slideshow"
+  },
+  "options": {},
+  "attributes": {
+    "spacingTop": { "type": "string" },
+    "spacingBottom": { "type": "string" },
+    "emphasis": { "type": "string" },
+    "appearance": { "type": "string" },
+    "minimalBackgroundStyle": { "type": "boolean" },
+    "title": { "type": "string" },
+    "description": { "type": "text" },
+    "callToActions": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.call-to-action"
+    },
+    "items": {
+      "type": "component",
+      "repeatable": true,
+      "component": "internals.full-bleed-vertical-carousel-item"
+    }
+  }
+}

@@ -1,83 +1,79 @@
-import { createClient, type SanityClient } from '@sanity/client'
 import { isFigmaUrl } from '../../studio/utils/is-figma-url'
 import { isAllowedStudioMediaFile } from '../../../lib/studio-inspiration-allowed-files'
 import { STUDIO_INSPIRATION_MAX_FILE_BYTES } from '../../../lib/studio-inspiration-limits'
 
 export const runtime = 'nodejs'
 
-const MEDIA_PROJECTION = `
-  "mediaUrl": coalesce(media.asset->url, thumbnail.asset->url, mediaVideo.asset->url),
-  "mimeType": coalesce(media.asset->mimeType, thumbnail.asset->mimeType, mediaVideo.asset->mimeType)
-`
-
-function getProjectConfig() {
-  const projectId =
-    process.env.SANITY_STUDIO_PROJECT_ID || process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || ''
-  const dataset =
-    process.env.SANITY_STUDIO_DATASET || process.env.NEXT_PUBLIC_SANITY_DATASET || 'production'
-  return { projectId, dataset }
+function getStrapiConfig() {
+  const baseUrl = process.env.STRAPI_URL
+  const apiToken = process.env.STRAPI_API_TOKEN
+  if (!baseUrl || !apiToken) return null
+  return { baseUrl, apiToken }
 }
 
-function getWriteClient(): SanityClient | null {
-  const { projectId, dataset } = getProjectConfig()
-  const token = process.env.SANITY_API_TOKEN
-  if (!projectId || !token) return null
-  return createClient({
-    projectId,
-    dataset,
-    apiVersion: '2024-01-01',
-    token,
-    useCdn: false,
-  })
+function strapiHeaders(apiToken: string): HeadersInit {
+  return {
+    Authorization: `Bearer ${apiToken}`,
+  }
+}
+
+function resolveMediaUrl(baseUrl: string, media: Record<string, unknown> | null): { mediaUrl: string; mimeType: string } {
+  if (!media) return { mediaUrl: '', mimeType: '' }
+  const url = media.url as string | null
+  const mime = media.mime as string | null
+  if (!url) return { mediaUrl: '', mimeType: '' }
+  const mediaUrl = url.startsWith('http') ? url : `${baseUrl}${url}`
+  return { mediaUrl, mimeType: mime ?? '' }
 }
 
 export async function GET(req: Request) {
-  const client = getWriteClient()
-  if (!client) {
-    return Response.json(
-      { error: 'Sanity is not configured (set SANITY_STUDIO_PROJECT_ID and SANITY_API_TOKEN).' },
-      { status: 503 }
-    )
+  const cfg = getStrapiConfig()
+  if (!cfg) {
+    return Response.json({ error: 'Strapi is not configured (set STRAPI_URL and STRAPI_API_TOKEN).' }, { status: 503 })
   }
+
   const { searchParams } = new URL(req.url)
   const type = searchParams.get('type')
   if (type !== 'benchmark' && type !== 'jioDesign') {
     return Response.json({ error: 'Query ?type= must be benchmark or jioDesign' }, { status: 400 })
   }
-  const rows = await client.fetch<
-    Array<{
-      _id: string
-      title: string | null
-      linkUrl: string | null
-      mediaUrl: string | null
-      mimeType: string | null
-    }>
-  >(
-    `*[_type == "studioInspiration" && inspirationType == $t] | order(_updatedAt desc) {
-      _id,
-      title,
-      linkUrl,
-      ${MEDIA_PROJECTION}
-    }`,
-    { t: type }
-  )
-  const items = rows.map((r) => ({
-    id: r._id,
-    title: r.title ?? '',
-    url: r.linkUrl ?? '',
-    mediaUrl: r.mediaUrl ?? '',
-    mimeType: r.mimeType ?? '',
-  }))
+
+  const qs = new URLSearchParams({
+    'filters[category][$eq]': type,
+    'populate': 'media',
+    'sort': 'createdAt:desc',
+    'pagination[pageSize]': '100',
+  })
+
+  const res = await fetch(`${cfg.baseUrl}/api/studio-inspirations?${qs}`, {
+    headers: strapiHeaders(cfg.apiToken),
+  })
+
+  if (!res.ok) {
+    return Response.json({ error: 'Failed to fetch from Strapi' }, { status: 502 })
+  }
+
+  const json = await res.json() as { data: unknown[] }
+  const items = (json.data ?? []).map((entry: unknown) => {
+    const e = entry as Record<string, unknown>
+    const media = (e.media ?? null) as Record<string, unknown> | null
+    const { mediaUrl, mimeType } = resolveMediaUrl(cfg.baseUrl, media)
+    return {
+      id: String(e.documentId ?? e.id ?? ''),
+      title: String(e.title ?? ''),
+      url: String(e.linkUrl ?? ''),
+      mediaUrl: mediaUrl || String(e.mediaUrl ?? ''),
+      mimeType: mimeType || String(e.mimeType ?? ''),
+    }
+  })
+
   return Response.json({ items })
 }
 
 export async function POST(req: Request) {
-  const client = getWriteClient()
-  if (!client) {
-    return Response.json(
-      { error: 'Sanity is not configured (set SANITY_STUDIO_PROJECT_ID and SANITY_API_TOKEN).' },
-      { status: 503 }
-    )
+  const cfg = getStrapiConfig()
+  if (!cfg) {
+    return Response.json({ error: 'Strapi is not configured (set STRAPI_URL and STRAPI_API_TOKEN).' }, { status: 503 })
   }
 
   let formData: FormData
@@ -90,12 +86,12 @@ export async function POST(req: Request) {
   const file = formData.get('file')
   const title = String(formData.get('title') ?? '').trim()
   const linkUrl = String(formData.get('linkUrl') ?? '').trim()
-  const inspirationType = String(formData.get('inspirationType') ?? '').trim()
+  const category = String(formData.get('inspirationType') ?? '').trim()
 
   if (!title || !linkUrl) {
     return Response.json({ error: 'title and linkUrl are required' }, { status: 400 })
   }
-  if (inspirationType !== 'benchmark' && inspirationType !== 'jioDesign') {
+  if (category !== 'benchmark' && category !== 'jioDesign') {
     return Response.json({ error: 'inspirationType must be benchmark or jioDesign' }, { status: 400 })
   }
 
@@ -108,69 +104,71 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Invalid linkUrl' }, { status: 400 })
   }
 
-  if (inspirationType === 'jioDesign' && !isFigmaUrl(linkUrl)) {
+  if (category === 'jioDesign' && !isFigmaUrl(linkUrl)) {
     return Response.json({ error: 'Jio Designs requires a valid https Figma URL' }, { status: 400 })
   }
 
   if (!(file instanceof Blob) || file.size === 0) {
     return Response.json({ error: 'Media file is required' }, { status: 400 })
   }
-
   if (!(file instanceof File)) {
     return Response.json({ error: 'Expected a File' }, { status: 400 })
   }
-
   if (file.size > STUDIO_INSPIRATION_MAX_FILE_BYTES) {
-    return Response.json(
-      { error: `File must be ${STUDIO_INSPIRATION_MAX_FILE_BYTES / (1024 * 1024)} MB or smaller` },
-      { status: 413 }
-    )
+    return Response.json({ error: `File must be ${STUDIO_INSPIRATION_MAX_FILE_BYTES / (1024 * 1024)} MB or smaller` }, { status: 413 })
   }
-
   if (!isAllowedStudioMediaFile(file)) {
     return Response.json({ error: 'Only PNG or MP4 files are allowed' }, { status: 400 })
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer())
-  const lower = file.name.toLowerCase()
-  const isPng = file.type === 'image/png' || lower.endsWith('.png')
-  const filename =
-    file.name && (lower.endsWith('.png') || lower.endsWith('.mp4'))
-      ? file.name
-      : isPng
-        ? 'upload.png'
-        : 'upload.mp4'
-  const contentType = isPng ? 'image/png' : 'video/mp4'
+  // Upload file to Strapi media library
+  const uploadForm = new FormData()
+  uploadForm.append('files', file, file.name || 'upload')
 
-  const asset = await client.assets.upload('file', buffer, {
-    filename,
-    contentType,
+  const uploadRes = await fetch(`${cfg.baseUrl}/api/upload`, {
+    method: 'POST',
+    headers: strapiHeaders(cfg.apiToken),
+    body: uploadForm,
   })
 
-  const created = await client.create({
-    _type: 'studioInspiration',
-    title,
-    linkUrl,
-    inspirationType,
-    media: {
-      _type: 'file',
-      asset: { _type: 'reference', _ref: asset._id },
+  if (!uploadRes.ok) {
+    return Response.json({ error: 'Failed to upload media to Strapi' }, { status: 502 })
+  }
+
+  const uploaded = await uploadRes.json() as Array<Record<string, unknown>>
+  const uploadedFile = uploaded[0]
+
+  // Create the studio-inspiration entry
+  const createRes = await fetch(`${cfg.baseUrl}/api/studio-inspirations`, {
+    method: 'POST',
+    headers: {
+      ...strapiHeaders(cfg.apiToken),
+      'Content-Type': 'application/json',
     },
+    body: JSON.stringify({
+      data: {
+        title,
+        linkUrl,
+        category,
+        media: uploadedFile?.id ?? null,
+        mimeType: String(uploadedFile?.mime ?? ''),
+      },
+    }),
   })
 
-  const row = await client.fetch<{
-    mediaUrl: string | null
-    mimeType: string | null
-  }>(
-    `*[_id == $id][0]{ ${MEDIA_PROJECTION} }`,
-    { id: created._id }
-  )
+  if (!createRes.ok) {
+    return Response.json({ error: 'Failed to create entry in Strapi' }, { status: 502 })
+  }
+
+  const created = await createRes.json() as { data: Record<string, unknown> }
+  const entry = created.data
+  const { mediaUrl, mimeType } = resolveMediaUrl(cfg.baseUrl, uploadedFile ?? null)
 
   return Response.json({
-    id: created._id,
+    id: String(entry.documentId ?? entry.id ?? ''),
     title,
     url: linkUrl,
-    mediaUrl: row?.mediaUrl ?? '',
-    mimeType: row?.mimeType ?? '',
+    mediaUrl,
+    mimeType,
   })
 }

@@ -1,0 +1,36 @@
+{
+  "collectionName": "components_blocks_media_text_blocks",
+  "info": {
+    "displayName": "Media Text Block",
+    "icon": "layout"
+  },
+  "options": {},
+  "attributes": {
+    "spacingTop": { "type": "string" },
+    "spacingBottom": { "type": "string" },
+    "eyebrow": { "type": "string" },
+    "subhead": { "type": "string" },
+    "title": { "type": "string" },
+    "body": { "type": "text" },
+    "ctaText": { "type": "string" },
+    "ctaLink": { "type": "string" },
+    "cta2Text": { "type": "string" },
+    "cta2Link": { "type": "string" },
+    "imageUrl": { "type": "string" },
+    "videoUrl": { "type": "string" },
+    "template": { "type": "string" },
+    "imagePosition": { "type": "string" },
+    "alignment": { "type": "string" },
+    "overlayAlignment": { "type": "string" },
+    "textOnlyAlignment": { "type": "string" },
+    "stackAlignment": { "type": "string" },
+    "mediaSize": { "type": "string" },
+    "descriptionTitle": { "type": "string" },
+    "descriptionBody": { "type": "text" },
+    "stackedMediaWidth": { "type": "string" },
+    "imageAspectRatio": { "type": "string" },
+    "emphasis": { "type": "string" },
+    "minimalBackgroundStyle": { "type": "boolean" },
+    "appearance": { "type": "string" }
+  }
+}

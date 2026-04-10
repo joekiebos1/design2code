@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_blocks_mta_items",
+  "info": {
+    "displayName": "Media Text Asymmetric Item",
+    "icon": "layout"
+  },
+  "options": {},
+  "attributes": {
+    "title": { "type": "string" },
+    "body": { "type": "text" },
+    "subtitle": { "type": "string" },
+    "linkText": { "type": "string" },
+    "linkUrl": { "type": "string" }
+  }
+}

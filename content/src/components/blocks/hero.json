@@ -1,0 +1,27 @@
+{
+  "collectionName": "components_blocks_heroes",
+  "info": {
+    "displayName": "Hero",
+    "icon": "monitor"
+  },
+  "options": {},
+  "attributes": {
+    "contentLayout": { "type": "string" },
+    "containerLayout": { "type": "string" },
+    "imageAnchor": { "type": "string" },
+    "textAlign": { "type": "string" },
+    "emphasis": { "type": "string" },
+    "appearance": { "type": "string" },
+    "spacingTop": { "type": "string" },
+    "spacingBottom": { "type": "string" },
+    "eyebrow": { "type": "string" },
+    "title": { "type": "string" },
+    "body": { "type": "text" },
+    "ctaText": { "type": "string" },
+    "ctaLink": { "type": "string" },
+    "cta2Text": { "type": "string" },
+    "cta2Link": { "type": "string" },
+    "imageUrl": { "type": "string" },
+    "videoUrl": { "type": "string" }
+  }
+}

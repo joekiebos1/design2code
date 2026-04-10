@@ -144,7 +144,7 @@ export function JioDesignsBrowseClient() {
       if (cancelled) return
       if (res.status === 503) {
         setLoadError(
-          'Sanity is not configured. Set SANITY_STUDIO_PROJECT_ID and SANITY_API_TOKEN in your environment (same as Studio).'
+          'Strapi is not configured. Set STRAPI_URL and STRAPI_API_TOKEN in your environment.'
         )
         setEntries([])
         return

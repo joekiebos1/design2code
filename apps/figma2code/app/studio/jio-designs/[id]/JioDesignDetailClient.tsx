@@ -16,7 +16,7 @@ export function JioDesignDetailClient({ id }: { id: string }) {
       const res = await fetch(`/api/studio-inspiration/${encodeURIComponent(id)}`)
       if (cancelled) return
       if (res.status === 503) {
-        setLoadError('Sanity is not configured.')
+        setLoadError('Strapi is not configured.')
         setEntry(null)
         return
       }
