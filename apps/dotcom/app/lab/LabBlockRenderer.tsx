@@ -160,6 +160,7 @@ function getBlockTypeTitle(_type: string): string {
     mediaTextBlock: 'Media + Text: Stacked',
     mediaText5050: 'Media + Text: 50/50',
     labMediaText5050: 'Media + Text: 50/50',
+    cardGrid: 'Card grid',
     labCardGrid: 'Card grid',
     carousel: 'Carousel (responsive)',
     labCarousel: 'Carousel',
@@ -217,6 +218,7 @@ export function getBlockLayoutTitle(block: LabBlock): string {
       const v = (block.variant as string) ?? 'small'
       return v === 'combined' ? 'Combined' : v === 'large' ? 'Large' : 'Small'
     }
+    case 'cardGrid':
     case 'labCardGrid':
       return `${block.columns ?? '3'} columns`
     case 'mediaZoomOutOnScroll':
@@ -307,6 +309,7 @@ export function getBlockOtherSettings(block: LabBlock): string {
     case 'rotatingMedia':
     case 'labRotatingMedia':
       return `Emphasis: ${block.emphasis ?? ''} · Appearance: ${(block.appearance ?? block.surfaceColour) ?? ''}`
+    case 'cardGrid':
     case 'labCardGrid':
       return `Emphasis: ${block.emphasis ?? ''} · Appearance: ${(block.appearance ?? block.surfaceColour) ?? ''} · ${Array.isArray(block.items) ? block.items.length : 0} card(s)`
     case 'mediaZoomOutOnScroll':
@@ -662,6 +665,7 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
             const mapped = mapMediaText5050BlockProps(block)
             return wrapSection(<LabMediaText5050Block {...mapped} />, block, i)
           }
+          case 'cardGrid':
           case 'labCardGrid': {
             const cols = block.columns as string
             const items = (block.items ?? []) as LabCardItem[]
