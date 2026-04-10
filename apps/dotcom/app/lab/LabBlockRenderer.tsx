@@ -1,10 +1,6 @@
 'use client'
 
 import React from 'react'
-/**
- * Lab block renderer – renders blocks from Sanity lab page sections.
- * Media + Text 50/50 re-exports the production block from app/blocks.
- */
 
 import {
   LabHeroBlock,
@@ -54,127 +50,20 @@ function mapLabParagraphRowsFromBlock(block: LabBlock) {
   }))
 }
 
-/** Map production `mediaTextAsymmetric` document shape → lab asymmetric props (legacy / mixed lab data). */
-function normalizeLegacyProductionAsymmetricForLab(block: LabBlock): {
-  blockTitle: string | null
-  variant: 'paragraphs' | 'faq' | 'links' | 'image'
-  paragraphRows?: Array<{
-    _key?: string
-    title?: string | null
-    body?: string | null
-    linkText?: string | null
-    linkUrl?: string | null
-  }>
-  items?: Array<{
-    title?: string | null
-    body?: string | null
-    linkText?: string | null
-    linkUrl?: string | null
-    subtitle?: string | null
-  }>
-  mainImageSrc?: string
-  imageAspectRatio?: '5:4' | '1:1' | '4:5'
-  imageAlt?: string | null
-} {
-  const rawVariant = (block.variant as string) ?? 'textList'
-  const blockTitle = (block.blockTitle as string | null) ?? null
-
-  if (rawVariant === 'paragraphs') {
-    return { blockTitle, variant: 'paragraphs', paragraphRows: mapLabParagraphRowsFromBlock(block) }
-  }
-
-  if (rawVariant === 'faq' || rawVariant === 'links') {
-    const items = Array.isArray(block.items)
-      ? (block.items as { title?: string; body?: string; linkText?: string; linkUrl?: string; subtitle?: string }[]).map(
-          (i) => ({
-            title: i.title,
-            body: i.body,
-            linkText: i.linkText,
-            linkUrl: i.linkUrl,
-            subtitle: i.subtitle,
-          }),
-        )
-      : []
-    return { blockTitle, variant: rawVariant, items }
-  }
-
-  if (rawVariant === 'image') {
-    const mainImageRaw = block.image as string | undefined
-    const mainImageSrc =
-      typeof mainImageRaw === 'string' && mainImageRaw.trim().length > 0
-        ? mainImageRaw.trim()
-        : typeof block.imageUrl === 'string' && block.imageUrl.trim().length > 0
-          ? (block.imageUrl as string).trim()
-          : ''
-    const ar = block.imageAspectRatio as string | undefined
-    const imageAspectRatio =
-      ar === '5:4' || ar === '1:1' || ar === '4:5' ? (ar as '5:4' | '1:1' | '4:5') : undefined
-    return {
-      blockTitle,
-      variant: 'image',
-      mainImageSrc,
-      imageAspectRatio,
-      imageAlt: (block.imageAlt as string | null) ?? null,
-    }
-  }
-
-  if (rawVariant === 'textList' || rawVariant === 'longForm') {
-    const paragraphRows =
-      rawVariant === 'textList'
-        ? (Array.isArray(block.items) ? block.items : []).map((it, i) => {
-            const row = it as {
-              _key?: string
-              title?: string | null
-              body?: string | null
-              linkText?: string | null
-              linkUrl?: string | null
-            }
-            return {
-              _key: row._key ?? `legacy-tl-${i}`,
-              title: row.title,
-              body: row.body,
-              linkText: row.linkText,
-              linkUrl: row.linkUrl,
-            }
-          })
-        : (Array.isArray(block.longFormParagraphs) ? block.longFormParagraphs : []).map(
-            (p: { _key?: string; text?: string | null }, i) => ({
-              _key: p._key ?? `legacy-lf-${i}`,
-              title: undefined as string | undefined,
-              body: p.text,
-            }),
-          )
-    return { blockTitle, variant: 'paragraphs', paragraphRows }
-  }
-
-  return { blockTitle, variant: 'paragraphs', paragraphRows: [] }
-}
-
 function getBlockTypeTitle(_type: string): string {
   const titles: Record<string, string> = {
     hero: 'Hero',
-    labHero: 'Hero',
     mediaTextStacked: 'Media + Text: Stacked',
-    labMediaTextStacked: 'Media + Text: Stacked',
     mediaText5050: 'Media + Text: 50/50',
-    labMediaText5050: 'Media + Text: 50/50',
     cardGrid: 'Card grid',
-    labCardGrid: 'Card grid',
     carousel: 'Carousel (responsive)',
-    labCarousel: 'Carousel',
     fullBleedVerticalCarousel: 'Full bleed vertical carousel',
-    labFullBleedVerticalCarousel: 'Full bleed vertical carousel',
     rotatingMedia: 'Rotating media',
-    labRotatingMedia: 'Rotating media',
     iconGrid: 'Icon grid',
-    labIconGrid: 'Icon grid',
     proofPoints: 'Proof points',
-    labProofPoints: 'Proof points',
     mediaTextAsymmetric: 'Media + Text Asymmetric',
-    labMediaTextAsymmetric: 'Media + Text Asymmetric',
     topNavBlock: 'Top nav (mega menu)',
     editorialBlock: 'Editorial',
-    labEditorialBlock: 'Editorial',
   }
   return titles[_type] ?? _type
 }
@@ -182,8 +71,7 @@ function getBlockTypeTitle(_type: string): string {
 /** Layout setting only – used as section title (h2) above each block. */
 export function getBlockLayoutTitle(block: LabBlock): string {
   switch (block._type) {
-    case 'hero':
-    case 'labHero': {
+    case 'hero': {
       const contentLayout = ((block.contentLayout as string) ?? 'sideBySide').toLowerCase()
       const containerLayout = (block.containerLayout as string) ?? (block.layout as string) ?? 'edgeToEdge'
       const anchor = (block.imageAnchor as string) ?? 'center'
@@ -207,28 +95,22 @@ export function getBlockLayoutTitle(block: LabBlock): string {
       return parts.join(' · ')
     }
     case 'fullBleedVerticalCarousel':
-    case 'labFullBleedVerticalCarousel':
       return 'Full bleed'
-    case 'rotatingMedia':
-    case 'labRotatingMedia': {
+    case 'rotatingMedia': {
       const v = (block.variant as string) ?? 'small'
       return v === 'combined' ? 'Combined' : v === 'large' ? 'Large' : 'Small'
     }
     case 'cardGrid':
-    case 'labCardGrid':
       return `${block.columns ?? '3'} columns`
-    case 'iconGrid':
-    case 'labIconGrid': {
+    case 'iconGrid': {
       const cols = block.columns as number | undefined
       return cols == null ? 'Auto columns' : `${cols} columns`
     }
-    case 'proofPoints':
-    case 'labProofPoints': {
+    case 'proofPoints': {
       const v = (block.variant as string) ?? 'icon'
       return v === 'stat' ? 'Stat' : 'Icon'
     }
-    case 'mediaText5050':
-    case 'labMediaText5050': {
+    case 'mediaText5050': {
       const variant = (block.variant as string) ?? 'multiParagraph'
       const variantLabels: Record<string, string> = {
         singleParagraph: 'Single paragraph',
@@ -245,8 +127,7 @@ export function getBlockLayoutTitle(block: LabBlock): string {
             : ''
       return `${variantLabels[variant] ?? variant}${layout} · Image ${imagePosition}`
     }
-    case 'mediaTextStacked':
-    case 'labMediaTextStacked': {
+    case 'mediaTextStacked': {
       const rawTemplate = (block.template as string) ?? 'stacked'
       const template = (rawTemplate === 'SideBySide' || rawTemplate === 'sideBySide') ? 'stacked' : rawTemplate === 'MediaOverlay' ? 'overlay' : rawTemplate
       if (template === 'textOnly') return `Text only · Align ${block.alignment as string}`
@@ -255,19 +136,11 @@ export function getBlockLayoutTitle(block: LabBlock): string {
       if (template === 'overlay') return `Overlay · ${sizeLabel} · Align ${block.alignment as string}`
       return `Stacked · ${sizeLabel} · Align ${block.alignment as string}`
     }
-    case 'carousel':
-    case 'labCarousel': {
+    case 'carousel': {
       const size = (block.cardSize as string) ?? 'medium'
       return size === 'compact' ? 'Compact' : size === 'large' ? 'Large' : 'Medium'
     }
     case 'mediaTextAsymmetric': {
-      const v = (block.variant as string) ?? 'textList'
-      if (v === 'faq') return 'FAQ'
-      if (v === 'links') return 'Links'
-      if (v === 'longForm') return 'Long form'
-      return 'Paragraphs'
-    }
-    case 'labMediaTextAsymmetric': {
       const v = (block.variant as string) ?? 'paragraphs'
       if (v === 'faq') return 'FAQ'
       if (v === 'links') return 'Links'
@@ -278,7 +151,6 @@ export function getBlockLayoutTitle(block: LabBlock): string {
     case 'topNavBlock':
       return 'Mega menu'
     case 'editorialBlock':
-    case 'labEditorialBlock':
       return 'Editorial'
     default:
       return getBlockTypeTitle(block._type)
@@ -287,84 +159,46 @@ export function getBlockLayoutTitle(block: LabBlock): string {
 
 /** Other settings (emphasis, surface colour, counts) – used as subtitle (smaller font) under the title. */
 export function getBlockOtherSettings(block: LabBlock): string {
+  const app = `${block.emphasis ?? ''} · Appearance: ${(block.appearance ?? block.surfaceColour) ?? ''}`
   switch (block._type) {
-    case 'hero':
-    case 'labHero': {
+    case 'hero': {
       const surface = String(block.emphasis ?? 'bold')
       const surfaceLabel =
         surface === 'ghost' ? 'No colour' : (surface && typeof surface === 'string' ? surface.charAt(0).toUpperCase() + surface.slice(1) : 'Minimal')
       return `Emphasis: ${surfaceLabel} · Appearance: ${(block.appearance ?? block.surfaceColour) ?? ''}`
     }
     case 'fullBleedVerticalCarousel':
-    case 'labFullBleedVerticalCarousel':
-      return `Emphasis: ${block.emphasis ?? ''} · Appearance: ${(block.appearance ?? block.surfaceColour) ?? ''}`
     case 'rotatingMedia':
-    case 'labRotatingMedia':
-      return `Emphasis: ${block.emphasis ?? ''} · Appearance: ${(block.appearance ?? block.surfaceColour) ?? ''}`
+    case 'mediaTextStacked':
+      return `Emphasis: ${app}`
     case 'cardGrid':
-    case 'labCardGrid':
-      return `Emphasis: ${block.emphasis ?? ''} · Appearance: ${(block.appearance ?? block.surfaceColour) ?? ''} · ${Array.isArray(block.items) ? block.items.length : 0} card(s)`
+      return `Emphasis: ${app} · ${Array.isArray(block.items) ? block.items.length : 0} card(s)`
     case 'iconGrid':
-    case 'labIconGrid':
-      return `Emphasis: ${block.emphasis ?? ''} · Appearance: ${(block.appearance ?? block.surfaceColour) ?? ''} · ${Array.isArray(block.items) ? block.items.length : 0} item(s)`
     case 'proofPoints':
-    case 'labProofPoints':
-      return `Emphasis: ${block.emphasis ?? ''} · Appearance: ${(block.appearance ?? block.surfaceColour) ?? ''} · ${Array.isArray(block.items) ? block.items.length : 0} item(s)`
-    case 'mediaText5050':
-      return `Emphasis: ${block.emphasis ?? ''} · Appearance: ${(block.appearance ?? block.surfaceColour) ?? ''} · ${Array.isArray(block.items) ? block.items.length : 0} item(s)`
-    case 'labMediaText5050': {
+    case 'carousel':
+      return `Emphasis: ${app} · ${Array.isArray(block.items) ? block.items.length : 0} item(s)`
+    case 'mediaText5050': {
       const v = (block.variant as string) ?? 'multiParagraph'
       const n =
         v === 'accordion'
-          ? Array.isArray(block.accordionItems)
-            ? block.accordionItems.length
-            : 0
-          : v === 'singleParagraph' || ((block.paragraphColumnLayout as string) === 'single')
+          ? Array.isArray(block.accordionItems) ? block.accordionItems.length : 0
+          : v === 'singleParagraph' || (block.paragraphColumnLayout as string) === 'single'
             ? 1
-            : Array.isArray(block.items)
-              ? block.items.length
-              : 0
-      return `Emphasis: ${block.emphasis ?? ''} · Appearance: ${(block.appearance ?? block.surfaceColour) ?? ''} · ${n} section(s)`
+            : Array.isArray(block.items) ? block.items.length : 0
+      return `Emphasis: ${app} · ${n} section(s)`
     }
-    case 'mediaTextStacked':
-    case 'labMediaTextStacked':
-      return `Emphasis: ${block.emphasis ?? ''} · Appearance: ${(block.appearance ?? block.surfaceColour) ?? ''}`
-    case 'carousel':
-    case 'labCarousel':
-      return `Emphasis: ${block.emphasis ?? ''} · Appearance: ${(block.appearance ?? block.surfaceColour) ?? ''} · ${Array.isArray(block.items) ? block.items.length : 0} item(s)`
     case 'mediaTextAsymmetric': {
-      const v = (block.variant as string) ?? 'textList'
-      const n =
-        v === 'longForm'
-          ? Array.isArray(block.longFormParagraphs)
-            ? block.longFormParagraphs.length
-            : 0
-          : Array.isArray(block.items)
-            ? block.items.length
-            : 0
-      const label = v === 'longForm' ? 'paragraph(s)' : 'item(s)'
-      return `Emphasis: ${block.emphasis ?? ''} · Appearance: ${(block.appearance ?? block.surfaceColour) ?? ''} · ${n} ${label}`
-    }
-    case 'labMediaTextAsymmetric': {
       const v = (block.variant as string) ?? 'paragraphs'
       if (v === 'image') {
-        const ar = (block.imageAspectRatio as string) ?? '4:5'
-        return `Emphasis: ${block.emphasis ?? ''} · Appearance: ${(block.appearance ?? block.surfaceColour) ?? ''} · ${ar} image`
+        return `Emphasis: ${app} · ${(block.imageAspectRatio as string) ?? '4:5'} image`
       }
       const isSinglePara = v === 'paragraphs' && (block.paragraphLayout as string) === 'single'
       const n =
         v === 'paragraphs'
-          ? isSinglePara
-            ? 1
-            : Array.isArray(block.paragraphRows)
-              ? block.paragraphRows.length
-              : 0
-          : Array.isArray(block.items)
-            ? block.items.length
-            : 0
-      const label =
-        v === 'paragraphs' ? (isSinglePara ? 'column' : 'section(s)') : 'item(s)'
-      return `Emphasis: ${block.emphasis ?? ''} · Appearance: ${(block.appearance ?? block.surfaceColour) ?? ''} · ${n} ${label}`
+          ? isSinglePara ? 1 : Array.isArray(block.paragraphRows) ? block.paragraphRows.length : 0
+          : Array.isArray(block.items) ? block.items.length : 0
+      const label = v === 'paragraphs' ? (isSinglePara ? 'column' : 'section(s)') : 'item(s)'
+      return `Emphasis: ${app} · ${n} ${label}`
     }
     case 'topNavBlock':
       return 'L1/L2/L3 navigation'
@@ -395,42 +229,18 @@ function deriveLabPattern(block: LabBlock): BlockPattern {
   if (contentLayout === 'mediaoverlay' || template === 'mediaoverlay') {
     return 'overlay'
   }
-  if ((block._type === 'hero' || block._type === 'labHero') && contentLayout === 'category') {
+  if (block._type === 'hero' && contentLayout === 'category') {
     return 'band'
   }
-  /** Hero sideBySide contained → always contained, never band. Background constrained to grid width by ContainedShell. */
-  if (
-    (block._type === 'hero' || block._type === 'labHero') &&
-    contentLayout === 'sidebyside' &&
-    (block.containerLayout as string)?.toLowerCase?.() === 'contained'
-  ) {
+  if (block._type === 'hero' && contentLayout === 'sidebyside' && (block.containerLayout as string)?.toLowerCase?.() === 'contained') {
     return 'contained'
   }
   const emphasis = (block.emphasis as string)?.toLowerCase?.()
   const hasBand = emphasis && !['ghost', 'none'].includes(emphasis)
   const bandTypes = [
-    'hero',
-    'labHero',
-    'mediaTextStacked',
-    'labMediaTextStacked',
-    'mediaText5050',
-    'labMediaText5050',
-    'carousel',
-    'labCarousel',
-    'labCardGrid',
-    'cardGrid',
-    'proofPoints',
-    'labProofPoints',
-    'iconGrid',
-    'labIconGrid',
-    'mediaTextAsymmetric',
-    'labMediaTextAsymmetric',
-    'fullBleedVerticalCarousel',
-    'labFullBleedVerticalCarousel',
-    'rotatingMedia',
-    'labRotatingMedia',
-    'editorialBlock',
-    'labEditorialBlock',
+    'hero', 'mediaTextStacked', 'mediaText5050', 'carousel', 'cardGrid',
+    'proofPoints', 'iconGrid', 'mediaTextAsymmetric',
+    'fullBleedVerticalCarousel', 'rotatingMedia', 'editorialBlock',
   ]
   if (hasBand && bandTypes.includes(block._type)) {
     return 'band'
@@ -567,15 +377,15 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
 
   const wrapSection = (content: React.ReactNode, block: LabBlock, i: number) => {
     const spacingTop =
-      (block._type === 'hero' || block._type === 'labHero')
+      block._type === 'hero'
         ? undefined
         : (block.spacingTop ? normalizeSpacing(block.spacingTop) : block.spacing ? normalizeSpacing(block.spacing) : undefined) as BlockSpacingValue | undefined
     const spacingBottom = (block.spacingBottom ? normalizeSpacing(block.spacingBottom) : block.spacing ? normalizeSpacing(block.spacing) : undefined) as BlockSpacingValue | undefined
     const pattern = deriveLabPattern(block)
     const contentLayout = (block.contentLayout as string)?.toLowerCase?.()
-    const isHeroCategory = (block._type === 'hero' || block._type === 'labHero') && contentLayout === 'category'
+    const isHeroCategory = block._type === 'hero' && contentLayout === 'category'
     const imageAnchor = (block.imageAnchor as string)?.toLowerCase?.()
-    const isHeroTopToBottom = (block._type === 'hero' || block._type === 'labHero') && contentLayout === 'sidebyside' && imageAnchor === 'bottom'
+    const isHeroTopToBottom = block._type === 'hero' && contentLayout === 'sidebyside' && imageAnchor === 'bottom'
     const emphasis = (block.emphasis as string)?.toLowerCase?.() as 'ghost' | 'minimal' | 'subtle' | 'bold' | undefined
     const shellEmphasis = isHeroCategory ? 'ghost' : emphasis
     const bandAppearance = ((block.appearance ?? block.surfaceColour) as string)?.toLowerCase?.() as
@@ -636,23 +446,19 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
     <>
       {blocks.map((block, i) => {
         switch (block._type) {
-          case 'hero':
-          case 'labHero': {
+          case 'hero': {
             const props = mapHeroBlockProps(block)
             return wrapSection(<LabHeroBlock {...props} />, block, i)
           }
-          case 'mediaTextStacked':
-          case 'labMediaTextStacked': {
+          case 'mediaTextStacked': {
             const mapped = mapMediaTextBlock(block)
             return wrapSection(<LabMediaTextBlock {...mapped} />, block, i)
           }
-          case 'mediaText5050':
-          case 'labMediaText5050': {
+          case 'mediaText5050': {
             const mapped = mapMediaText5050BlockProps(block)
             return wrapSection(<LabMediaText5050Block {...mapped} />, block, i)
           }
-          case 'cardGrid':
-          case 'labCardGrid': {
+          case 'cardGrid': {
             const cols = block.columns as string
             const items = (block.items ?? []) as LabCardItem[]
             return wrapSection(
@@ -672,7 +478,6 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
               i,
             )
           }
-          case 'labCarousel':
           case 'carousel': {
             const rawItems = (block.items ?? []) as { cardType?: string; title?: string; description?: string; image?: string; video?: string; link?: string; ctaText?: string; aspectRatio?: string; imageSlot?: string }[]
             const carouselItems = rawItems.map((it) => ({
@@ -706,8 +511,7 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
               i,
             )
           }
-          case 'fullBleedVerticalCarousel':
-          case 'labFullBleedVerticalCarousel': {
+          case 'fullBleedVerticalCarousel': {
             return wrapSection(
               <LabFullBleedVerticalCarousel
                 title={block.title as string | null | undefined}
@@ -721,8 +525,7 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
               i,
             )
           }
-          case 'rotatingMedia':
-          case 'labRotatingMedia': {
+          case 'rotatingMedia': {
             return wrapSection(
               <LabRotatingMediaBlock
                 title={block.title as string | null | undefined}
@@ -741,8 +544,7 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
               i,
             )
           }
-          case 'iconGrid':
-          case 'labIconGrid': {
+          case 'iconGrid': {
             const SPECTRUMS = ['indigo', 'sky', 'pink', 'gold', 'red', 'purple', 'mint', 'violet', 'marigold', 'green', 'crimson', 'orange'] as const
             const items = Array.isArray(block.items)
               ? (block.items as { title?: string; body?: string; icon?: string; accentColor?: string; spectrum?: string }[]).map((i) => ({
@@ -767,8 +569,7 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
               i,
             )
           }
-          case 'proofPoints':
-          case 'labProofPoints': {
+          case 'proofPoints': {
             const ppSurf = String(block.emphasis ?? '').toLowerCase()
             const ppSurfValid = ppSurf && ['ghost', 'minimal', 'subtle', 'bold'].includes(ppSurf) ? ppSurf : undefined
             const ppAcc = String((block.appearance ?? block.surfaceColour) ?? '').toLowerCase()
@@ -792,8 +593,7 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
           case 'topNavBlock': {
             return wrapSection(<LabTopNavBlock />, block, i)
           }
-          case 'editorialBlock':
-          case 'labEditorialBlock': {
+          case 'editorialBlock': {
             const textArea = block.textArea as { topLeft?: { column?: number; row?: number }; bottomRight?: { column?: number; row?: number } } | undefined
             const imageArea = block.imageArea as { topLeft?: { column?: number; row?: number }; bottomRight?: { column?: number; row?: number } } | undefined
             return wrapSection(
@@ -826,7 +626,7 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
               i,
             )
           }
-          case 'labMediaTextAsymmetric': {
+          case 'mediaTextAsymmetric': {
             const paragraphRows = mapLabParagraphRowsFromBlock(block)
             const paragraphLayout =
               (block.paragraphLayout as string) === 'single' ? ('single' as const) : ('multi' as const)
@@ -864,33 +664,6 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
                 mainImageSrc={mainImageSrc}
                 imageAspectRatio={imageAspectRatio}
                 imageAlt={(block.imageAlt as string | null) ?? null}
-                size={(block.size as 'hero' | 'feature' | 'editorial') ?? 'feature'}
-                emphasis={asymmetricSurfValid as 'ghost' | 'minimal' | 'subtle' | 'bold'}
-                minimalBackgroundStyle={(block.minimalBackgroundStyle as string)?.toLowerCase?.() === 'gradient' ? 'gradient' : 'block'}
-                appearance={asymmetricAccValid as 'primary' | 'secondary' | 'sparkle' | 'neutral'}
-                openLinksInNewTab={asymmetricBlockOpenLinksInNewTab}
-              />,
-              block,
-              i,
-            )
-          }
-          case 'mediaTextAsymmetric': {
-            const normalized = normalizeLegacyProductionAsymmetricForLab(block)
-            const asymmetricSurf = String(block.emphasis ?? '').toLowerCase()
-            const asymmetricSurfValid = asymmetricSurf && ['ghost', 'minimal', 'subtle', 'bold'].includes(asymmetricSurf) ? asymmetricSurf : undefined
-            const asymmetricAcc = String((block.appearance ?? block.surfaceColour) ?? '').toLowerCase()
-            const asymmetricAccValid = asymmetricAcc && ['primary', 'secondary', 'sparkle', 'neutral'].includes(asymmetricAcc) ? asymmetricAcc : undefined
-            return wrapSection(
-              <LabMediaTextAsymmetricBlock
-                blockTitle={normalized.blockTitle}
-                variant={normalized.variant}
-                paragraphLayout="multi"
-                singleColumnBody={null}
-                paragraphRows={normalized.paragraphRows}
-                items={normalized.items}
-                mainImageSrc={normalized.mainImageSrc}
-                imageAspectRatio={normalized.imageAspectRatio}
-                imageAlt={normalized.imageAlt}
                 size={(block.size as 'hero' | 'feature' | 'editorial') ?? 'feature'}
                 emphasis={asymmetricSurfValid as 'ghost' | 'minimal' | 'subtle' | 'bold'}
                 minimalBackgroundStyle={(block.minimalBackgroundStyle as string)?.toLowerCase?.() === 'gradient' ? 'gradient' : 'block'}
