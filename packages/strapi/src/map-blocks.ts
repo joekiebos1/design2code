@@ -4,7 +4,7 @@ const COMPONENT_TO_TYPE: Record<string, string> = {
   'blocks.hero': 'hero',
   'blocks.card-grid': 'cardGrid',
   'blocks.media-text-stacked': 'mediaTextStacked',
-  'blocks.media-text-block': 'mediaTextBlock',
+  'blocks.media-text-block': 'mediaTextStacked',
   'blocks.media-text-5050': 'mediaText5050',
   'blocks.carousel': 'carousel',
   'blocks.proof-points': 'proofPoints',
@@ -12,7 +12,6 @@ const COMPONENT_TO_TYPE: Record<string, string> = {
   'blocks.media-text-asymmetric': 'mediaTextAsymmetric',
   'blocks.full-bleed-vertical-carousel': 'fullBleedVerticalCarousel',
   'blocks.rotating-media': 'rotatingMedia',
-  'blocks.media-zoom-out-on-scroll': 'mediaZoomOutOnScroll',
   'blocks.editorial-block': 'editorialBlock',
 }
 
@@ -65,7 +64,7 @@ function mapOneBlock(baseUrl: string, raw: unknown, index: number): BlockRendere
     }
   }
 
-  if (_type === 'mediaTextStacked' || _type === 'mediaTextBlock') {
+  if (_type === 'mediaTextStacked') {
     return {
       _type,
       _key,

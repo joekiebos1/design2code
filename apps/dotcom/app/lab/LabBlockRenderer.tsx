@@ -9,7 +9,6 @@ import React from 'react'
 import {
   LabHeroBlock,
   LabCardGridBlock,
-  LabMediaZoomOutOnScroll,
   LabFullBleedVerticalCarousel,
   LabCarouselBlock,
   LabRotatingMediaBlock,
@@ -157,7 +156,6 @@ function getBlockTypeTitle(_type: string): string {
     labHero: 'Hero',
     mediaTextStacked: 'Media + Text: Stacked',
     labMediaTextStacked: 'Media + Text: Stacked',
-    mediaTextBlock: 'Media + Text: Stacked',
     mediaText5050: 'Media + Text: 50/50',
     labMediaText5050: 'Media + Text: 50/50',
     cardGrid: 'Card grid',
@@ -174,8 +172,6 @@ function getBlockTypeTitle(_type: string): string {
     labProofPoints: 'Proof points',
     mediaTextAsymmetric: 'Media + Text Asymmetric',
     labMediaTextAsymmetric: 'Media + Text Asymmetric',
-    mediaZoomOutOnScroll: 'Media zoom out on scroll',
-    labMediaZoomOutOnScroll: 'Media zoom out on scroll',
     topNavBlock: 'Top nav (mega menu)',
     editorialBlock: 'Editorial',
     labEditorialBlock: 'Editorial',
@@ -221,9 +217,6 @@ export function getBlockLayoutTitle(block: LabBlock): string {
     case 'cardGrid':
     case 'labCardGrid':
       return `${block.columns ?? '3'} columns`
-    case 'mediaZoomOutOnScroll':
-    case 'labMediaZoomOutOnScroll':
-      return block.videoUrl ? 'With video' : 'Image only'
     case 'iconGrid':
     case 'labIconGrid': {
       const cols = block.columns as number | undefined
@@ -253,8 +246,7 @@ export function getBlockLayoutTitle(block: LabBlock): string {
       return `${variantLabels[variant] ?? variant}${layout} · Image ${imagePosition}`
     }
     case 'mediaTextStacked':
-    case 'labMediaTextStacked':
-    case 'mediaTextBlock': {
+    case 'labMediaTextStacked': {
       const rawTemplate = (block.template as string) ?? 'stacked'
       const template = (rawTemplate === 'SideBySide' || rawTemplate === 'sideBySide') ? 'stacked' : rawTemplate === 'MediaOverlay' ? 'overlay' : rawTemplate
       if (template === 'textOnly') return `Text only · Align ${block.alignment as string}`
@@ -312,9 +304,6 @@ export function getBlockOtherSettings(block: LabBlock): string {
     case 'cardGrid':
     case 'labCardGrid':
       return `Emphasis: ${block.emphasis ?? ''} · Appearance: ${(block.appearance ?? block.surfaceColour) ?? ''} · ${Array.isArray(block.items) ? block.items.length : 0} card(s)`
-    case 'mediaZoomOutOnScroll':
-    case 'labMediaZoomOutOnScroll':
-      return ''
     case 'iconGrid':
     case 'labIconGrid':
       return `Emphasis: ${block.emphasis ?? ''} · Appearance: ${(block.appearance ?? block.surfaceColour) ?? ''} · ${Array.isArray(block.items) ? block.items.length : 0} item(s)`
@@ -339,7 +328,6 @@ export function getBlockOtherSettings(block: LabBlock): string {
     }
     case 'mediaTextStacked':
     case 'labMediaTextStacked':
-    case 'mediaTextBlock':
       return `Emphasis: ${block.emphasis ?? ''} · Appearance: ${(block.appearance ?? block.surfaceColour) ?? ''}`
     case 'carousel':
     case 'labCarousel':
@@ -425,7 +413,6 @@ function deriveLabPattern(block: LabBlock): BlockPattern {
     'labHero',
     'mediaTextStacked',
     'labMediaTextStacked',
-    'mediaTextBlock',
     'mediaText5050',
     'labMediaText5050',
     'carousel',
@@ -655,8 +642,7 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
             return wrapSection(<LabHeroBlock {...props} />, block, i)
           }
           case 'mediaTextStacked':
-          case 'labMediaTextStacked':
-          case 'mediaTextBlock': {
+          case 'labMediaTextStacked': {
             const mapped = mapMediaTextBlock(block)
             return wrapSection(<LabMediaTextBlock {...mapped} />, block, i)
           }
@@ -798,21 +784,6 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
                 minimalBackgroundStyle={(block.minimalBackgroundStyle as string)?.toLowerCase?.() === 'gradient' ? 'gradient' : 'block'}
                 appearance={ppAccValid as 'primary' | 'secondary' | 'sparkle' | 'neutral'}
                 items={block.items as { title?: string; description?: string; icon?: string }[]}
-              />,
-              block,
-              i,
-            )
-          }
-          case 'mediaZoomOutOnScroll':
-          case 'labMediaZoomOutOnScroll': {
-            return wrapSection(
-              <LabMediaZoomOutOnScroll
-                title={block.title as string | null | undefined}
-                description={block.description as string | null | undefined}
-                callToActions={block.callToActions as LabBlockCallToAction[] | undefined}
-                image={(block.image as string) || '/placeholder-preview.svg'}
-                videoUrl={block.videoUrl as string | null}
-                alt={block.alt as string | null}
               />,
               block,
               i,

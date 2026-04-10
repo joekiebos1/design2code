@@ -49,7 +49,7 @@ function derivePattern(block: Block): BlockPattern {
   }
   const emphasis = (block.emphasis as string)?.toLowerCase?.()
   const hasBand = emphasis && !['ghost', 'none'].includes(emphasis)
-  const bandTypes = ['hero', 'mediaTextStacked', 'mediaTextBlock', 'mediaText5050', 'carousel', 'cardGrid', 'proofPoints', 'iconGrid', 'mediaTextAsymmetric']
+  const bandTypes = ['hero', 'mediaTextStacked', 'mediaText5050', 'carousel', 'cardGrid', 'proofPoints', 'iconGrid', 'mediaTextAsymmetric']
   if (hasBand && bandTypes.includes(block._type)) {
     return 'band'
   }
@@ -132,8 +132,7 @@ export function BlockRenderer({ blocks, images }: BlockRendererProps) {
             )
           }
             break
-          case 'mediaTextStacked':
-          case 'mediaTextBlock': {
+          case 'mediaTextStacked': {
             const mapped = mapMediaTextBlock(block)
             const imageSlot = block.imageSlot as string | undefined
             const imageState = imageSlot && images?.[imageSlot] ? images[imageSlot] : undefined

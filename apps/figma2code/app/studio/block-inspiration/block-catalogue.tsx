@@ -163,19 +163,6 @@ export const BLOCK_CATALOGUE: BlockCatalogueEntry[] = [
     ],
   },
   {
-    id: 'mediaZoomOutOnScroll',
-    name: 'Media Zoom Out on Scroll',
-    description: 'Media that zooms out as you scroll. Image or video.',
-    category: 'Content blocks',
-    tier: 'lab',
-    labSlug: 'media-zoom-out-on-scroll',
-    creativeUses: [
-      'Immersive hero or section transitions',
-      'Video with scroll-driven reveal',
-      'Editorial or editorial-style layouts',
-    ],
-  },
-  {
     id: 'topNav',
     name: 'Top Nav (Mega Menu)',
     description: 'Mega menu navigation. Supports dropdowns and links.',

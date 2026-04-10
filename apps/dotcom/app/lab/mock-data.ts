@@ -36,11 +36,6 @@ export const mockRotatingMedia = {
   ],
 }
 
-export const mockMediaZoomOutOnScroll = {
-  image: PLACEHOLDER_IMAGE,
-  alt: 'Media zoom out on scroll demo',
-}
-
 export const mockHero = {
   eyebrow: 'Product Name',
   title: 'Designed for the way you live.',
