@@ -50,7 +50,8 @@ export async function GET(req: Request) {
   })
 
   if (!res.ok) {
-    return Response.json({ error: 'Failed to fetch from Strapi' }, { status: 502 })
+    const body = await res.text()
+    return Response.json({ error: 'Failed to fetch from Strapi', status: res.status, body }, { status: 502 })
   }
 
   const json = await res.json() as { data: unknown[] }
