@@ -12,9 +12,7 @@ function getStrapiConfig() {
 }
 
 function strapiHeaders(apiToken: string): HeadersInit {
-  return {
-    Authorization: `Bearer ${apiToken}`,
-  }
+  return { Authorization: `Bearer ${apiToken}` }
 }
 
 function resolveMediaUrl(baseUrl: string, media: Record<string, unknown> | null): { mediaUrl: string; mimeType: string } {
@@ -64,6 +62,8 @@ export async function GET(req: Request) {
       url: String(e.linkUrl ?? ''),
       mediaUrl: mediaUrl || String(e.mediaUrl ?? ''),
       mimeType: mimeType || String(e.mimeType ?? ''),
+      description: e.description ? String(e.description) : undefined,
+      viewport: e.viewport ? String(e.viewport) : undefined,
     }
   })
 
@@ -86,74 +86,90 @@ export async function POST(req: Request) {
   const file = formData.get('file')
   const title = String(formData.get('title') ?? '').trim()
   const linkUrl = String(formData.get('linkUrl') ?? '').trim()
+  const description = String(formData.get('description') ?? '').trim()
+  const viewport = String(formData.get('viewport') ?? '').trim()
   const category = String(formData.get('inspirationType') ?? '').trim()
 
-  if (!title || !linkUrl) {
-    return Response.json({ error: 'title and linkUrl are required' }, { status: 400 })
+  if (!title) {
+    return Response.json({ error: 'title is required' }, { status: 400 })
   }
   if (category !== 'benchmark' && category !== 'jioDesign') {
     return Response.json({ error: 'inspirationType must be benchmark or jioDesign' }, { status: 400 })
   }
 
-  try {
-    const u = new URL(linkUrl)
-    if (!u.protocol.startsWith('http')) {
-      return Response.json({ error: 'linkUrl must be http(s)' }, { status: 400 })
+  const hasFile = file instanceof Blob && file.size > 0
+  const hasUrl = linkUrl.length > 0
+
+  if (!hasFile && !hasUrl) {
+    return Response.json({ error: 'Either a media file or a URL is required' }, { status: 400 })
+  }
+
+  // Validate URL if provided
+  if (hasUrl) {
+    try {
+      const u = new URL(linkUrl)
+      if (!u.protocol.startsWith('http')) {
+        return Response.json({ error: 'linkUrl must be http(s)' }, { status: 400 })
+      }
+    } catch {
+      return Response.json({ error: 'Invalid linkUrl' }, { status: 400 })
     }
-  } catch {
-    return Response.json({ error: 'Invalid linkUrl' }, { status: 400 })
+    if (category === 'jioDesign' && !isFigmaUrl(linkUrl)) {
+      return Response.json({ error: 'Jio Designs requires a valid https Figma URL' }, { status: 400 })
+    }
   }
 
-  if (category === 'jioDesign' && !isFigmaUrl(linkUrl)) {
-    return Response.json({ error: 'Jio Designs requires a valid https Figma URL' }, { status: 400 })
+  // Validate file if provided
+  if (hasFile) {
+    if (!(file instanceof File)) {
+      return Response.json({ error: 'Expected a File' }, { status: 400 })
+    }
+    if (file.size > STUDIO_INSPIRATION_MAX_FILE_BYTES) {
+      return Response.json({ error: `File must be ${STUDIO_INSPIRATION_MAX_FILE_BYTES / (1024 * 1024)} MB or smaller` }, { status: 413 })
+    }
+    if (!isAllowedStudioMediaFile(file)) {
+      return Response.json({ error: 'Only image or video files are allowed (no PDFs)' }, { status: 400 })
+    }
   }
 
-  if (!(file instanceof Blob) || file.size === 0) {
-    return Response.json({ error: 'Media file is required' }, { status: 400 })
-  }
-  if (!(file instanceof File)) {
-    return Response.json({ error: 'Expected a File' }, { status: 400 })
-  }
-  if (file.size > STUDIO_INSPIRATION_MAX_FILE_BYTES) {
-    return Response.json({ error: `File must be ${STUDIO_INSPIRATION_MAX_FILE_BYTES / (1024 * 1024)} MB or smaller` }, { status: 413 })
-  }
-  if (!isAllowedStudioMediaFile(file)) {
-    return Response.json({ error: 'Only PNG or MP4 files are allowed' }, { status: 400 })
-  }
+  let uploadedFile: Record<string, unknown> | null = null
 
-  // Upload file to Strapi media library
-  const uploadForm = new FormData()
-  uploadForm.append('files', file, file.name || 'upload')
+  // Upload file to Strapi media library if present
+  if (hasFile && file instanceof File) {
+    const uploadForm = new FormData()
+    uploadForm.append('files', file, file.name || 'upload')
 
-  const uploadRes = await fetch(`${cfg.baseUrl}/api/upload`, {
-    method: 'POST',
-    headers: strapiHeaders(cfg.apiToken),
-    body: uploadForm,
-  })
+    const uploadRes = await fetch(`${cfg.baseUrl}/api/upload`, {
+      method: 'POST',
+      headers: strapiHeaders(cfg.apiToken),
+      body: uploadForm,
+    })
 
-  if (!uploadRes.ok) {
-    return Response.json({ error: 'Failed to upload media to Strapi' }, { status: 502 })
+    if (!uploadRes.ok) {
+      return Response.json({ error: 'Failed to upload media to Strapi' }, { status: 502 })
+    }
+
+    const uploaded = await uploadRes.json() as Array<Record<string, unknown>>
+    uploadedFile = uploaded[0] ?? null
   }
 
-  const uploaded = await uploadRes.json() as Array<Record<string, unknown>>
-  const uploadedFile = uploaded[0]
+  // Build Strapi entry data
+  const entryData: Record<string, unknown> = {
+    title,
+    category,
+    ...(linkUrl ? { linkUrl } : {}),
+    ...(description ? { description } : {}),
+    ...(viewport ? { viewport } : {}),
+    ...(uploadedFile ? { media: uploadedFile.id, mimeType: String(uploadedFile.mime ?? '') } : {}),
+  }
 
-  // Create the studio-inspiration entry
   const createRes = await fetch(`${cfg.baseUrl}/api/studio-inspirations`, {
     method: 'POST',
     headers: {
       ...strapiHeaders(cfg.apiToken),
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      data: {
-        title,
-        linkUrl,
-        category,
-        media: uploadedFile?.id ?? null,
-        mimeType: String(uploadedFile?.mime ?? ''),
-      },
-    }),
+    body: JSON.stringify({ data: entryData }),
   })
 
   if (!createRes.ok) {
@@ -162,7 +178,7 @@ export async function POST(req: Request) {
 
   const created = await createRes.json() as { data: Record<string, unknown> }
   const entry = created.data
-  const { mediaUrl, mimeType } = resolveMediaUrl(cfg.baseUrl, uploadedFile ?? null)
+  const { mediaUrl, mimeType } = resolveMediaUrl(cfg.baseUrl, uploadedFile)
 
   return Response.json({
     id: String(entry.documentId ?? entry.id ?? ''),
@@ -170,5 +186,7 @@ export async function POST(req: Request) {
     url: linkUrl,
     mediaUrl,
     mimeType,
+    description: description || undefined,
+    viewport: viewport || undefined,
   })
 }
