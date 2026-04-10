@@ -13,10 +13,14 @@ import {
 type PageProps = { params: Promise<{ block: string }> }
 
 export async function generateStaticParams() {
-  const cfg = getStrapiConfigFromEnv()
-  if (!cfg) return []
-  const pages = await fetchStrapiLabBlockPageSummaries(cfg)
-  return pages.map((p) => ({ block: p.slug }))
+  try {
+    const cfg = getStrapiConfigFromEnv()
+    if (!cfg) return []
+    const pages = await fetchStrapiLabBlockPageSummaries(cfg)
+    return pages.map((p) => ({ block: p.slug }))
+  } catch {
+    return []
+  }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
