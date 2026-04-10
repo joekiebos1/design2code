@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react'
 import { inspirationHasMedia, inspirationIsVideo } from '../../../lib/studio-inspiration-media'
 import type { BenchmarkEntry } from '../../../lib/benchmarks/types'
 import { BenchmarkGalleryTile } from './BenchmarkGalleryTile'
+import { BenchmarkIframeTile } from './BenchmarkIframeTile'
+import { BenchmarkUrlPreview } from './BenchmarkUrlPreview'
 import { StudioInspirationLightbox } from '../components/StudioInspirationLightbox'
 import { BenchmarkAddUrlModal } from './BenchmarkAddUrlModal'
 import { BenchmarkAddMediaModal } from './BenchmarkAddMediaModal'
@@ -11,37 +13,6 @@ import { BenchmarkAddMediaModal } from './BenchmarkAddMediaModal'
 const GAP_PX = 40
 
 type Modal = 'url' | 'media' | null
-
-// URL-only card shown in the gallery for entries without media
-function BenchmarkUrlCard({ entry, onClick }: { entry: BenchmarkEntry; onClick: () => void }) {
-  const domain = (() => {
-    try { return new URL(entry.url ?? '').hostname.replace(/^www\./, '') } catch { return entry.url ?? '' }
-  })()
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex w-full flex-col gap-3 rounded-xl border border-gray-200 bg-white p-4 text-left transition-colors hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 cursor-pointer"
-    >
-      <div className="flex items-center gap-2">
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-gray-100 text-gray-400">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5A5.5 5.5 0 117 12.5 5.5 5.5 0 017 1.5zM7 1.5c1.5 2 2.5 3.5 2.5 5.5S8.5 11 7 12.5M7 1.5C5.5 3.5 4.5 5 4.5 7S5.5 11 7 12.5M1.5 7h11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
-        </span>
-        <span className="truncate text-xs text-gray-500">{domain}</span>
-        {entry.viewport && (
-          <span className="ml-auto shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">{entry.viewport}px</span>
-        )}
-      </div>
-      <p className="m-0 text-sm font-medium text-gray-900 leading-snug line-clamp-2">{entry.title}</p>
-      {entry.description && (
-        <p className="m-0 text-xs text-gray-500 leading-relaxed line-clamp-3">{entry.description}</p>
-      )}
-      {entry.pending && (
-        <span className="text-xs text-gray-400">Saving…</span>
-      )}
-    </button>
-  )
-}
 
 async function postEntry(entry: BenchmarkEntry & { _file?: File }): Promise<BenchmarkEntry> {
   const fd = new FormData()
@@ -71,7 +42,8 @@ async function postEntry(entry: BenchmarkEntry & { _file?: File }): Promise<Benc
 
 export function BenchmarksBrowseClient() {
   const [entries, setEntries] = useState<BenchmarkEntry[] | null>(null)
-  const [active, setActive] = useState<BenchmarkEntry | null>(null)
+  const [activeMedia, setActiveMedia] = useState<BenchmarkEntry | null>(null)
+  const [activeUrl, setActiveUrl] = useState<BenchmarkEntry | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [modal, setModal] = useState<Modal>(null)
   const [showDropdown, setShowDropdown] = useState(false)
@@ -236,7 +208,7 @@ export function BenchmarksBrowseClient() {
       {hasAny && (
         <div className="relative flex min-h-0 flex-1 flex-col">
           <div
-            className={`min-h-0 flex-1 overflow-auto px-6 md:px-8 ${active ? 'overflow-hidden' : ''}`}
+            className={`min-h-0 flex-1 overflow-auto px-6 md:px-8 ${activeMedia ? 'overflow-hidden' : ''}`}
             style={{ paddingTop: GAP_PX, paddingBottom: GAP_PX }}
           >
             <div className="columns-1 sm:columns-2 lg:columns-3" style={{ columnGap: GAP_PX }}>
@@ -245,36 +217,44 @@ export function BenchmarksBrowseClient() {
                   {inspirationHasMedia(entry) ? (
                     <button
                       type="button"
-                      onClick={() => setActive(entry)}
+                      onClick={() => setActiveMedia(entry)}
                       className="block w-full min-h-0 min-w-0 cursor-pointer rounded-xl border-0 bg-transparent p-0 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
                     >
                       <BenchmarkGalleryTile entry={entry} />
                     </button>
-                  ) : (
-                    <BenchmarkUrlCard
+                  ) : entry.url ? (
+                    <BenchmarkIframeTile
                       entry={entry}
-                      onClick={() => entry.url ? window.open(entry.url, '_blank') : undefined}
+                      onClick={() => setActiveUrl(entry)}
                     />
-                  )}
+                  ) : null}
                 </div>
               ))}
             </div>
           </div>
 
           <StudioInspirationLightbox
-            open={active !== null}
-            mediaUrl={active?.mediaUrl}
-            isVideo={active ? inspirationIsVideo(active) : false}
-            title={active?.title}
-            href={active?.url}
+            open={activeMedia !== null}
+            mediaUrl={activeMedia?.mediaUrl}
+            isVideo={activeMedia ? inspirationIsVideo(activeMedia) : false}
+            title={activeMedia?.title}
+            href={activeMedia?.url}
             linkLabel="Open link"
-            onClose={() => setActive(null)}
+            onClose={() => setActiveMedia(null)}
             overlay="panel"
           />
         </div>
       )}
 
-      {/* Modals */}
+      {/* URL preview — full-screen interactive iframe */}
+      {activeUrl && (
+        <BenchmarkUrlPreview
+          entry={activeUrl}
+          onClose={() => setActiveUrl(null)}
+        />
+      )}
+
+      {/* Add modals */}
       {modal === 'url' && (
         <BenchmarkAddUrlModal
           onClose={() => setModal(null)}
