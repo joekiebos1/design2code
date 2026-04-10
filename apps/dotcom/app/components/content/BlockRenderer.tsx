@@ -16,7 +16,6 @@ import {
 import type { BlockPattern } from '@design2code/block-library'
 import type { ImageSlotState } from '@design2code/block-library'
 
-
 type BlockSpacingValue = 'none' | 'medium' | 'large'
 
 type Block = {
