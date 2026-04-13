@@ -156,7 +156,7 @@ export default function Prompt2CodePage() {
   const showInput = state.step === 'idle' || state.step === 'generating'
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', height: '100vh', overflow: 'hidden' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', height: '100vh', overflow: 'hidden' }}>
 
       {/* Left panel */}
       <div style={{ height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column', borderRight: '1px solid rgba(0,0,0,0.08)', background: '#fff' }}>

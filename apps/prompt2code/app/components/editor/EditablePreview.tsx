@@ -4,7 +4,6 @@ import { useRef, useEffect, useMemo, useState, useCallback } from 'react'
 import { ContentDsProvider } from '@design2code/ds'
 import { BlockRenderer } from '../BlockRenderer'
 import { briefToBlocks } from '../../lib/briefToBlocks'
-import { DamImagePicker } from './DamImagePicker'
 import {
   updateField,
   updateCtaLabel,
@@ -13,7 +12,7 @@ import {
   pinImage,
   reorderSections,
 } from '../../lib/briefEditor'
-import type { PageBrief, Section } from '../../lib/types'
+import type { PageBrief, Section, BlockOptions } from '../../lib/types'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -45,7 +44,7 @@ type FocusedBlockState = {
 /** Blocks that show the side panel when selected. */
 const PANEL_BLOCKS = new Set(['mediaTextStacked', 'cardGrid', 'carousel', 'mediaText5050'])
 
-/** The three swappable Engage block types shown in the "Change block" section. */
+/** The three swappable Engage block types shown in the "Choose block" section. */
 const CHANGE_BLOCK_COMPONENTS = ['mediaTextStacked', 'carousel', 'cardGrid']
 
 const BLOCK_LABELS: Record<string, string> = {
@@ -82,6 +81,64 @@ const ITEM_LABEL: Record<string, string> = {
 const IMAGE_BLOCKS = new Set(['hero', 'mediaTextStacked', 'mediaText5050', 'mediaTextAsymmetric', 'cardGrid', 'carousel'])
 
 const isDraggableSection = (s: Section) => s.component !== 'hero' && s.narrativeRole !== 'resolve'
+
+// ─── Variant config ───────────────────────────────────────────────────────────
+
+type VariantConfig = {
+  key: string
+  label: string
+  options: Array<{ value: string; label: string }>
+  currentValue: (opts: BlockOptions) => string
+}
+
+function getVariantConfigs(component: string): VariantConfig[] {
+  switch (component) {
+    case 'mediaTextStacked':
+      return [
+        {
+          key: 'template', label: 'Template',
+          options: [{ value: 'stacked', label: 'Stacked' }, { value: 'textOnly', label: 'Text only' }, { value: 'overlay', label: 'Overlay' }],
+          currentValue: opts => (opts.template as string) ?? 'stacked',
+        },
+        {
+          key: 'alignment', label: 'Align',
+          options: [{ value: 'left', label: 'Left' }, { value: 'center', label: 'Center' }],
+          currentValue: opts => (opts.alignment as string) ?? 'left',
+        },
+      ]
+    case 'carousel':
+      return [
+        {
+          key: 'cardSize', label: 'Card size',
+          options: [{ value: 'compact', label: 'Compact' }, { value: 'medium', label: 'Medium' }, { value: 'large', label: 'Large' }],
+          currentValue: opts => (opts.cardSize as string) ?? 'compact',
+        },
+      ]
+    case 'cardGrid':
+      return [
+        {
+          key: 'columns', label: 'Columns',
+          options: [{ value: '2', label: '2' }, { value: '3', label: '3' }, { value: '4', label: '4' }],
+          currentValue: opts => String(opts.columns ?? 3),
+        },
+      ]
+    case 'mediaText5050':
+      return [
+        {
+          key: 'variant', label: 'Layout',
+          options: [{ value: 'paragraphs', label: 'Paragraphs' }, { value: 'accordion', label: 'Accordion' }],
+          currentValue: opts => (opts.variant as string) ?? 'paragraphs',
+        },
+        {
+          key: 'imagePosition', label: 'Image side',
+          options: [{ value: 'left', label: 'Left' }, { value: 'right', label: 'Right' }],
+          currentValue: opts => (opts.imagePosition as string) ?? 'right',
+        },
+      ]
+    default:
+      return []
+  }
+}
 
 // ─── DOM helpers ──────────────────────────────────────────────────────────
 
@@ -120,60 +177,13 @@ function makeEditable(
   el.addEventListener('keydown', onKeyDown, { signal })
 }
 
-function addImageSwap(
-  blockEl: HTMLElement,
-  onSwap: () => void,
-  signal: AbortSignal,
-) {
-  const imgs = Array.from(blockEl.querySelectorAll<HTMLImageElement>('img'))
-  const target = imgs.find(img => {
-    const rect = img.getBoundingClientRect()
-    return rect.width > 64 || img.style.position === 'absolute'
-  })
-  if (!target) return
-
-  let wrapper: HTMLElement = target.parentElement as HTMLElement
-  while (wrapper && wrapper !== blockEl) {
-    const pos = getComputedStyle(wrapper).position
-    if (pos === 'relative' || pos === 'absolute') break
-    wrapper = wrapper.parentElement as HTMLElement
-  }
-  if (!wrapper || wrapper === blockEl) return
-  if (wrapper.dataset.swapAdded) return
-
-  wrapper.dataset.swapAdded = '1'
-  wrapper.style.position = 'relative'
-  if (getComputedStyle(wrapper).overflow === 'hidden') wrapper.style.overflow = 'visible'
-
-  const btn = document.createElement('button')
-  btn.textContent = '⟳ Swap'
-  btn.style.cssText = `
-    position:absolute;top:8px;right:8px;z-index:10;
-    padding:4px 10px;border-radius:20px;border:none;
-    background:rgba(0,0,0,0.65);color:#fff;
-    font-size:11px;font-weight:600;cursor:pointer;
-    opacity:0;transition:opacity 0.15s;pointer-events:none;
-    font-family:inherit;
-  `
-
-  const show = () => { btn.style.opacity = '1'; btn.style.pointerEvents = 'auto' }
-  const hide = () => { btn.style.opacity = '0'; btn.style.pointerEvents = 'none' }
-
-  wrapper.addEventListener('mouseenter', show, { signal })
-  wrapper.addEventListener('mouseleave', hide, { signal })
-  btn.addEventListener('click', (e) => { e.stopPropagation(); onSwap() }, { signal })
-
-  wrapper.appendChild(btn)
-}
-
-// ─── Apply edit affordances (no add-item bar — that lives in the panel) ──────
+// ─── Apply edit affordances (text fields only — image swap lives in panel) ───
 
 function applyBlockAffordances(
   blockEl: HTMLElement,
   section: Section,
   onFieldUpdate: (field: string, value: string) => void,
   onItemFieldUpdate: (itemIndex: number, field: string, value: string) => void,
-  onImageSwap: () => void,
   signal: AbortSignal,
 ) {
   const slots = section.contentSlots
@@ -211,10 +221,6 @@ function applyBlockAffordances(
       if (el) makeEditable(el, bodyVal, (v) => onItemFieldUpdate(i, bodyKey, v), signal)
     }
   })
-
-  if (IMAGE_BLOCKS.has(section.component)) {
-    addImageSwap(blockEl, onImageSwap, signal)
-  }
 }
 
 // ─── Chevron SVGs ────────────────────────────────────────────────────────────
@@ -239,7 +245,7 @@ function ChevronDown() {
 
 function PanelSection({ title, children }: { title?: string; children: React.ReactNode }) {
   return (
-    <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(0,0,0,0.07)' }}>
+    <div style={{ padding: '10px 16px', borderTop: '1px solid rgba(0,0,0,0.07)' }}>
       {title && (
         <div style={{
           fontSize: 10,
@@ -275,9 +281,9 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
   const panelRef          = useRef<HTMLDivElement>(null)
   const focusedBlockElRef = useRef<HTMLElement | null>(null)
 
-  const [pickerSection, setPickerSection] = useState<string | null>(null)
-  const [moveButtons,   setMoveButtons]   = useState<MoveButtonsState>(null)
-  const [focusedBlock,  setFocusedBlock]  = useState<FocusedBlockState>(null)
+  const [moveButtons,             setMoveButtons]             = useState<MoveButtonsState>(null)
+  const [focusedBlock,            setFocusedBlock]            = useState<FocusedBlockState>(null)
+  const [selectedImageSectionName, setSelectedImageSectionName] = useState<string | null>(null)
 
   const blocks = useMemo(
     () => briefToBlocks(brief, imageUrls, videoUrls),
@@ -296,7 +302,7 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
   // ── Derived panel data ────────────────────────────────────────────────────
 
   const focusedSection = focusedBlock ? sections[focusedBlock.sectionIdx] : null
-  const showPanel      = !!(focusedSection && PANEL_BLOCKS.has(focusedSection.component))
+  const showPanel      = !!(focusedSection && (PANEL_BLOCKS.has(focusedSection.component) || selectedImageSectionName))
 
   const currentEmphasis = focusedSection?.blockOptions?.emphasis ?? 'ghost'
 
@@ -306,7 +312,7 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
   const isLastInList  = draggableIdx === draggable.length - 1
 
   // ── Panel position (fixed, viewport-relative) ─────────────────────────────
-  // Updated directly on DOM to avoid scroll jank — no state involved.
+  // Top-aligned with the selected block, snug against the canvas right edge.
 
   const updatePanelPosition = useCallback(() => {
     const panel   = panelRef.current
@@ -315,15 +321,14 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
     if (!panel || !blockEl || !wrapper) return
 
     const wRect   = wrapper.getBoundingClientRect()
-    const bTop    = blockEl.offsetTop    * scale
-    const bHeight = blockEl.offsetHeight * scale
+    const bTop    = blockEl.offsetTop * scale
 
-    const panelH  = panel.offsetHeight || 400
-    const idealTop = wRect.top + bTop + bHeight / 2 - panelH / 2
+    const panelH     = panel.offsetHeight || 400
+    const idealTop   = wRect.top + bTop
     const clampedTop = Math.max(8, Math.min(window.innerHeight - panelH - 8, idealTop))
 
     panel.style.top  = `${clampedTop}px`
-    panel.style.left = `${wRect.left + 1440 * scale + 20}px`
+    panel.style.left = `${wRect.left + 1440 * scale + 8}px`
   }, [scale])
 
   // Scroll / resize → re-sync panel position
@@ -424,6 +429,19 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
     })
   }, [brief, update])
 
+  // ── Variant update ────────────────────────────────────────────────────────
+
+  const handleVariantUpdate = useCallback((sectionName: string, key: string, value: string) => {
+    update({
+      ...brief,
+      sections: brief.sections.map(s =>
+        s.sectionName === sectionName
+          ? { ...s, blockOptions: { ...(s.blockOptions ?? {}), [key]: key === 'columns' ? Number(value) : value } }
+          : s
+      ),
+    })
+  }, [brief, update])
+
   // ── Swap block component ──────────────────────────────────────────────────
 
   const handleSwapComponent = useCallback((sectionName: string, newComponent: string) => {
@@ -479,11 +497,6 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
     abortRef.current = new AbortController()
     const { signal } = abortRef.current
 
-    container.querySelectorAll('[data-swap-added]').forEach(el => {
-      delete (el as HTMLElement).dataset.swapAdded
-      el.querySelector('button[style*="position:absolute"]')?.remove()
-    })
-
     const blockStack = container.querySelector('.block-stack')
     const blockEls   = blockStack ? Array.from(blockStack.children) as HTMLElement[] : []
 
@@ -516,6 +529,7 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
       focusedBlockElRef.current = null
       setMoveButtons(null)
       setFocusedBlock(null)
+      setSelectedImageSectionName(null)
     }
 
     // Re-sync ring + panel after blocks re-render (e.g. after a swap / emphasis change)
@@ -525,9 +539,10 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
       const blockEl = sIdx !== -1 ? blockEls[sIdx] : null
       if (blockEl) {
         positionRing(selRing, blockEl)
-        selectedElRef.current    = blockEl
+        selectedElRef.current     = blockEl
         focusedBlockElRef.current = blockEl
         setMoveButtons(computeMoveButtons(blockEl, prevSectionName))
+        setFocusedBlock({ sectionIdx: sIdx, sectionName: prevSectionName })
         requestAnimationFrame(updatePanelPosition)
       } else {
         hideSelectionRing()
@@ -582,6 +597,28 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
       selectedElRef.current = el
       positionRing(selRing, el)
       hideHoverRing()
+
+      // Image click → show image picker in panel
+      if (el.tagName === 'IMG') {
+        const parentBlock = blockEls.find(b => b.contains(el))
+        if (parentBlock) {
+          const parentIdx = blockEls.indexOf(parentBlock)
+          if (parentIdx !== -1 && sections[parentIdx] && IMAGE_BLOCKS.has(sections[parentIdx].component)) {
+            const sectionName = sections[parentIdx].sectionName
+            selectedSectionNameRef.current = sectionName
+            focusedBlockElRef.current      = parentBlock
+            setFocusedBlock({ sectionIdx: parentIdx, sectionName })
+            setSelectedImageSectionName(sectionName)
+            setMoveButtons(null)
+            scrollToBlock(parentBlock)
+            return
+          }
+        }
+        return
+      }
+
+      // Block click → block panel (clear image picker)
+      setSelectedImageSectionName(null)
 
       const blockIdx = blockEls.indexOf(el)
       if (blockIdx !== -1 && sections[blockIdx]) {
@@ -640,7 +677,6 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
         (itemIndex, field, value) => {
           update(updateItemField(brief, section.sectionName, itemIndex, field, value))
         },
-        () => setPickerSection(section.sectionName),
         signal,
       )
     })
@@ -743,17 +779,17 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
 
       {/* ── Side panel ────────────────────────────────────────────────────────
           position: fixed so it sits to the right of the page canvas regardless
-          of the parent scroll container's overflow. Position is updated directly
-          via panelRef.current.style to avoid scroll jank.
+          of the parent scroll container's overflow. Top-aligned with the selected
+          block. Position is updated directly via panelRef.current.style.
       ─────────────────────────────────────────────────────────────────────── */}
       {showPanel && focusedSection && (
         <div
           ref={panelRef}
-          onClick={e => e.stopPropagation()}   // prevent outside-click deselect
+          onClick={e => e.stopPropagation()}
           style={{
             position: 'fixed',
-            top: 0,           // overwritten by updatePanelPosition
-            left: 0,          // overwritten by updatePanelPosition
+            top: 0,   // overwritten by updatePanelPosition
+            left: 0,  // overwritten by updatePanelPosition
             width: PANEL_WIDTH,
             background: '#fff',
             border: '1px solid rgba(0,0,0,0.13)',
@@ -765,165 +801,232 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
           }}
         >
           {/* ── Title ─────────────────────────────────────────────────────── */}
-          <div style={{
-            padding: '14px 16px 12px',
-            borderBottom: '1px solid rgba(0,0,0,0.07)',
-          }}>
-            <div style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: 'rgb(13,13,15)',
-              letterSpacing: '-0.02em',
-            }}>
-              {BLOCK_LABELS[focusedSection.component] ?? focusedSection.component}
+          <div style={{ padding: '12px 16px 10px', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'rgb(13,13,15)', letterSpacing: '-0.01em' }}>
+              {selectedImageSectionName
+                ? 'Swap image'
+                : (BLOCK_LABELS[focusedSection.component] ?? focusedSection.component)
+              }
             </div>
           </div>
 
-          {/* ── Emphasis ──────────────────────────────────────────────────── */}
-          <PanelSection title="Emphasis">
-            <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-              {EMPHASIS_OPTIONS.map(({ value, label }) => {
-                const isActive = currentEmphasis === value
-                return (
+          {/* ── Image picker (when image was clicked) ─────────────────────── */}
+          {selectedImageSectionName && imageUrls.length > 0 && (
+            <PanelSection title="Choose image">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5 }}>
+                {imageUrls.map((url, i) => (
                   <button
-                    key={value}
-                    onClick={() => handleEmphasis(focusedSection.sectionName, value)}
-                    style={{
-                      padding: '4px 10px',
-                      fontSize: 11,
-                      fontWeight: isActive ? 600 : 400,
-                      background: isActive ? 'rgb(13,13,15)' : 'transparent',
-                      color: isActive ? '#fff' : 'rgba(0,0,0,0.55)',
-                      border: '1px solid',
-                      borderColor: isActive ? 'rgb(13,13,15)' : 'rgba(0,0,0,0.14)',
-                      borderRadius: 4,
-                      cursor: 'pointer',
-                      fontFamily: 'inherit',
-                      transition: 'all 0.1s',
+                    key={i}
+                    onClick={() => {
+                      update(pinImage(brief, selectedImageSectionName, url))
+                      setSelectedImageSectionName(null)
                     }}
-                  >
-                    {label}
-                  </button>
-                )
-              })}
-            </div>
-          </PanelSection>
-
-          {/* ── Move block ────────────────────────────────────────────────── */}
-          {isDraggableSection(focusedSection) && (
-            <PanelSection title="Move block">
-              <div style={{ display: 'flex', gap: 6 }}>
-                {[
-                  { dir: 'up'   as const, label: 'Up',   icon: <ChevronUp />,   disabled: isFirstInList },
-                  { dir: 'down' as const, label: 'Down', icon: <ChevronDown />, disabled: isLastInList  },
-                ].map(({ dir, label, icon, disabled }) => (
-                  <button
-                    key={dir}
-                    onClick={() => handleMove(dir)}
-                    disabled={disabled}
                     style={{
-                      display: 'flex', alignItems: 'center', gap: 5,
-                      padding: '6px 12px',
-                      fontSize: 12, fontFamily: 'inherit',
-                      background: disabled ? 'rgba(0,0,0,0.04)' : '#fff',
-                      color: disabled ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.7)',
-                      border: '1px solid',
-                      borderColor: disabled ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.16)',
-                      borderRadius: 4,
-                      cursor: disabled ? 'default' : 'pointer',
-                      transition: 'all 0.1s',
+                      padding: 0, border: '2px solid transparent', borderRadius: 4,
+                      background: 'transparent', cursor: 'pointer', overflow: 'hidden',
+                      aspectRatio: '1',
+                      transition: 'border-color 0.1s',
                     }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#4f46e5' }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'transparent' }}
                   >
-                    {icon} {label}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={url}
+                      alt=""
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', pointerEvents: 'none' }}
+                    />
                   </button>
                 ))}
               </div>
+              {imageUrls.length === 0 && (
+                <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)', lineHeight: 1.5 }}>
+                  No images available in DAM
+                </div>
+              )}
             </PanelSection>
           )}
 
-          {/* ── Change block ──────────────────────────────────────────────── */}
-          {CHANGE_BLOCK_COMPONENTS.includes(focusedSection.component) && (
-            <PanelSection title="Change block">
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {CHANGE_BLOCK_COMPONENTS.map(comp => {
-                  const isActive = comp === focusedSection.component
-                  return (
-                    <div
-                      key={comp}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => !isActive && handleSwapComponent(focusedSection.sectionName, comp)}
-                      onKeyDown={e => { if ((e.key === 'Enter' || e.key === ' ') && !isActive) { e.preventDefault(); handleSwapComponent(focusedSection.sectionName, comp) } }}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 10,
-                        padding: '7px 10px',
-                        background: isActive ? 'rgba(79,70,229,0.06)' : 'transparent',
-                        cursor: isActive ? 'default' : 'pointer',
-                        borderRadius: 4,
-                        transition: 'background 0.1s',
-                        userSelect: 'none',
-                      }}
-                    >
-                      {/* Radio dot */}
-                      <div style={{
-                        width: 13, height: 13, borderRadius: '50%', flexShrink: 0,
-                        border: isActive ? '4px solid #4f46e5' : '1.5px solid rgba(0,0,0,0.22)',
-                        transition: 'border 0.1s',
-                      }} />
-                      <span style={{
-                        fontSize: 12,
-                        color: isActive ? 'rgb(13,13,15)' : 'rgba(0,0,0,0.65)',
-                        fontWeight: isActive ? 500 : 400,
-                        letterSpacing: '-0.01em',
-                        fontFamily: 'inherit',
-                      }}>
-                        {BLOCK_LABELS[comp] ?? comp}
-                      </span>
-                      {isActive && (
-                        <span style={{ marginLeft: 'auto', fontSize: 10, color: '#4f46e5', fontWeight: 600, letterSpacing: '-0.01em', fontFamily: 'inherit' }}>
-                          Current
-                        </span>
-                      )}
+          {/* ── Block editing sections (hidden in image picker mode) ───────── */}
+          {!selectedImageSectionName && (
+            <>
+              {/* ── Move block ──────────────────────────────────────────────── */}
+              {isDraggableSection(focusedSection) && (
+                <PanelSection title="Move block">
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    {[
+                      { dir: 'up'   as const, label: 'Up',   icon: <ChevronUp />,   disabled: isFirstInList },
+                      { dir: 'down' as const, label: 'Down', icon: <ChevronDown />, disabled: isLastInList  },
+                    ].map(({ dir, label, icon, disabled }) => (
+                      <button
+                        key={dir}
+                        onClick={() => handleMove(dir)}
+                        disabled={disabled}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 5,
+                          padding: '6px 12px',
+                          fontSize: 12, fontFamily: 'inherit',
+                          background: disabled ? 'rgba(0,0,0,0.04)' : '#fff',
+                          color: disabled ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.7)',
+                          border: '1px solid',
+                          borderColor: disabled ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.16)',
+                          borderRadius: 4,
+                          cursor: disabled ? 'default' : 'pointer',
+                          transition: 'all 0.1s',
+                          letterSpacing: '-0.01em',
+                        }}
+                      >
+                        {icon} {label}
+                      </button>
+                    ))}
+                  </div>
+                </PanelSection>
+              )}
+
+              {/* ── Choose block ─────────────────────────────────────────────── */}
+              {CHANGE_BLOCK_COMPONENTS.includes(focusedSection.component) && (
+                <PanelSection title="Choose block">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {CHANGE_BLOCK_COMPONENTS.map(comp => {
+                      const isActive = comp === focusedSection.component
+                      return (
+                        <div
+                          key={comp}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => !isActive && handleSwapComponent(focusedSection.sectionName, comp)}
+                          onKeyDown={e => { if ((e.key === 'Enter' || e.key === ' ') && !isActive) { e.preventDefault(); handleSwapComponent(focusedSection.sectionName, comp) } }}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 10,
+                            padding: '7px 10px',
+                            background: isActive ? 'rgba(79,70,229,0.06)' : 'transparent',
+                            cursor: isActive ? 'default' : 'pointer',
+                            borderRadius: 4,
+                            transition: 'background 0.1s',
+                            userSelect: 'none',
+                          }}
+                        >
+                          {/* Radio dot */}
+                          <div style={{
+                            width: 13, height: 13, borderRadius: '50%', flexShrink: 0,
+                            border: isActive ? '4px solid #4f46e5' : '1.5px solid rgba(0,0,0,0.22)',
+                            transition: 'border 0.1s',
+                          }} />
+                          <span style={{
+                            fontSize: 12,
+                            color: isActive ? 'rgb(13,13,15)' : 'rgba(0,0,0,0.65)',
+                            fontWeight: isActive ? 500 : 400,
+                            letterSpacing: '-0.01em',
+                            fontFamily: 'inherit',
+                          }}>
+                            {BLOCK_LABELS[comp] ?? comp}
+                          </span>
+                          {isActive && (
+                            <span style={{ marginLeft: 'auto', fontSize: 10, color: '#4f46e5', fontWeight: 600, letterSpacing: '-0.01em', fontFamily: 'inherit' }}>
+                              Current
+                            </span>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </PanelSection>
+              )}
+
+              {/* ── Emphasis ──────────────────────────────────────────────────── */}
+              {PANEL_BLOCKS.has(focusedSection.component) && (
+                <PanelSection title="Emphasis">
+                  <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                    {EMPHASIS_OPTIONS.map(({ value, label }) => {
+                      const isActive = currentEmphasis === value
+                      return (
+                        <button
+                          key={value}
+                          onClick={() => handleEmphasis(focusedSection.sectionName, value)}
+                          style={{
+                            padding: '4px 10px',
+                            fontSize: 11,
+                            fontWeight: isActive ? 600 : 400,
+                            background: isActive ? 'rgb(13,13,15)' : 'transparent',
+                            color: isActive ? '#fff' : 'rgba(0,0,0,0.55)',
+                            border: '1px solid',
+                            borderColor: isActive ? 'rgb(13,13,15)' : 'rgba(0,0,0,0.14)',
+                            borderRadius: 4,
+                            cursor: 'pointer',
+                            fontFamily: 'inherit',
+                            transition: 'all 0.1s',
+                            letterSpacing: '-0.01em',
+                          }}
+                        >
+                          {label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </PanelSection>
+              )}
+
+              {/* ── Variant ───────────────────────────────────────────────────── */}
+              {getVariantConfigs(focusedSection.component).map(config => {
+                const currentVal = config.currentValue(focusedSection.blockOptions ?? {})
+                return (
+                  <PanelSection key={config.key} title={config.label}>
+                    <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                      {config.options.map(({ value, label }) => {
+                        const isActive = currentVal === value
+                        return (
+                          <button
+                            key={value}
+                            onClick={() => handleVariantUpdate(focusedSection.sectionName, config.key, value)}
+                            style={{
+                              padding: '4px 10px',
+                              fontSize: 11,
+                              fontWeight: isActive ? 600 : 400,
+                              background: isActive ? 'rgb(13,13,15)' : 'transparent',
+                              color: isActive ? '#fff' : 'rgba(0,0,0,0.55)',
+                              border: '1px solid',
+                              borderColor: isActive ? 'rgb(13,13,15)' : 'rgba(0,0,0,0.14)',
+                              borderRadius: 4,
+                              cursor: 'pointer',
+                              fontFamily: 'inherit',
+                              transition: 'all 0.1s',
+                              letterSpacing: '-0.01em',
+                            }}
+                          >
+                            {label}
+                          </button>
+                        )
+                      })}
                     </div>
-                  )
-                })}
-              </div>
-            </PanelSection>
-          )}
+                  </PanelSection>
+                )
+              })}
 
-          {/* ── Add item ──────────────────────────────────────────────────── */}
-          {ITEM_BLOCKS.has(focusedSection.component) && (
-            <PanelSection>
-              <button
-                onClick={() => update(addItem(brief, focusedSection.sectionName))}
-                style={{
-                  width: '100%', padding: '7px 12px', textAlign: 'left',
-                  fontSize: 12, fontFamily: 'inherit',
-                  background: 'transparent', cursor: 'pointer',
-                  border: '1px dashed rgba(0,0,0,0.2)',
-                  borderRadius: 4,
-                  color: 'rgba(0,0,0,0.55)',
-                  transition: 'border-color 0.1s, color 0.1s',
-                }}
-                onMouseEnter={e => { const b = e.currentTarget; b.style.color='rgba(0,100,220,0.8)'; b.style.borderColor='rgba(0,100,220,0.4)' }}
-                onMouseLeave={e => { const b = e.currentTarget; b.style.color='rgba(0,0,0,0.55)'; b.style.borderColor='rgba(0,0,0,0.2)' }}
-              >
-                + Add {ITEM_LABEL[focusedSection.component] ?? 'item'}
-              </button>
-            </PanelSection>
+              {/* ── Add item ──────────────────────────────────────────────────── */}
+              {ITEM_BLOCKS.has(focusedSection.component) && (
+                <PanelSection>
+                  <button
+                    onClick={() => update(addItem(brief, focusedSection.sectionName))}
+                    style={{
+                      width: '100%', padding: '7px 12px', textAlign: 'left',
+                      fontSize: 12, fontFamily: 'inherit',
+                      background: 'transparent', cursor: 'pointer',
+                      border: '1px dashed rgba(0,0,0,0.2)',
+                      borderRadius: 4,
+                      color: 'rgba(0,0,0,0.55)',
+                      transition: 'border-color 0.1s, color 0.1s',
+                      letterSpacing: '-0.01em',
+                    }}
+                    onMouseEnter={e => { const b = e.currentTarget; b.style.color='rgba(0,100,220,0.8)'; b.style.borderColor='rgba(0,100,220,0.4)' }}
+                    onMouseLeave={e => { const b = e.currentTarget; b.style.color='rgba(0,0,0,0.55)'; b.style.borderColor='rgba(0,0,0,0.2)' }}
+                  >
+                    + Add {ITEM_LABEL[focusedSection.component] ?? 'item'}
+                  </button>
+                </PanelSection>
+              )}
+            </>
           )}
         </div>
-      )}
-
-      {/* DAM Image picker */}
-      {pickerSection && (
-        <DamImagePicker
-          imageUrls={imageUrls}
-          onSelect={(url) => {
-            update(pinImage(brief, pickerSection, url))
-          }}
-          onClose={() => setPickerSection(null)}
-        />
       )}
     </div>
   )

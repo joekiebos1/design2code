@@ -21,7 +21,7 @@ type PanelMode = 'edit' | 'preview'
 type Viewport = '360' | '1440'
 
 // Edit canvas zoom level
-const EDIT_SCALE = 0.5
+const EDIT_SCALE = 0.75
 
 export function PreviewPanel({ blocks, brief, imageUrls, videoUrls, step, sectionCount, onBriefUpdate }: PreviewPanelProps) {
   const [mode, setMode] = useState<PanelMode>('edit')
