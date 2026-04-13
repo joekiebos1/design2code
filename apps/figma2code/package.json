@@ -6,19 +6,15 @@
   "scripts": {
     "dev": "next dev -p 3002",
     "build": "next build",
-    "start": "next start",
-    "figma:import": "node --env-file=../../.env --experimental-strip-types scripts/import-figma-to-sanity.ts",
-    "figma-design:create": "node --env-file=../../.env --experimental-strip-types scripts/create-figma-design-from-frame.ts"
+    "start": "next start"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
     "@marcelinodzn/ds-react": "^1.0.6",
     "@marcelinodzn/ds-tokens": "^1.0.1",
-    "@design2code/cms-schema": "*",
     "@tailwindcss/postcss": "^4.2.2",
     "html2canvas": "^1.4.1",
     "jszip": "^3.10.1",
-    "@sanity/client": "^7.16.0",
     "next": "^16.1.6",
     "react": "^19.2.4",
     "react-compiler-runtime": "^1.0.0",
