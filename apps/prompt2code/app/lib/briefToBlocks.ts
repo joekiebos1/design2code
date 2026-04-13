@@ -129,6 +129,8 @@ export function briefToBlocks(
     const opts = s.blockOptions ?? {}
     const cta = getCtaFromSlot(slots.cta)
     const colours = colourFields(opts)
+    // Support image pinned by the direct editor (_imageUrl set via briefEditor.pinImage)
+    const pinnedImage = (s as Record<string, unknown>)._imageUrl as string | undefined
     const base: Block = {
       _type: s.component,
       _key: `preview-${i}-${s.component}`,
@@ -155,7 +157,7 @@ export function briefToBlocks(
           ctaLink: cta?.href ?? '#',
           cta2Text: undefined,
           cta2Link: undefined,
-          image: resolveImage(undefined, imageUrls, 0),
+          image: pinnedImage ?? resolveImage(undefined, imageUrls, 0),
         }
       }
 
@@ -178,7 +180,7 @@ export function briefToBlocks(
           ctaLink: cta?.href ?? '#',
           cta2Text: undefined,
           cta2Link: undefined,
-          image: hasMedia ? resolveImage(undefined, imageUrls, i) : undefined,
+          image: hasMedia ? (pinnedImage ?? resolveImage(undefined, imageUrls, i)) : undefined,
           video: videoUrl,
         }
       }
@@ -224,7 +226,7 @@ export function briefToBlocks(
           ...colours,
           headline: slots.headline ?? s.sectionName,
           description: null,
-          image,
+          image: pinnedImage ?? image,
           ...(isAccordion && accordionItems ? { accordionItems } : {}),
           ...(isSingle
             ? {
@@ -245,7 +247,7 @@ export function briefToBlocks(
           variant: opts.variant ?? 'faq',
           size: (opts.size as string) ?? 'feature',
           ...colours,
-          image: resolveImage(undefined, imageUrls, i),
+          image: pinnedImage ?? resolveImage(undefined, imageUrls, i),
           imageAspectRatio: (opts.imageAspectRatio as string) ?? '5:4',
           items: items.length > 0 ? items : undefined,
         }

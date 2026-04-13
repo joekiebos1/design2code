@@ -3,9 +3,9 @@
 import { useReducer, useCallback, useEffect, useState, useMemo } from 'react'
 import { InputPanel } from './components/storytelling-inspiration/InputPanel'
 import { PreviewPanel } from './components/PreviewPanel'
-import { ChatPanel } from './components/ChatPanel'
-import type { ChatMessage } from './components/ChatPanel'
+import { BlockList } from './components/editor/BlockList'
 import { briefToBlocks } from './lib/briefToBlocks'
+import { reorderSections } from './lib/briefEditor'
 import type { PageBrief, Section } from './lib/types'
 import type { StoryCoachInput } from './components/storytelling-inspiration/types'
 
@@ -61,7 +61,6 @@ function reducer(state: PageBuilderState, action: Action): PageBuilderState {
     case 'SET_BRIEF':
       return { ...state, brief: action.brief, step: 'reviewing' }
     case 'UPDATE_BRIEF':
-      // Iterate result — keep current step, just swap the brief
       return { ...state, brief: action.brief }
     case 'SET_STEP':
       return { ...state, step: action.step }
@@ -82,10 +81,8 @@ export default function Prompt2CodePage() {
   const [damMedia, setDamMedia] = useState<DamMedia>({ urls: [], videoUrls: [] })
   useEffect(() => {
     fetch('/api/dam-images')
-      .then((r) => r.json())
-      .then((data: DamMedia) => {
-        if (data.urls?.length) setDamMedia(data)
-      })
+      .then(r => r.json())
+      .then((data: DamMedia) => { if (data.urls?.length) setDamMedia(data) })
       .catch(() => {})
   }, [])
 
@@ -94,70 +91,19 @@ export default function Prompt2CodePage() {
     [state.brief, damMedia],
   )
 
-  // ── Chat state ────────────────────────────────────────────────────────────
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
-  const [isChatLoading, setIsChatLoading] = useState(false)
-
-  // Reset chat when a new page is generated
-  useEffect(() => {
-    if (state.step === 'reviewing') setChatMessages([])
-  }, [state.brief, state.step])
-
-  const handleIterate = useCallback(async (message: string) => {
-    if (!state.brief || isChatLoading) return
-
-    setChatMessages(prev => [...prev, { role: 'user', content: message }])
-    setIsChatLoading(true)
-
-    try {
-      const res = await fetch('/api/iterate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          brief: state.brief,
-          message,
-          imageUrls: damMedia.urls,
-        }),
-      })
-
-      const data = await res.json() as
-        | { action: 'update'; brief: PageBrief; message: string }
-        | { action: 'explain'; message: string }
-
-      if (data.action === 'update' && data.brief) {
-        dispatch({ type: 'UPDATE_BRIEF', brief: data.brief })
-      }
-
-      setChatMessages(prev => [...prev, {
-        role: 'assistant',
-        content: data.message ?? (data.action === 'update' ? 'Done.' : 'I wasn\'t able to make that change.'),
-      }])
-    } catch (err) {
-      setChatMessages(prev => [...prev, {
-        role: 'assistant',
-        content: err instanceof Error ? err.message : 'Something went wrong. Please try again.',
-      }])
-    } finally {
-      setIsChatLoading(false)
-    }
-  }, [state.brief, damMedia.urls, isChatLoading])
-
   // ── Generate ──────────────────────────────────────────────────────────────
   const handleGenerate = useCallback(async (input: StoryCoachInput) => {
     dispatch({ type: 'START_GENERATING', input })
-
     try {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(input),
       })
-
       if (!res.ok || !res.body) {
         dispatch({ type: 'SET_ERROR', error: `Generate failed: ${res.status}` })
         return
       }
-
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
       let buffer = ''
@@ -166,11 +112,9 @@ export default function Prompt2CodePage() {
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
-
         buffer += decoder.decode(value, { stream: true })
         const chunks = buffer.split('\n\n')
         buffer = chunks.pop() ?? ''
-
         for (const chunk of chunks) {
           const match = chunk.match(/^data: (.+)$/m)
           if (!match) continue
@@ -179,24 +123,13 @@ export default function Prompt2CodePage() {
               | { type: 'section'; section: Section }
               | { type: 'complete'; brief: PageBrief }
               | { type: 'error'; error: string }
-
-            if (event.type === 'section') {
-              dispatch({ type: 'ADD_SECTION', section: event.section })
-            } else if (event.type === 'complete') {
-              completeBriefReceived = true
-              dispatch({ type: 'SET_BRIEF', brief: event.brief })
-            } else if (event.type === 'error') {
-              dispatch({ type: 'SET_ERROR', error: event.error })
-            }
-          } catch {
-            // malformed SSE chunk — ignore
-          }
+            if (event.type === 'section') dispatch({ type: 'ADD_SECTION', section: event.section })
+            else if (event.type === 'complete') { completeBriefReceived = true; dispatch({ type: 'SET_BRIEF', brief: event.brief }) }
+            else if (event.type === 'error') dispatch({ type: 'SET_ERROR', error: event.error })
+          } catch { /* malformed chunk */ }
         }
       }
-
-      if (!completeBriefReceived) {
-        dispatch({ type: 'SET_ERROR', error: 'Generation ended without a complete page brief' })
-      }
+      if (!completeBriefReceived) dispatch({ type: 'SET_ERROR', error: 'Generation ended without a complete page brief' })
     } catch (err) {
       dispatch({ type: 'SET_ERROR', error: err instanceof Error ? err.message : 'Unknown error' })
     }
@@ -212,59 +145,104 @@ export default function Prompt2CodePage() {
       body: JSON.stringify(state.brief),
     })
     const data = await res.json()
-    if (data.success) {
-      dispatch({ type: 'SET_PUBLISHED', slug: data.slug })
-    } else {
-      dispatch({ type: 'SET_ERROR', error: data.error ?? 'Failed to publish' })
-    }
+    if (data.success) dispatch({ type: 'SET_PUBLISHED', slug: data.slug })
+    else dispatch({ type: 'SET_ERROR', error: data.error ?? 'Failed to publish' })
+  }, [state.brief])
+
+  // ── Brief mutations (from direct editor) ─────────────────────────────────
+  const handleBriefUpdate = useCallback((brief: PageBrief) => {
+    dispatch({ type: 'UPDATE_BRIEF', brief })
+  }, [])
+
+  const handleReorder = useCallback((newOrder: string[]) => {
+    if (!state.brief) return
+    dispatch({ type: 'UPDATE_BRIEF', brief: reorderSections(state.brief, newOrder) })
   }, [state.brief])
 
   const sectionCount = state.brief?.sections?.length ?? 0
   const showInput = state.step === 'idle' || state.step === 'generating'
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', height: '100vh', overflow: 'hidden' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', height: '100vh', overflow: 'hidden' }}>
+
       {/* Left panel */}
-      <div style={{ height: '100%', overflowY: 'auto', borderRight: '1px solid rgba(0,0,0,0.07)' }}>
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column', borderRight: '1px solid rgba(0,0,0,0.07)', background: '#fafafa' }}>
         {showInput ? (
-          <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+
+          /* Input form */
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto' }}>
             <InputPanel onSubmit={handleGenerate} isLoading={state.step === 'generating'} />
             {state.error && state.step === 'idle' && (
-              <div style={{
-                margin: '0 20px 20px',
-                padding: '12px 14px',
-                background: 'rgba(220,38,38,0.06)',
-                border: '1px solid rgba(220,38,38,0.2)',
-                borderRadius: 8,
-                fontSize: 12.5,
-                color: 'rgb(185,28,28)',
-                lineHeight: 1.5,
-              }}>
+              <div style={{ margin: '0 20px 20px', padding: '12px 14px', background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.2)', borderRadius: 8, fontSize: 12.5, color: 'rgb(185,28,28)', lineHeight: 1.5 }}>
                 {state.error}
               </div>
             )}
           </div>
+
         ) : (
-          <ChatPanel
-            productName={state.input?.productName ?? 'Page'}
-            sectionCount={sectionCount}
-            messages={chatMessages}
-            isChatLoading={isChatLoading}
-            isPublishing={state.step === 'publishing'}
-            isPublished={state.step === 'done'}
-            publishedSlug={state.publishedSlug}
-            onSend={handleIterate}
-            onApprove={handleApprove}
-            onReset={() => dispatch({ type: 'RESET' })}
-          />
+
+          /* Editor left panel */
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+
+            {/* Header */}
+            <div style={{ padding: '16px 16px 12px', borderBottom: '1px solid rgba(0,0,0,0.07)', flexShrink: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#111', letterSpacing: '-0.015em', marginBottom: 2 }}>
+                {state.input?.productName ?? 'Page'}
+              </div>
+              <div style={{ fontSize: 11.5, color: 'rgba(0,0,0,0.38)' }}>
+                {state.step === 'reviewing' && `${sectionCount} blocks · drag to reorder`}
+                {state.step === 'publishing' && 'Publishing…'}
+                {state.step === 'done' && state.publishedSlug && `Published · /${state.publishedSlug}`}
+              </div>
+            </div>
+
+            {/* Block list */}
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              {state.brief && (
+                <BlockList brief={state.brief} onReorder={handleReorder} />
+              )}
+            </div>
+
+            {/* Actions */}
+            <div style={{ padding: '12px 16px 18px', borderTop: '1px solid rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', gap: 7, flexShrink: 0 }}>
+              <button
+                onClick={handleApprove}
+                disabled={state.step === 'done' || state.step === 'publishing'}
+                style={{
+                  width: '100%', padding: '10px 16px', borderRadius: 9, border: 'none',
+                  background: state.step === 'done' ? 'rgba(0,0,0,0.06)' : '#111',
+                  color: state.step === 'done' ? 'rgba(0,0,0,0.35)' : '#fff',
+                  fontSize: 13.5, fontWeight: 600, fontFamily: 'inherit',
+                  cursor: state.step === 'done' || state.step === 'publishing' ? 'default' : 'pointer',
+                  letterSpacing: '-0.01em',
+                }}
+              >
+                {state.step === 'done' ? '✓ Published' : state.step === 'publishing' ? 'Publishing…' : 'Approve & publish draft'}
+              </button>
+              <button
+                onClick={() => dispatch({ type: 'RESET' })}
+                style={{
+                  width: '100%', padding: '9px 16px', borderRadius: 9,
+                  border: '1px solid rgba(0,0,0,0.1)', background: 'transparent',
+                  color: 'rgba(0,0,0,0.5)', fontSize: 13, fontFamily: 'inherit', cursor: 'pointer',
+                }}
+              >
+                Start over
+              </button>
+            </div>
+          </div>
         )}
       </div>
 
       {/* Right panel */}
       <PreviewPanel
         blocks={blocks}
+        brief={state.brief}
+        imageUrls={damMedia.urls}
+        videoUrls={damMedia.videoUrls}
         step={state.step}
         sectionCount={sectionCount}
+        onBriefUpdate={handleBriefUpdate}
       />
     </div>
   )
