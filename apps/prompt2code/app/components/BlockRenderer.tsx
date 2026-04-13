@@ -15,7 +15,6 @@ import {
   mapMediaTextAsymmetricBlockProps,
 } from '@design2code/block-library'
 import type { BlockPattern, LabBlockCallToAction } from '@design2code/block-library'
-import type { ImageSlotState } from '../hooks/useImageStream'
 
 function previewCtasToLab(
   ctas: { label?: string; link?: string }[] | null | undefined
@@ -24,8 +23,6 @@ function previewCtasToLab(
   const out = ctas.filter((c): c is { label: string; link?: string } => Boolean(c.label))
   return out.length ? out : undefined
 }
-
-// ─── Debug placeholder ───────────────────────────────────────────────────────
 
 function DebugBlock({ blockType, sectionName }: { blockType: string; sectionName?: string }) {
   return (
@@ -47,8 +44,6 @@ function DebugBlock({ blockType, sectionName }: { blockType: string; sectionName
     </div>
   )
 }
-
-// ─── Error boundary ──────────────────────────────────────────────────────────
 
 type BoundaryProps = { blockType: string; sectionName?: string; children: React.ReactNode }
 type BoundaryState = { error: Error | null }
@@ -100,10 +95,9 @@ function derivePattern(block: Block): BlockPattern {
 
 type BlockRendererProps = {
   blocks: Block[] | unknown[] | null | undefined
-  images?: Record<string, ImageSlotState>
 }
 
-export function BlockRenderer({ blocks, images }: BlockRendererProps) {
+export function BlockRenderer({ blocks }: BlockRendererProps) {
   if (!blocks?.length) return null
 
   const blocks_ = blocks as Block[]
@@ -119,8 +113,6 @@ export function BlockRenderer({ blocks, images }: BlockRendererProps) {
         let content: React.ReactNode = null
         switch (block._type) {
           case 'hero': {
-            const imageSlot = block.imageSlot as string | undefined
-            const imageState = imageSlot && images?.[imageSlot] ? images[imageSlot] : undefined
             content = (
               <HeroBlock
                 key={block._key || block._type}
@@ -133,8 +125,6 @@ export function BlockRenderer({ blocks, images }: BlockRendererProps) {
                 cta2Link={block.cta2Link as string}
                 image={block.image as string}
                 videoUrl={block.videoUrl as string}
-                imageSlot={imageSlot}
-                imageState={imageState}
                 contentLayout={block.contentLayout as 'stacked' | 'sideBySide' | 'category' | 'mediaOverlay' | 'textOnly' | undefined}
                 containerLayout={block.containerLayout as 'edgeToEdge' | 'contained' | undefined}
                 imageAnchor={block.imageAnchor as 'center' | 'bottom' | undefined}
@@ -146,21 +136,17 @@ export function BlockRenderer({ blocks, images }: BlockRendererProps) {
             break
           }
           case 'mediaText5050': {
-            const props = mapMediaText5050BlockProps(block, images ?? undefined)
+            const props = mapMediaText5050BlockProps(block)
             content = <MediaText5050Block key={block._key || block._type} {...props} />
             break
           }
           case 'mediaTextStacked':
           case 'mediaTextBlock': {
             const mapped = mapMediaTextBlock(block)
-            const imageSlot = block.imageSlot as string | undefined
-            const imageState = imageSlot && images?.[imageSlot] ? images[imageSlot] : undefined
             content = (
               <MediaTextBlock
                 key={block._key || block._type}
                 {...mapped}
-                imageSlot={imageSlot}
-                imageState={imageState}
               />
             )
             break
@@ -179,7 +165,6 @@ export function BlockRenderer({ blocks, images }: BlockRendererProps) {
                   _type: (i._type as 'cardGridItem') ?? 'cardGridItem',
                   title: (i.title as string) ?? '',
                 })) as Parameters<typeof CardGridBlock>[0]['items']}
-                images={images}
               />
             )
             break
@@ -204,14 +189,12 @@ export function BlockRenderer({ blocks, images }: BlockRendererProps) {
                   link?: string
                   ctaText?: string
                   aspectRatio?: '4:5' | '8:5' | '2:1'
-                  imageSlot?: string
                   backgroundColor?: string | null
                 }[]).map((it) => ({
                   ...it,
                   cardType: (it.cardType ?? 'mediaTextBelow') as 'mediaTextBelow' | 'colourFeatured',
                   aspectRatio: it.aspectRatio as '4:5' | '8:5' | '2:1',
                 }))}
-                images={images}
               />
             )
             break

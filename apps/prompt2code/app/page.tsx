@@ -5,7 +5,6 @@ import { SurfaceProvider, Button } from '@marcelinodzn/ds-react'
 import { InputPanel } from './components/storytelling-inspiration/InputPanel'
 import { PreviewPanel } from './components/PreviewPanel'
 import { briefToBlocks } from './lib/briefToBlocks'
-import { useImageStream } from './hooks/useImageStream'
 import type { PageBrief, Section } from './lib/types'
 import type { StoryCoachInput } from './components/storytelling-inspiration/types'
 
@@ -17,7 +16,6 @@ export type PageBuilderState = {
   step: ConversationStep
   input: StoryCoachInput | null
   brief: PageBrief | null
-  jobId: string | null
   publishedSlug: string | null
   error: string | null
 }
@@ -27,7 +25,6 @@ type Action =
   | { type: 'ADD_SECTION'; section: Section }
   | { type: 'SET_BRIEF'; brief: PageBrief }
   | { type: 'SET_STEP'; step: ConversationStep }
-  | { type: 'SET_JOB_ID'; jobId: string }
   | { type: 'SET_PUBLISHED'; slug: string }
   | { type: 'SET_ERROR'; error: string }
   | { type: 'RESET' }
@@ -36,7 +33,6 @@ const initialState: PageBuilderState = {
   step: 'idle',
   input: null,
   brief: null,
-  jobId: null,
   publishedSlug: null,
   error: null,
 }
@@ -64,8 +60,6 @@ function reducer(state: PageBuilderState, action: Action): PageBuilderState {
       return { ...state, brief: action.brief, step: 'reviewing' }
     case 'SET_STEP':
       return { ...state, step: action.step }
-    case 'SET_JOB_ID':
-      return { ...state, jobId: action.jobId }
     case 'SET_PUBLISHED':
       return { ...state, step: 'done', publishedSlug: action.slug }
     case 'SET_ERROR':
@@ -79,7 +73,6 @@ function reducer(state: PageBuilderState, action: Action): PageBuilderState {
 
 export default function Prompt2CodePage() {
   const [state, dispatch] = useReducer(reducer, initialState)
-  const { images, readyCount, totalCount } = useImageStream(state.jobId, state.brief)
 
   const [damMedia, setDamMedia] = useState<DamMedia>({ urls: [], videoUrls: [] })
   useEffect(() => {
@@ -138,8 +131,6 @@ export default function Prompt2CodePage() {
             } else if (event.type === 'complete') {
               completeBriefReceived = true
               dispatch({ type: 'SET_BRIEF', brief: event.brief })
-              // useImageStream watches jobId + brief and starts the stream automatically
-              dispatch({ type: 'SET_JOB_ID', jobId: crypto.randomUUID() })
             } else if (event.type === 'error') {
               dispatch({ type: 'SET_ERROR', error: event.error })
             }
@@ -228,9 +219,6 @@ export default function Prompt2CodePage() {
       {/* Right panel */}
       <PreviewPanel
         blocks={blocks}
-        images={images}
-        readyCount={readyCount}
-        totalCount={totalCount}
         step={state.step}
         sectionCount={sectionCount}
       />

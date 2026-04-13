@@ -2,51 +2,26 @@
 
 import { useRef, useEffect } from 'react'
 import type { ConversationStep } from '../page'
-import type { ImageSlotState } from '../hooks/useImageStream'
 
 type PreviewPanelProps = {
   blocks: unknown[] | null
-  images: Record<string, ImageSlotState>
-  readyCount: number
-  totalCount: number
   step: ConversationStep
   sectionCount: number
 }
 
-export function PreviewPanel({ blocks, images, readyCount, totalCount, step, sectionCount }: PreviewPanelProps) {
+export function PreviewPanel({ blocks, step, sectionCount }: PreviewPanelProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const showBlocks = (step === 'generating' || step === 'reviewing' || step === 'publishing' || step === 'done') && blocks?.length
 
   useEffect(() => {
     iframeRef.current?.contentWindow?.postMessage(
-      { type: 'UPDATE_PREVIEW', blocks, images },
+      { type: 'UPDATE_PREVIEW', blocks },
       '*'
     )
-  }, [blocks, images])
+  }, [blocks])
 
   return (
     <div style={{ height: '100vh', position: 'relative', background: '#f0f0f0' }}>
-      {/* Image progress badge */}
-      {totalCount > 0 && (
-        <div style={{
-          position: 'absolute',
-          top: 12,
-          right: 16,
-          zIndex: 10,
-          background: readyCount === totalCount ? 'rgba(34,197,94,0.9)' : 'rgba(0,0,0,0.6)',
-          color: 'white',
-          fontSize: 12,
-          fontWeight: 500,
-          borderRadius: 20,
-          padding: '4px 10px',
-          backdropFilter: 'blur(4px)',
-          transition: 'background 0.3s',
-          pointerEvents: 'none',
-        }}>
-          Images: {readyCount}/{totalCount}
-        </div>
-      )}
-
       {/* Empty state */}
       {step === 'idle' && (
         <div style={{
@@ -96,7 +71,7 @@ export function PreviewPanel({ blocks, images, readyCount, totalCount, step, sec
         </div>
       )}
 
-      {/* Preview iframe — always mounted so it's ready to receive messages */}
+      {/* Preview iframe */}
       <iframe
         ref={iframeRef}
         src="/preview"
