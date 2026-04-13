@@ -1,9 +1,10 @@
 'use client'
 
 import { useReducer, useCallback, useEffect, useState, useMemo } from 'react'
-import { SurfaceProvider, Button } from '@marcelinodzn/ds-react'
 import { InputPanel } from './components/storytelling-inspiration/InputPanel'
 import { PreviewPanel } from './components/PreviewPanel'
+import { ChatPanel } from './components/ChatPanel'
+import type { ChatMessage } from './components/ChatPanel'
 import { briefToBlocks } from './lib/briefToBlocks'
 import type { PageBrief, Section } from './lib/types'
 import type { StoryCoachInput } from './components/storytelling-inspiration/types'
@@ -24,6 +25,7 @@ type Action =
   | { type: 'START_GENERATING'; input: StoryCoachInput }
   | { type: 'ADD_SECTION'; section: Section }
   | { type: 'SET_BRIEF'; brief: PageBrief }
+  | { type: 'UPDATE_BRIEF'; brief: PageBrief }
   | { type: 'SET_STEP'; step: ConversationStep }
   | { type: 'SET_PUBLISHED'; slug: string }
   | { type: 'SET_ERROR'; error: string }
@@ -58,6 +60,9 @@ function reducer(state: PageBuilderState, action: Action): PageBuilderState {
     }
     case 'SET_BRIEF':
       return { ...state, brief: action.brief, step: 'reviewing' }
+    case 'UPDATE_BRIEF':
+      // Iterate result — keep current step, just swap the brief
+      return { ...state, brief: action.brief }
     case 'SET_STEP':
       return { ...state, step: action.step }
     case 'SET_PUBLISHED':
@@ -89,6 +94,55 @@ export default function Prompt2CodePage() {
     [state.brief, damMedia],
   )
 
+  // ── Chat state ────────────────────────────────────────────────────────────
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
+  const [isChatLoading, setIsChatLoading] = useState(false)
+
+  // Reset chat when a new page is generated
+  useEffect(() => {
+    if (state.step === 'reviewing') setChatMessages([])
+  }, [state.brief, state.step])
+
+  const handleIterate = useCallback(async (message: string) => {
+    if (!state.brief || isChatLoading) return
+
+    setChatMessages(prev => [...prev, { role: 'user', content: message }])
+    setIsChatLoading(true)
+
+    try {
+      const res = await fetch('/api/iterate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          brief: state.brief,
+          message,
+          imageUrls: damMedia.urls,
+        }),
+      })
+
+      const data = await res.json() as
+        | { action: 'update'; brief: PageBrief; message: string }
+        | { action: 'explain'; message: string }
+
+      if (data.action === 'update' && data.brief) {
+        dispatch({ type: 'UPDATE_BRIEF', brief: data.brief })
+      }
+
+      setChatMessages(prev => [...prev, {
+        role: 'assistant',
+        content: data.message ?? (data.action === 'update' ? 'Done.' : 'I wasn\'t able to make that change.'),
+      }])
+    } catch (err) {
+      setChatMessages(prev => [...prev, {
+        role: 'assistant',
+        content: err instanceof Error ? err.message : 'Something went wrong. Please try again.',
+      }])
+    } finally {
+      setIsChatLoading(false)
+    }
+  }, [state.brief, damMedia.urls, isChatLoading])
+
+  // ── Generate ──────────────────────────────────────────────────────────────
   const handleGenerate = useCallback(async (input: StoryCoachInput) => {
     dispatch({ type: 'START_GENERATING', input })
 
@@ -148,6 +202,7 @@ export default function Prompt2CodePage() {
     }
   }, [])
 
+  // ── Publish ───────────────────────────────────────────────────────────────
   const handleApprove = useCallback(async () => {
     if (!state.brief) return
     dispatch({ type: 'SET_STEP', step: 'publishing' })
@@ -168,51 +223,40 @@ export default function Prompt2CodePage() {
   const showInput = state.step === 'idle' || state.step === 'generating'
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '420px 1fr', height: '100vh', overflow: 'hidden' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', height: '100vh', overflow: 'hidden' }}>
       {/* Left panel */}
-      <div style={{ height: '100%', overflowY: 'auto', borderRight: '1px solid rgba(0,0,0,0.06)' }}>
+      <div style={{ height: '100%', overflowY: 'auto', borderRight: '1px solid rgba(0,0,0,0.07)' }}>
         {showInput ? (
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <InputPanel onSubmit={handleGenerate} isLoading={state.step === 'generating'} />
             {state.error && state.step === 'idle' && (
-              <div style={{ margin: '0 var(--ds-spacing-2xl) var(--ds-spacing-2xl)', padding: 'var(--ds-spacing-m)', background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.2)', borderRadius: 4, fontSize: 13, color: 'rgb(185,28,28)', lineHeight: 1.5 }}>
+              <div style={{
+                margin: '0 20px 20px',
+                padding: '12px 14px',
+                background: 'rgba(220,38,38,0.06)',
+                border: '1px solid rgba(220,38,38,0.2)',
+                borderRadius: 8,
+                fontSize: 12.5,
+                color: 'rgb(185,28,28)',
+                lineHeight: 1.5,
+              }}>
                 {state.error}
               </div>
             )}
           </div>
         ) : (
-          <SurfaceProvider level={0}>
-            <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 'var(--ds-spacing-2xl)', gap: 'var(--ds-spacing-l)' }}>
-              <div style={{ fontSize: 'var(--ds-typography-headline-m)', fontWeight: 'var(--ds-typography-weight-medium)', color: 'var(--ds-color-text-high)', letterSpacing: '-0.02em' }}>
-                {state.input?.productName ?? 'Page'}
-              </div>
-              <div style={{ fontSize: 'var(--ds-typography-body-xs)', color: 'rgba(0,0,0,0.48)', lineHeight: 1.5 }}>
-                {state.step === 'reviewing' && `${sectionCount} blocks ready`}
-                {state.step === 'publishing' && 'Publishing to Sanity…'}
-                {state.step === 'done' && state.publishedSlug && `Published as draft: /${state.publishedSlug}`}
-              </div>
-              <div style={{ flex: 1 }} />
-              {(state.step === 'reviewing' || state.step === 'done') && (
-                <Button
-                  onPress={handleApprove}
-                  isDisabled={state.step === 'done'}
-                  appearance="neutral"
-                  size="M"
-                  attention="high"
-                >
-                  {state.step === 'done' ? 'Published' : 'Approve & publish draft'}
-                </Button>
-              )}
-              <Button
-                onPress={() => dispatch({ type: 'RESET' })}
-                appearance="neutral"
-                size="M"
-                attention="low"
-              >
-                Start over
-              </Button>
-            </div>
-          </SurfaceProvider>
+          <ChatPanel
+            productName={state.input?.productName ?? 'Page'}
+            sectionCount={sectionCount}
+            messages={chatMessages}
+            isChatLoading={isChatLoading}
+            isPublishing={state.step === 'publishing'}
+            isPublished={state.step === 'done'}
+            publishedSlug={state.publishedSlug}
+            onSend={handleIterate}
+            onApprove={handleApprove}
+            onReset={() => dispatch({ type: 'RESET' })}
+          />
         )}
       </div>
 
