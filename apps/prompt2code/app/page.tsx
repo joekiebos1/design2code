@@ -166,7 +166,7 @@ export default function Prompt2CodePage() {
     <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', height: '100vh', overflow: 'hidden' }}>
 
       {/* Left panel */}
-      <div style={{ height: '100%', display: 'flex', flexDirection: 'column', borderRight: '1px solid rgba(0,0,0,0.07)', background: '#fafafa' }}>
+      <div style={{ height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column', borderRight: '1px solid rgba(0,0,0,0.07)', background: '#fafafa' }}>
         {showInput ? (
 
           /* Input form */
