@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@sanity/client'
-import { createImageUrlBuilder } from '@sanity/image-url'
 import { buildImageManifest } from '../../../lib/imageManifest'
 import type { PageBrief } from '../../../lib/types'
 import { registerStream } from '../stream-store'
@@ -20,19 +18,18 @@ function delay(ms: number): Promise<void> {
 
 const IMAGE_SERVICE_URL = process.env.IMAGE_SERVICE_URL
 
-const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || process.env.SANITY_STUDIO_PROJECT_ID
-const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || process.env.SANITY_STUDIO_DATASET || 'production'
-
-async function fetchSanityImageUrls(): Promise<string[]> {
-  if (!projectId || projectId === 'your-project-id') return []
+async function fetchDamImageUrls(): Promise<string[]> {
+  const supabaseUrl = process.env.SUPABASE_URL
+  const supabaseKey = process.env.SUPABASE_ANON_KEY
+  if (!supabaseUrl || !supabaseKey) return []
   try {
-    const client = createClient({ projectId, dataset, apiVersion: '2024-01-01', useCdn: true })
-    const assets = await client.fetch<{ _id: string; url: string }[]>(
-      `*[_type == "sanity.imageAsset"] | order(_createdAt desc) [0...30]{ _id, url }`
+    const res = await fetch(
+      `${supabaseUrl}/rest/v1/dam_assets?status=eq.approved&select=image_url&order=created_at.desc`,
+      { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` } }
     )
-    if (!assets?.length) return []
-    const builder = createImageUrlBuilder({ projectId, dataset })
-    return assets.map((a) => builder.image(a._id).width(800).auto('format').url())
+    if (!res.ok) return []
+    const rows = await res.json() as { image_url: string }[]
+    return rows.map((r) => r.image_url).filter(Boolean)
   } catch {
     return []
   }
@@ -98,8 +95,8 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Mock mode: return Sanity library images as stand-ins
-    const sanityUrls = await fetchSanityImageUrls()
+    // Mock mode: stream DAM images as stand-ins for each slot
+    const damUrls = await fetchDamImageUrls()
     const encoder = new TextEncoder()
 
     const stream = new ReadableStream({
@@ -112,8 +109,8 @@ export async function POST(request: NextRequest) {
           const delayMs = 200 + Math.random() * 800
 
           return delay(delayMs).then(() => {
-            const url = sanityUrls.length > 0
-              ? sanityUrls[idx % sanityUrls.length]
+            const url = damUrls.length > 0
+              ? damUrls[idx % damUrls.length]
               : ''
             if (url) {
               pushEvent({
