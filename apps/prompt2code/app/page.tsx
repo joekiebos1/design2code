@@ -11,7 +11,7 @@ import type { StoryCoachInput } from './components/storytelling-inspiration/type
 
 export type ConversationStep = 'idle' | 'generating' | 'reviewing' | 'publishing' | 'done'
 
-type SanityMedia = { urls: string[]; videoUrls: string[] }
+type DamMedia = { urls: string[]; videoUrls: string[] }
 
 export type PageBuilderState = {
   step: ConversationStep
@@ -81,19 +81,19 @@ export default function Prompt2CodePage() {
   const [state, dispatch] = useReducer(reducer, initialState)
   const { images, readyCount, totalCount } = useImageStream(state.jobId, state.brief)
 
-  const [sanityMedia, setSanityMedia] = useState<SanityMedia>({ urls: [], videoUrls: [] })
+  const [damMedia, setDamMedia] = useState<DamMedia>({ urls: [], videoUrls: [] })
   useEffect(() => {
-    fetch('/api/sanity-images')
+    fetch('/api/dam-images')
       .then((r) => r.json())
-      .then((data: SanityMedia) => {
-        if (data.urls?.length) setSanityMedia(data)
+      .then((data: DamMedia) => {
+        if (data.urls?.length) setDamMedia(data)
       })
       .catch(() => {})
   }, [])
 
   const blocks = useMemo(
-    () => state.brief ? briefToBlocks(state.brief, sanityMedia.urls, sanityMedia.videoUrls) : null,
-    [state.brief, sanityMedia],
+    () => state.brief ? briefToBlocks(state.brief, damMedia.urls, damMedia.videoUrls) : null,
+    [state.brief, damMedia],
   )
 
   const handleGenerate = useCallback(async (input: StoryCoachInput) => {

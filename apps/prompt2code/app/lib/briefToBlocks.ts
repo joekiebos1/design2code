@@ -167,23 +167,23 @@ export function extractImageSlots(brief: PageBrief): { slot: string }[] {
   return slots
 }
 
-/** Picks an image: Sanity pool first, then placeholder. Raw brief URLs are ignored. */
+/** Picks an image from the DAM pool, falling back to placeholder. */
 function resolveImage(
   _raw: string | null | undefined,
-  sanityUrls: string[],
+  imageUrls: string[],
   index: number
 ): string {
-  if (sanityUrls.length > 0) return sanityUrls[index % sanityUrls.length]
+  if (imageUrls.length > 0) return imageUrls[index % imageUrls.length]
   return PLACEHOLDER_IMAGE
 }
 
-/** Video URL: Sanity file assets first, then placeholder. Raw brief URLs are ignored. */
+/** Video URL from pool, or undefined. */
 function resolveVideo(
   _raw: string | null | undefined,
-  sanityVideoUrls: string[],
+  videoUrls: string[],
   index: number
 ): string | undefined {
-  if (sanityVideoUrls.length > 0) return sanityVideoUrls[index % sanityVideoUrls.length]
+  if (videoUrls.length > 0) return videoUrls[index % videoUrls.length]
   return undefined
 }
 
@@ -218,7 +218,7 @@ function normalizeItems(
   items: unknown[] | null | undefined,
   component: string,
   sectionIndex: number,
-  sanityImageUrls: string[],
+  imageUrls: string[],
   itemOffset: number
 ): Record<string, unknown>[] {
   if (!Array.isArray(items) || items.length === 0) return []
@@ -242,7 +242,7 @@ function normalizeItems(
           description,
           icon: o.icon,
           backgroundColor: o.backgroundColor,
-          image: resolveImage(o.image as string, sanityImageUrls, imgIndex),
+          image: resolveImage(o.image as string, imageUrls, imgIndex),
           video: o.video,
           ctaText: o.ctaText,
           ctaLink: o.ctaLink ?? (o.link as string),
@@ -253,7 +253,7 @@ function normalizeItems(
           cardType: (o.cardType as string) ?? 'mediaTextBelow',
           title,
           description,
-          image: resolveImage(o.image as string, sanityImageUrls, imgIndex),
+          image: resolveImage(o.image as string, imageUrls, imgIndex),
           video: o.video,
           link: o.link,
           ctaText: o.ctaText,
@@ -274,8 +274,8 @@ function normalizeItems(
 
 export function briefToBlocks(
   brief: PageBrief,
-  sanityImageUrls: string[] = [],
-  sanityVideoUrls: string[] = [],
+  imageUrls: string[] = [],
+  videoUrls: string[] = [],
 ): Block[] {
   const sections = [...brief.sections].sort((a, b) => a.order - b.order)
   let itemOffset = 0
@@ -311,7 +311,7 @@ export function briefToBlocks(
           ctaLink: cta?.href ?? '#',
           cta2Text: undefined,
           cta2Link: undefined,
-          image: resolveImage(undefined, sanityImageUrls, 0),
+          image: resolveImage(undefined, imageUrls, 0),
           imageSlot: `hero-${i}-image`,
         }
       }
@@ -320,7 +320,7 @@ export function briefToBlocks(
         const template = opts.template ?? 'stacked'
         const hasMedia = slots.mediaType === 'image' || slots.mediaType === 'video'
         const isVideo = slots.mediaType === 'video'
-        const videoUrl = isVideo ? resolveVideo(undefined, sanityVideoUrls, i) : undefined
+        const videoUrl = isVideo ? resolveVideo(undefined, videoUrls, i) : undefined
         return {
           ...base,
           template: hasMedia ? template : 'textOnly',
@@ -335,7 +335,7 @@ export function briefToBlocks(
           ctaLink: cta?.href ?? '#',
           cta2Text: undefined,
           cta2Link: undefined,
-          image: hasMedia ? resolveImage(undefined, sanityImageUrls, i) : undefined,
+          image: hasMedia ? resolveImage(undefined, imageUrls, i) : undefined,
           video: videoUrl,
           imageSlot: hasMedia ? `mediaTextStacked-${i}-media` : undefined,
         }
@@ -345,7 +345,7 @@ export function briefToBlocks(
         const rawVariant = opts.variant ?? 'paragraphs'
         const isAccordion = rawVariant === 'accordion'
         const isSingle = rawVariant === 'single' || (rawVariant === 'paragraphs' && opts.paragraphColumnLayout === 'single')
-        const image = resolveImage(undefined, sanityImageUrls, i)
+        const image = resolveImage(undefined, imageUrls, i)
         const rawItems = Array.isArray(slots.items) ? slots.items : []
 
         const accordionItems = isAccordion
@@ -354,7 +354,7 @@ export function briefToBlocks(
               return {
                 subtitle: (o.question as string) ?? (o.subtitle as string) ?? (o.title as string) ?? '',
                 body: (o.answer as string) ?? (o.body as string) ?? '',
-                image: resolveImage(o.image as string | undefined, sanityImageUrls, itemOffset + j),
+                image: resolveImage(o.image as string | undefined, imageUrls, itemOffset + j),
               }
             })
           : undefined
@@ -396,7 +396,7 @@ export function briefToBlocks(
       }
 
       case 'mediaTextAsymmetric': {
-        const items = normalizeItems(slots.items, 'mediaTextAsymmetric', i, sanityImageUrls, itemOffset)
+        const items = normalizeItems(slots.items, 'mediaTextAsymmetric', i, imageUrls, itemOffset)
         const isFaq = opts.variant === 'faq'
         return {
           ...base,
@@ -404,20 +404,20 @@ export function briefToBlocks(
           variant: opts.variant ?? 'faq',
           size: (opts.size as string) ?? 'feature',
           ...colours,
-          image: resolveImage(undefined, sanityImageUrls, i),
+          image: resolveImage(undefined, imageUrls, i),
           imageAspectRatio: (opts.imageAspectRatio as string) ?? '5:4',
           items: items.length > 0 ? items : undefined,
         }
       }
 
       case 'cardGrid': {
-        const items = normalizeItems(slots.items, 'cardGrid', i, sanityImageUrls, itemOffset)
+        const items = normalizeItems(slots.items, 'cardGrid', i, imageUrls, itemOffset)
         itemOffset += items.length
         if (items.length === 0) {
           items.push(
-            { cardType: 'mediaTextBelow', title: 'Card 1', description: slots.body ?? '', image: resolveImage(undefined, sanityImageUrls, itemOffset), imageSlot: `cardGrid-${i}-item-0-image` },
-            { cardType: 'mediaTextBelow', title: 'Card 2', description: '', image: resolveImage(undefined, sanityImageUrls, itemOffset + 1), imageSlot: `cardGrid-${i}-item-1-image` },
-            { cardType: 'mediaTextBelow', title: 'Card 3', description: '', image: resolveImage(undefined, sanityImageUrls, itemOffset + 2), imageSlot: `cardGrid-${i}-item-2-image` }
+            { cardType: 'mediaTextBelow', title: 'Card 1', description: slots.body ?? '', image: resolveImage(undefined, imageUrls, itemOffset), imageSlot: `cardGrid-${i}-item-0-image` },
+            { cardType: 'mediaTextBelow', title: 'Card 2', description: '', image: resolveImage(undefined, imageUrls, itemOffset + 1), imageSlot: `cardGrid-${i}-item-1-image` },
+            { cardType: 'mediaTextBelow', title: 'Card 3', description: '', image: resolveImage(undefined, imageUrls, itemOffset + 2), imageSlot: `cardGrid-${i}-item-2-image` }
           )
           itemOffset += 3
         }
@@ -431,14 +431,14 @@ export function briefToBlocks(
       }
 
       case 'carousel': {
-        let items = normalizeItems(slots.items, 'carousel', i, sanityImageUrls, itemOffset)
+        let items = normalizeItems(slots.items, 'carousel', i, imageUrls, itemOffset)
         itemOffset += items.length
         if (items.length === 0) {
           items = [
-            { cardType: 'mediaTextBelow', title: 'Item 1', description: slots.body ?? '', image: resolveImage(undefined, sanityImageUrls, itemOffset), imageSlot: `carousel-${i}-item-0-image` },
-            { cardType: 'mediaTextBelow', title: 'Item 2', description: '', image: resolveImage(undefined, sanityImageUrls, itemOffset + 1), imageSlot: `carousel-${i}-item-1-image` },
-            { cardType: 'mediaTextBelow', title: 'Item 3', description: '', image: resolveImage(undefined, sanityImageUrls, itemOffset + 2), imageSlot: `carousel-${i}-item-2-image` },
-            { cardType: 'mediaTextBelow', title: 'Item 4', description: '', image: resolveImage(undefined, sanityImageUrls, itemOffset + 3), imageSlot: `carousel-${i}-item-3-image` },
+            { cardType: 'mediaTextBelow', title: 'Item 1', description: slots.body ?? '', image: resolveImage(undefined, imageUrls, itemOffset), imageSlot: `carousel-${i}-item-0-image` },
+            { cardType: 'mediaTextBelow', title: 'Item 2', description: '', image: resolveImage(undefined, imageUrls, itemOffset + 1), imageSlot: `carousel-${i}-item-1-image` },
+            { cardType: 'mediaTextBelow', title: 'Item 3', description: '', image: resolveImage(undefined, imageUrls, itemOffset + 2), imageSlot: `carousel-${i}-item-2-image` },
+            { cardType: 'mediaTextBelow', title: 'Item 4', description: '', image: resolveImage(undefined, imageUrls, itemOffset + 3), imageSlot: `carousel-${i}-item-3-image` },
           ]
           itemOffset += 4
         }
@@ -452,7 +452,7 @@ export function briefToBlocks(
       }
 
       case 'proofPoints': {
-        let items = normalizeItems(slots.items, 'proofPoints', i, sanityImageUrls, itemOffset)
+        let items = normalizeItems(slots.items, 'proofPoints', i, imageUrls, itemOffset)
         if (items.length === 0) {
           items = [
             { title: 'Point 1', description: '', icon: 'IcCheckboxOn' },
