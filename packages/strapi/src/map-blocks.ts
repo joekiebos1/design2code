@@ -113,7 +113,7 @@ function mapOneBlock(baseUrl: string, raw: unknown, index: number): BlockRendere
       emphasis: o.emphasis,
       minimalBackgroundStyle: o.minimalBackgroundStyle,
       appearance: o.appearance,
-      items: mapItems(baseUrl, o.items, mapCardItem.bind(null, baseUrl)),
+      items: mapItems(baseUrl, o.items, (item, i) => mapCardItem(baseUrl, item, `${_key}-i${i}`)),
     }
   }
 
@@ -133,13 +133,13 @@ function mapOneBlock(baseUrl: string, raw: unknown, index: number): BlockRendere
       imagePosition: o.imagePosition,
       headingAlignment: o.headingAlignment,
       blockFramingAlignment: o.blockFramingAlignment,
-      items: mapItems(baseUrl, o.items, (item) => ({
-        _key: String(item.id ?? Math.random()),
+      items: mapItems(baseUrl, o.items, (item, i) => ({
+        _key: `${_key}-i${i}`,
         subtitle: item.subtitle,
         body: item.body,
       })),
-      accordionItems: mapItems(baseUrl, o.accordionItems, (item) => ({
-        _key: String(item.id ?? Math.random()),
+      accordionItems: mapItems(baseUrl, o.accordionItems, (item, i) => ({
+        _key: `${_key}-a${i}`,
         subtitle: item.subtitle,
         body: item.body,
         image: resolveStrapiMediaUrl(baseUrl, item.image, item.imageUrl as string | null),
@@ -170,7 +170,7 @@ function mapOneBlock(baseUrl: string, raw: unknown, index: number): BlockRendere
       emphasis: o.emphasis,
       minimalBackgroundStyle: o.minimalBackgroundStyle,
       appearance: o.appearance,
-      items: mapItems(baseUrl, o.items, mapCardItem.bind(null, baseUrl)),
+      items: mapItems(baseUrl, o.items, (item, i) => mapCardItem(baseUrl, item, `${_key}-i${i}`)),
     }
   }
 
@@ -187,8 +187,8 @@ function mapOneBlock(baseUrl: string, raw: unknown, index: number): BlockRendere
       emphasis: o.emphasis,
       minimalBackgroundStyle: o.minimalBackgroundStyle,
       appearance: o.appearance,
-      items: mapItems(baseUrl, o.items, (item) => ({
-        _key: String(item.id ?? Math.random()),
+      items: mapItems(baseUrl, o.items, (item, i) => ({
+        _key: `${_key}-i${i}`,
         title: item.title,
         description: item.description,
         icon: item.icon,
@@ -209,8 +209,8 @@ function mapOneBlock(baseUrl: string, raw: unknown, index: number): BlockRendere
       appearance: o.appearance,
       minimalBackgroundStyle: o.minimalBackgroundStyle,
       columns: o.columns,
-      items: mapItems(baseUrl, o.items, (item) => ({
-        _key: String(item.id ?? Math.random()),
+      items: mapItems(baseUrl, o.items, (item, i) => ({
+        _key: `${_key}-i${i}`,
         title: item.title,
         body: item.body,
         icon: item.icon,
@@ -232,8 +232,8 @@ function mapOneBlock(baseUrl: string, raw: unknown, index: number): BlockRendere
       variant: o.variant,
       paragraphLayout: o.paragraphLayout,
       singleColumnBody: o.singleColumnBody,
-      longFormParagraphs: mapItems(baseUrl, o.longFormParagraphs, (item) => ({
-        _key: String(item.id ?? Math.random()),
+      longFormParagraphs: mapItems(baseUrl, o.longFormParagraphs, (item, i) => ({
+        _key: `${_key}-lf${i}`,
         text: item.text,
         bodyTypography: item.bodyTypography,
       })),
@@ -243,16 +243,16 @@ function mapOneBlock(baseUrl: string, raw: unknown, index: number): BlockRendere
       imageAspectRatio: o.imageAspectRatio,
       imageAlt: o.imageAlt,
       image: resolveStrapiMediaUrl(baseUrl, o.image, o.imageUrl as string | null),
-      paragraphRows: mapItems(baseUrl, o.paragraphRows, (item) => ({
-        _key: String(item.id ?? Math.random()),
+      paragraphRows: mapItems(baseUrl, o.paragraphRows, (item, i) => ({
+        _key: `${_key}-pr${i}`,
         title: item.title,
         body: item.body,
         bodyTypography: item.bodyTypography,
         linkText: item.linkText,
         linkUrl: item.linkUrl,
       })),
-      items: mapItems(baseUrl, o.items, (item) => ({
-        _key: String(item.id ?? Math.random()),
+      items: mapItems(baseUrl, o.items, (item, i) => ({
+        _key: `${_key}-i${i}`,
         title: item.title,
         body: item.body,
         subtitle: item.subtitle,
@@ -265,9 +265,9 @@ function mapOneBlock(baseUrl: string, raw: unknown, index: number): BlockRendere
   return { _type, _key, ...stripStrapiMeta(o) }
 }
 
-function mapCardItem(baseUrl: string, item: Record<string, unknown>) {
+function mapCardItem(baseUrl: string, item: Record<string, unknown>, key?: string) {
   return {
-    _key: String(item.id ?? item.documentId ?? Math.random()),
+    _key: key ?? String(item.id ?? item.documentId ?? Math.random()),
     cardType: item.cardType,
     title: item.title,
     description: item.description,
@@ -286,20 +286,20 @@ function mapCardItem(baseUrl: string, item: Record<string, unknown>) {
 function mapItems<T>(
   _baseUrl: string,
   raw: unknown,
-  mapper: (item: Record<string, unknown>) => T
+  mapper: (item: Record<string, unknown>, index: number) => T
 ): T[] {
   if (!Array.isArray(raw)) return []
   return raw
     .filter((item): item is Record<string, unknown> => item != null && typeof item === 'object')
-    .map(mapper)
+    .map((item, i) => mapper(item, i))
 }
 
 function mapCallToActions(raw: unknown): { _key: string; label: string; link: string; style?: string }[] {
   if (!Array.isArray(raw)) return []
   return raw
     .filter((item): item is Record<string, unknown> => item != null && typeof item === 'object')
-    .map((item) => ({
-      _key: String(item.id ?? Math.random()),
+    .map((item, i) => ({
+      _key: String(item.id ?? `cta-${i}`),
       label: String(item.label ?? ''),
       link: String(item.link ?? ''),
       style: item.style as string | undefined,
