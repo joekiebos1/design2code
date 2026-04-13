@@ -17,6 +17,18 @@ export default function PreviewPage() {
     return () => window.removeEventListener('message', handler)
   }, [])
 
+  // Report page height to parent whenever content changes
+  useEffect(() => {
+    const report = () => {
+      const h = document.documentElement.scrollHeight
+      window.parent?.postMessage({ type: 'PREVIEW_HEIGHT', height: h }, '*')
+    }
+    report()
+    const ro = new ResizeObserver(report)
+    ro.observe(document.documentElement)
+    return () => ro.disconnect()
+  }, [blocks])
+
   return (
     <ContentDsProvider>
       <BlockRenderer blocks={blocks} />

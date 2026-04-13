@@ -3,9 +3,7 @@
 import { useReducer, useCallback, useEffect, useState, useMemo } from 'react'
 import { InputPanel } from './components/storytelling-inspiration/InputPanel'
 import { PreviewPanel } from './components/PreviewPanel'
-import { BlockList } from './components/editor/BlockList'
 import { briefToBlocks } from './lib/briefToBlocks'
-import { reorderSections } from './lib/briefEditor'
 import type { PageBrief, Section } from './lib/types'
 import type { StoryCoachInput } from './components/storytelling-inspiration/types'
 
@@ -154,11 +152,6 @@ export default function Prompt2CodePage() {
     dispatch({ type: 'UPDATE_BRIEF', brief })
   }, [])
 
-  const handleReorder = useCallback((newOrder: string[]) => {
-    if (!state.brief) return
-    dispatch({ type: 'UPDATE_BRIEF', brief: reorderSections(state.brief, newOrder) })
-  }, [state.brief])
-
   const sectionCount = state.brief?.sections?.length ?? 0
   const showInput = state.step === 'idle' || state.step === 'generating'
 
@@ -185,26 +178,32 @@ export default function Prompt2CodePage() {
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
             {/* Header */}
-            <div style={{ padding: '16px 16px 12px', borderBottom: '1px solid rgba(0,0,0,0.07)', flexShrink: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#111', letterSpacing: '-0.015em', marginBottom: 2 }}>
+            <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid rgba(0,0,0,0.07)', flexShrink: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#111', letterSpacing: '-0.015em', marginBottom: 3 }}>
                 {state.input?.productName ?? 'Page'}
               </div>
-              <div style={{ fontSize: 11.5, color: 'rgba(0,0,0,0.38)' }}>
-                {state.step === 'reviewing' && `${sectionCount} blocks · drag to reorder`}
+              <div style={{ fontSize: 11.5, color: 'rgba(0,0,0,0.38)', lineHeight: 1.5 }}>
+                {state.step === 'reviewing' && `${sectionCount} blocks · drag blocks in preview to reorder`}
                 {state.step === 'publishing' && 'Publishing…'}
-                {state.step === 'done' && state.publishedSlug && `Published · /${state.publishedSlug}`}
+                {state.step === 'done' && state.publishedSlug ? `Published · /${state.publishedSlug}` : state.step === 'done' ? 'Published' : ''}
               </div>
             </div>
 
-            {/* Block list */}
-            <div style={{ flex: 1, overflowY: 'auto' }}>
-              {state.brief && (
-                <BlockList brief={state.brief} onReorder={handleReorder} />
-              )}
+            {/* Hint */}
+            <div style={{ padding: '16px 20px', flex: 1 }}>
+              <div style={{ fontSize: 12.5, color: 'rgba(0,0,0,0.4)', lineHeight: 1.65 }}>
+                <p style={{ margin: '0 0 10px', fontWeight: 600, color: 'rgba(0,0,0,0.55)' }}>How to edit</p>
+                <ul style={{ margin: 0, paddingLeft: 16, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <li><strong>Click any text</strong> to edit it inline</li>
+                  <li><strong>Hover an image</strong>, then click ⟳ to swap from DAM</li>
+                  <li><strong>Drag the Move handle</strong> on any block to reorder</li>
+                  <li><strong>+ Add</strong> bar below collections to add cards or items</li>
+                </ul>
+              </div>
             </div>
 
             {/* Actions */}
-            <div style={{ padding: '12px 16px 18px', borderTop: '1px solid rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', gap: 7, flexShrink: 0 }}>
+            <div style={{ padding: '12px 16px 20px', borderTop: '1px solid rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', gap: 7, flexShrink: 0 }}>
               <button
                 onClick={handleApprove}
                 disabled={state.step === 'done' || state.step === 'publishing'}

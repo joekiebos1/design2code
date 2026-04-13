@@ -18,32 +18,44 @@ type PreviewPanelProps = {
 type Viewport = '360' | '1440'
 type PanelMode = 'edit' | 'preview'
 
+const PAD = 24 // horizontal padding around the page card
+
 export function PreviewPanel({ blocks, brief, imageUrls, videoUrls, step, sectionCount, onBriefUpdate }: PreviewPanelProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [viewport, setViewport] = useState<Viewport>('1440')
   const [mode, setMode] = useState<PanelMode>('edit')
   const [containerWidth, setContainerWidth] = useState(0)
+  const [iframeHeight, setIframeHeight] = useState(2000)
 
   const isActive = (step === 'generating' || step === 'reviewing' || step === 'publishing' || step === 'done') && !!blocks?.length
   const canEdit = (step === 'reviewing' || step === 'publishing' || step === 'done') && !!brief
 
-  // Switch to edit mode when content first arrives
-  useEffect(() => {
-    if (canEdit) setMode('edit')
-  }, [canEdit])
+  // Switch to edit when content first arrives
+  useEffect(() => { if (canEdit) setMode('edit') }, [canEdit])
 
-  // Measure container for 1440 scaling
+  // Measure container width
   useEffect(() => {
     const el = containerRef.current
     if (!el) return
-    const ro = new ResizeObserver(entries => setContainerWidth(entries[0]?.contentRect.width ?? 0))
+    const ro = new ResizeObserver(e => setContainerWidth(e[0]?.contentRect.width ?? 0))
     ro.observe(el)
     setContainerWidth(el.clientWidth)
     return () => ro.disconnect()
   }, [])
 
-  // Keep iframe in sync
+  // Listen for iframe height reports
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (e.data?.type === 'PREVIEW_HEIGHT' && typeof e.data.height === 'number') {
+        setIframeHeight(Math.max(600, e.data.height + 40))
+      }
+    }
+    window.addEventListener('message', handler)
+    return () => window.removeEventListener('message', handler)
+  }, [])
+
+  // Push blocks to iframe
   useEffect(() => {
     iframeRef.current?.contentWindow?.postMessage({ type: 'UPDATE_PREVIEW', blocks }, '*')
   }, [blocks])
@@ -52,224 +64,152 @@ export function PreviewPanel({ blocks, brief, imageUrls, videoUrls, step, sectio
     iframeRef.current?.contentWindow?.postMessage({ type: 'UPDATE_PREVIEW', blocks }, '*')
   }, [blocks])
 
-  const scale = viewport === '1440' && containerWidth > 0 ? containerWidth / 1440 : 1
+  const cardWidth = viewport === '360' ? 360 : Math.max(320, containerWidth - PAD * 2)
+  const scale = viewport === '1440' ? cardWidth / 1440 : 1
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#ebebeb' }}>
-
-      {/* Toolbar */}
+    <div
+      style={{
+        height: '100vh',
+        overflowY: 'auto',
+        background: '#f2f2f2',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      {/* Sticky toolbar */}
       <div style={{
-        flexShrink: 0,
+        position: 'sticky',
+        top: 0,
+        zIndex: 20,
         height: 44,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        borderBottom: '1px solid rgba(0,0,0,0.09)',
-        background: '#f5f5f5',
         gap: 8,
-        position: 'relative',
+        background: 'rgba(242,242,242,0.85)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(0,0,0,0.07)',
+        flexShrink: 0,
       }}>
 
-        {/* Edit / Preview toggle (only when content is ready) */}
+        {/* Edit / Preview */}
         {canEdit && (
-          <div style={{
-            display: 'flex',
-            background: 'rgba(0,0,0,0.08)',
-            borderRadius: 8,
-            padding: 3,
-            gap: 2,
-          }}>
-            {(['edit', 'preview'] as PanelMode[]).map(m => (
-              <button
-                key={m}
-                onClick={() => setMode(m)}
-                style={{
-                  padding: '3px 12px',
-                  borderRadius: 6,
-                  border: 'none',
-                  background: mode === m ? '#fff' : 'transparent',
-                  color: mode === m ? '#111' : 'rgba(0,0,0,0.45)',
-                  fontSize: 12,
-                  fontWeight: mode === m ? 600 : 400,
-                  fontFamily: 'inherit',
-                  cursor: 'pointer',
-                  boxShadow: mode === m ? '0 1px 3px rgba(0,0,0,0.12)' : 'none',
-                  transition: 'all 0.12s',
-                  textTransform: 'capitalize',
-                  letterSpacing: '-0.01em',
-                }}
-              >
-                {m}
-              </button>
-            ))}
-          </div>
+          <Toggle
+            options={[
+              { value: 'edit', label: 'Edit' },
+              { value: 'preview', label: 'Preview' },
+            ]}
+            value={mode}
+            onChange={v => setMode(v as PanelMode)}
+          />
         )}
 
-        {/* Viewport toggle */}
-        <div style={{
-          display: 'flex',
-          background: 'rgba(0,0,0,0.08)',
-          borderRadius: 8,
-          padding: 3,
-          gap: 2,
-        }}>
-          {(['360', '1440'] as Viewport[]).map(v => (
-            <button
-              key={v}
-              onClick={() => setViewport(v)}
-              style={{
-                padding: '3px 10px',
-                borderRadius: 6,
-                border: 'none',
-                background: viewport === v ? '#fff' : 'transparent',
-                color: viewport === v ? '#111' : 'rgba(0,0,0,0.45)',
-                fontSize: 12,
-                fontWeight: viewport === v ? 600 : 400,
-                fontFamily: 'inherit',
-                cursor: 'pointer',
-                boxShadow: viewport === v ? '0 1px 3px rgba(0,0,0,0.12)' : 'none',
-                transition: 'all 0.12s',
-                letterSpacing: '-0.01em',
-              }}
-            >
-              {v}
-            </button>
-          ))}
-        </div>
+        {/* 360 / 1440 */}
+        <Toggle
+          options={[
+            { value: '360', label: '360' },
+            { value: '1440', label: '1440' },
+          ]}
+          value={viewport}
+          onChange={v => setViewport(v as Viewport)}
+        />
 
         {/* Scale readout */}
-        {viewport === '1440' && containerWidth > 0 && (
+        {viewport === '1440' && scale < 1 && (
           <div style={{
-            position: 'absolute',
-            right: 12,
-            fontSize: 10.5,
-            color: 'rgba(0,0,0,0.3)',
-            letterSpacing: '0.02em',
-            fontVariantNumeric: 'tabular-nums',
+            position: 'absolute', right: 12,
+            fontSize: 10.5, color: 'rgba(0,0,0,0.3)',
+            letterSpacing: '0.02em', fontVariantNumeric: 'tabular-nums',
           }}>
             {Math.round(scale * 100)}%
           </div>
         )}
       </div>
 
-      {/* Content area */}
+      {/* Page area */}
       <div
         ref={containerRef}
         style={{
           flex: 1,
-          position: 'relative',
-          overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
           alignItems: viewport === '360' ? 'center' : 'flex-start',
+          padding: `20px ${PAD}px 80px`,
         }}
       >
-        {/* Empty state */}
+
+        {/* Empty / building states */}
         {step === 'idle' && (
-          <div style={{
-            position: 'absolute', inset: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'rgba(0,0,0,0.3)', fontSize: 13, textAlign: 'center', padding: 40,
-          }}>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', color: 'rgba(0,0,0,0.3)', fontSize: 13 }}>
             Your page preview will appear here
           </div>
         )}
 
-        {/* Building indicator */}
         {step === 'generating' && !sectionCount && (
-          <div style={{
-            position: 'absolute', inset: 0,
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            gap: 14, color: 'rgba(0,0,0,0.45)', fontSize: 13,
-          }}>
-            <div style={{ display: 'flex', gap: 6 }}>
-              {[0, 1, 2].map(i => (
-                <div key={i} style={{
-                  width: 8, height: 8, borderRadius: '50%',
-                  background: 'rgba(0,0,0,0.3)',
-                  animation: `pp 1.2s ease-in-out ${i * 0.2}s infinite`,
-                }} />
-              ))}
-            </div>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', gap: 14, color: 'rgba(0,0,0,0.4)', fontSize: 13 }}>
+            <Dots />
             Building your page…
-            <style>{`@keyframes pp{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}`}</style>
           </div>
         )}
 
-        {/* ── EDIT MODE — inline editable render ── */}
-        {isActive && mode === 'edit' && canEdit && (
+        {/* Page card */}
+        {isActive && (
           <div style={{
             width: viewport === '360' ? 360 : '100%',
-            height: '100%',
-            overflowY: 'auto',
-            overflowX: 'hidden',
             background: '#fff',
-            boxShadow: viewport === '360' ? '0 2px 20px rgba(0,0,0,0.12)' : 'none',
-            // Scale 1440 to fit
-            ...(viewport === '1440' && containerWidth > 0 && scale < 1 ? {
-              width: 1440,
-              height: `${100 / scale}%`,
-              transform: `scale(${scale})`,
-              transformOrigin: 'top left',
-              overflow: 'auto',
-            } : {}),
+            borderRadius: 12,
+            boxShadow: '0 1px 8px rgba(0,0,0,0.07), 0 4px 24px rgba(0,0,0,0.05)',
+            overflow: 'hidden',
           }}>
-            <EditablePreview
-              brief={brief}
-              imageUrls={imageUrls}
-              videoUrls={videoUrls}
-              onBriefUpdate={onBriefUpdate}
-            />
+
+            {/* ── EDIT mode — inline render ── */}
+            {mode === 'edit' && canEdit && (
+              <EditablePreview
+                brief={brief}
+                imageUrls={imageUrls}
+                videoUrls={videoUrls}
+                onBriefUpdate={onBriefUpdate}
+              />
+            )}
+
+            {/* ── PREVIEW mode — iframe ── */}
+            {(mode === 'preview' || !canEdit) && (
+              <div style={{
+                width: viewport === '360' ? 360 : cardWidth,
+                overflow: 'hidden',
+                // Scale 1440 content down to fit card
+                ...(viewport === '1440' && scale < 1 ? {
+                  height: iframeHeight * scale,
+                } : {}),
+              }}>
+                <div style={{
+                  width: viewport === '1440' ? 1440 : '100%',
+                  ...(viewport === '1440' && scale < 1 ? {
+                    transformOrigin: 'top left',
+                    transform: `scale(${scale})`,
+                  } : {}),
+                }}>
+                  <iframe
+                    ref={iframeRef}
+                    src="/preview"
+                    onLoad={handleIframeLoad}
+                    style={{
+                      width: viewport === '1440' ? 1440 : '100%',
+                      height: iframeHeight,
+                      border: 'none',
+                      display: 'block',
+                    }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        {/* ── PREVIEW MODE — iframe ── */}
-        {isActive && (mode === 'preview' || !canEdit) && (
-          <>
-            {/* 360 centred */}
-            {viewport === '360' && (
-              <div style={{ width: 360, height: '100%', background: '#fff', boxShadow: '0 2px 20px rgba(0,0,0,0.12)' }}>
-                <iframe
-                  ref={iframeRef}
-                  src="/preview"
-                  onLoad={handleIframeLoad}
-                  style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
-                />
-              </div>
-            )}
-            {/* 1440 scaled */}
-            {viewport === '1440' && containerWidth > 0 && (
-              <div style={{
-                width: '100%',
-                height: `${100 / scale}%`,
-                transformOrigin: 'top left',
-                transform: `scale(${scale})`,
-                overflow: 'hidden',
-                flexShrink: 0,
-              }}>
-                <iframe
-                  ref={iframeRef}
-                  src="/preview"
-                  onLoad={handleIframeLoad}
-                  style={{ width: 1440, height: '100%', border: 'none', display: 'block', background: '#fff' }}
-                />
-              </div>
-            )}
-          </>
-        )}
-
-        {/* Hidden iframe when in edit mode (still mounted to keep state) */}
+        {/* Hidden iframe when in edit mode (keep alive for instant Preview switch) */}
         {isActive && mode === 'edit' && (
-          <iframe
-            ref={mode === 'edit' ? iframeRef : undefined}
-            src="/preview"
-            onLoad={handleIframeLoad}
-            style={{ display: 'none' }}
-          />
-        )}
-
-        {/* Iframe placeholder when no content */}
-        {!isActive && (
           <iframe
             ref={iframeRef}
             src="/preview"
@@ -277,7 +217,66 @@ export function PreviewPanel({ blocks, brief, imageUrls, videoUrls, step, sectio
             style={{ display: 'none' }}
           />
         )}
+
       </div>
     </div>
+  )
+}
+
+// ─── Small shared UI pieces ───────────────────────────────────────────────
+
+function Toggle({ options, value, onChange }: {
+  options: { value: string; label: string }[]
+  value: string
+  onChange: (v: string) => void
+}) {
+  return (
+    <div style={{
+      display: 'flex',
+      background: 'rgba(0,0,0,0.08)',
+      borderRadius: 8,
+      padding: 3,
+      gap: 2,
+    }}>
+      {options.map(o => (
+        <button
+          key={o.value}
+          onClick={() => onChange(o.value)}
+          style={{
+            padding: '3px 11px',
+            borderRadius: 6,
+            border: 'none',
+            background: value === o.value ? '#fff' : 'transparent',
+            color: value === o.value ? '#111' : 'rgba(0,0,0,0.45)',
+            fontSize: 12,
+            fontWeight: value === o.value ? 600 : 400,
+            fontFamily: 'inherit',
+            cursor: 'pointer',
+            boxShadow: value === o.value ? '0 1px 3px rgba(0,0,0,0.12)' : 'none',
+            transition: 'all 0.12s',
+            letterSpacing: '-0.01em',
+          }}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function Dots() {
+  return (
+    <>
+      <div style={{ display: 'flex', gap: 6 }}>
+        {[0, 1, 2].map(i => (
+          <div key={i} style={{
+            width: 8, height: 8, borderRadius: '50%',
+            background: 'rgba(0,0,0,0.3)',
+            animation: `pp 1.2s ease-in-out ${i * 0.2}s infinite`,
+          }} />
+        ))}
+      </div>
+      <style>{`@keyframes pp{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}`}</style>
+    </>
   )
 }

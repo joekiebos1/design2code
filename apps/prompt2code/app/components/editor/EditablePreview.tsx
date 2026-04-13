@@ -11,6 +11,7 @@ import {
   updateItemField,
   addItem,
   pinImage,
+  reorderSections,
 } from '../../lib/briefEditor'
 import type { PageBrief, Section } from '../../lib/types'
 
@@ -260,21 +261,23 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate }: 
     onBriefUpdate(updatedBrief)
   }, [onBriefUpdate])
 
-  // Apply edit affordances after every render
+  // Drag state — refs so DnD handlers don't go stale
+  const dragFromRef = useRef<number | null>(null)
+
+  // Apply edit affordances + drag handles after every render
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
 
-    // Don't interrupt active editing
+    // Don't interrupt active text editing
     const active = document.activeElement as HTMLElement | null
     if (container.contains(active) && active?.contentEditable === 'true') return
 
-    // Cancel previous signal, create fresh one
     abortRef.current.abort()
     abortRef.current = new AbortController()
     const { signal } = abortRef.current
 
-    // Reset image swap markers so they get re-applied cleanly
+    // Reset image swap markers
     container.querySelectorAll('[data-swap-added]').forEach(el => {
       delete (el as HTMLElement).dataset.swapAdded
       el.querySelector('button[style*="position:absolute"]')?.remove()
@@ -283,6 +286,7 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate }: 
     const blockStack = container.querySelector('.block-stack')
     const blockEls = blockStack ? Array.from(blockStack.children) as HTMLElement[] : []
 
+    // ── Edit affordances ────────────────────────────────────────────────────
     sections.forEach((section, i) => {
       const blockEl = blockEls[i]
       if (!blockEl) return
@@ -304,6 +308,104 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate }: 
         () => update(addItem(brief, section.sectionName)),
         signal,
       )
+    })
+
+    // ── Drag-to-reorder handles ─────────────────────────────────────────────
+    const clearIndicators = () =>
+      blockEls.forEach(el => { el.style.borderTop = ''; el.style.borderBottom = '' })
+
+    sections.forEach((section, i) => {
+      const blockEl = blockEls[i]
+      if (!blockEl) return
+
+      // Hero is always first — no handle. Resolve sections are fixed — no handle.
+      const isDraggable = section.component !== 'hero' && section.narrativeRole !== 'resolve'
+      if (!isDraggable) return
+
+      // Remove any previous handle
+      blockEl.querySelector('[data-drag-handle]')?.remove()
+
+      // Inject handle
+      const handle = document.createElement('div')
+      handle.dataset.dragHandle = '1'
+      handle.draggable = true
+      handle.title = 'Drag to reorder'
+      handle.style.cssText = `
+        position:absolute;top:10px;left:50%;transform:translateX(-50%);
+        z-index:30;cursor:grab;opacity:0;transition:opacity 0.15s;
+        padding:5px 12px;background:rgba(255,255,255,0.95);
+        border-radius:20px;box-shadow:0 1px 6px rgba(0,0,0,0.14);
+        display:flex;align-items:center;gap:6px;
+        font-size:11px;font-weight:600;color:rgba(0,0,0,0.45);
+        user-select:none;white-space:nowrap;pointer-events:auto;
+      `
+      handle.innerHTML = `
+        <svg width="10" height="12" viewBox="0 0 10 12" fill="none">
+          <circle cx="3" cy="2" r="1.3" fill="currentColor"/>
+          <circle cx="7" cy="2" r="1.3" fill="currentColor"/>
+          <circle cx="3" cy="6" r="1.3" fill="currentColor"/>
+          <circle cx="7" cy="6" r="1.3" fill="currentColor"/>
+          <circle cx="3" cy="10" r="1.3" fill="currentColor"/>
+          <circle cx="7" cy="10" r="1.3" fill="currentColor"/>
+        </svg>
+        Move
+      `
+
+      // Show/hide on block hover
+      blockEl.style.position = 'relative'
+      blockEl.addEventListener('mouseenter', () => { handle.style.opacity = '1' }, { signal })
+      blockEl.addEventListener('mouseleave', () => { handle.style.opacity = '0' }, { signal })
+
+      // Drag events on the handle
+      handle.addEventListener('dragstart', (e) => {
+        dragFromRef.current = i
+        e.dataTransfer!.effectAllowed = 'move'
+        handle.style.cursor = 'grabbing'
+        setTimeout(() => { blockEl.style.opacity = '0.45' }, 0)
+      }, { signal })
+
+      handle.addEventListener('dragend', () => {
+        dragFromRef.current = null
+        blockEl.style.opacity = ''
+        handle.style.cursor = 'grab'
+        clearIndicators()
+      }, { signal })
+
+      // Drop zone on each block
+      blockEl.addEventListener('dragover', (e) => {
+        e.preventDefault()
+        const from = dragFromRef.current
+        if (from == null || from === i) return
+        clearIndicators()
+        if (from < i) {
+          blockEl.style.borderBottom = '3px solid rgba(0,100,220,0.6)'
+        } else {
+          blockEl.style.borderTop = '3px solid rgba(0,100,220,0.6)'
+        }
+      }, { signal })
+
+      blockEl.addEventListener('dragleave', () => {
+        clearIndicators()
+      }, { signal })
+
+      blockEl.addEventListener('drop', (e) => {
+        e.preventDefault()
+        clearIndicators()
+        const from = dragFromRef.current
+        if (from == null || from === i) return
+
+        const reordered = [...sections]
+        const [moved] = reordered.splice(from, 1)
+        reordered.splice(i, 0, moved)
+
+        const newOrder = reordered
+          .filter(s => s.narrativeRole !== 'resolve')
+          .map(s => s.sectionName)
+
+        update(reorderSections(brief, newOrder))
+      }, { signal })
+
+      blockEl.appendChild(handle)
     })
 
     return () => abortRef.current.abort()
