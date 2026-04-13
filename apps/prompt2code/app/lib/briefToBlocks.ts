@@ -63,7 +63,7 @@ function colourFields(opts: Record<string, unknown>) {
 function normalizeItems(
   items: unknown[] | null | undefined,
   component: string,
-  sectionIndex: number,
+  _sectionIndex: number,
   imageUrls: string[],
   itemOffset: number
 ): Record<string, unknown>[] {
