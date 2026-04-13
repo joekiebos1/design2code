@@ -159,14 +159,14 @@ export default function Prompt2CodePage() {
     <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', height: '100vh', overflow: 'hidden' }}>
 
       {/* Left panel */}
-      <div style={{ height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column', borderRight: '1px solid rgba(0,0,0,0.07)', background: '#fafafa' }}>
+      <div style={{ height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column', borderRight: '1px solid rgba(0,0,0,0.08)', background: '#fff' }}>
         {showInput ? (
 
           /* Input form */
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto' }}>
             <InputPanel onSubmit={handleGenerate} isLoading={state.step === 'generating'} />
             {state.error && state.step === 'idle' && (
-              <div style={{ margin: '0 20px 20px', padding: '12px 14px', background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.2)', borderRadius: 8, fontSize: 12.5, color: 'rgb(185,28,28)', lineHeight: 1.5 }}>
+              <div style={{ margin: '0 20px 20px', padding: '12px 14px', background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.2)', borderRadius: 6, fontSize: 12, color: 'rgb(185,28,28)', lineHeight: 1.55 }}>
                 {state.error}
               </div>
             )}
@@ -178,40 +178,50 @@ export default function Prompt2CodePage() {
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
             {/* Header */}
-            <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid rgba(0,0,0,0.07)', flexShrink: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#111', letterSpacing: '-0.015em', marginBottom: 3 }}>
+            <div style={{ padding: '19px 19px 14px', borderBottom: '1px solid rgba(0,0,0,0.06)', flexShrink: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 500, color: 'rgb(13,13,15)', letterSpacing: '-0.02em', marginBottom: 4 }}>
                 {state.input?.productName ?? 'Page'}
               </div>
-              <div style={{ fontSize: 11.5, color: 'rgba(0,0,0,0.38)', lineHeight: 1.5 }}>
-                {state.step === 'reviewing' && `${sectionCount} blocks · drag blocks in preview to reorder`}
+              <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.48)', lineHeight: 1.5 }}>
+                {state.step === 'reviewing' && `${sectionCount} blocks · drag to reorder`}
                 {state.step === 'publishing' && 'Publishing…'}
                 {state.step === 'done' && state.publishedSlug ? `Published · /${state.publishedSlug}` : state.step === 'done' ? 'Published' : ''}
               </div>
             </div>
 
-            {/* Hint */}
-            <div style={{ padding: '16px 20px', flex: 1 }}>
-              <div style={{ fontSize: 12.5, color: 'rgba(0,0,0,0.4)', lineHeight: 1.65 }}>
-                <p style={{ margin: '0 0 10px', fontWeight: 600, color: 'rgba(0,0,0,0.55)' }}>How to edit</p>
-                <ul style={{ margin: 0, paddingLeft: 16, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <li><strong>Click any text</strong> to edit it inline</li>
-                  <li><strong>Hover an image</strong>, then click ⟳ to swap from DAM</li>
-                  <li><strong>Drag the Move handle</strong> on any block to reorder</li>
-                  <li><strong>+ Add</strong> bar below collections to add cards or items</li>
-                </ul>
+            {/* How to edit */}
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              <div style={{ padding: '14px 19px 9px', fontSize: 12, fontWeight: 500, color: 'rgba(0,0,0,0.65)' }}>
+                How to edit
               </div>
+              {[
+                { icon: '✏️', text: 'Click any text to edit it inline' },
+                { icon: '⟳', text: 'Hover an image and click Swap to change from DAM' },
+                { icon: '⠿', text: 'Drag the Move handle on any block to reorder' },
+                { icon: '+', text: 'Use the Add bar below collections to add items' },
+              ].map((item, i) => (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'flex-start', gap: 12,
+                  padding: '9px 19px',
+                  borderTop: i === 0 ? '1px solid rgba(0,0,0,0.06)' : undefined,
+                  borderBottom: '1px solid rgba(0,0,0,0.06)',
+                }}>
+                  <span style={{ fontSize: 12, color: 'rgba(0,0,0,0.36)', width: 16, flexShrink: 0, marginTop: 1 }}>{item.icon}</span>
+                  <span style={{ fontSize: 12, color: 'rgba(0,0,0,0.48)', lineHeight: 1.55 }}>{item.text}</span>
+                </div>
+              ))}
             </div>
 
             {/* Actions */}
-            <div style={{ padding: '12px 16px 20px', borderTop: '1px solid rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', gap: 7, flexShrink: 0 }}>
+            <div style={{ padding: '14px 19px 19px', borderTop: '1px solid rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', gap: 7, flexShrink: 0 }}>
               <button
                 onClick={handleApprove}
                 disabled={state.step === 'done' || state.step === 'publishing'}
                 style={{
-                  width: '100%', padding: '10px 16px', borderRadius: 9, border: 'none',
-                  background: state.step === 'done' ? 'rgba(0,0,0,0.06)' : '#111',
-                  color: state.step === 'done' ? 'rgba(0,0,0,0.35)' : '#fff',
-                  fontSize: 13.5, fontWeight: 600, fontFamily: 'inherit',
+                  width: '100%', padding: '10px 16px', borderRadius: 7, border: 'none',
+                  background: state.step === 'done' ? 'rgba(0,0,0,0.06)' : 'rgb(13,13,15)',
+                  color: state.step === 'done' ? 'rgba(0,0,0,0.36)' : '#fff',
+                  fontSize: 13, fontWeight: 500, fontFamily: 'inherit',
                   cursor: state.step === 'done' || state.step === 'publishing' ? 'default' : 'pointer',
                   letterSpacing: '-0.01em',
                 }}
@@ -221,9 +231,10 @@ export default function Prompt2CodePage() {
               <button
                 onClick={() => dispatch({ type: 'RESET' })}
                 style={{
-                  width: '100%', padding: '9px 16px', borderRadius: 9,
-                  border: '1px solid rgba(0,0,0,0.1)', background: 'transparent',
-                  color: 'rgba(0,0,0,0.5)', fontSize: 13, fontFamily: 'inherit', cursor: 'pointer',
+                  width: '100%', padding: '9px 16px', borderRadius: 7,
+                  border: '1px solid rgba(0,0,0,0.12)', background: 'transparent',
+                  color: 'rgba(0,0,0,0.48)', fontSize: 12, fontFamily: 'inherit', cursor: 'pointer',
+                  letterSpacing: '-0.01em',
                 }}
               >
                 Start over

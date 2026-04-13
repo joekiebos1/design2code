@@ -1,6 +1,8 @@
 'use client'
 
-import { useRef, useEffect, useState, useCallback } from 'react'
+import { useState, useEffect } from 'react'
+import { ContentDsProvider } from '@design2code/ds'
+import { BlockRenderer } from './BlockRenderer'
 import { EditablePreview } from './editor/EditablePreview'
 import type { ConversationStep } from '../page'
 import type { PageBrief } from '../lib/types'
@@ -15,90 +17,51 @@ type PreviewPanelProps = {
   onBriefUpdate: (brief: PageBrief) => void
 }
 
-type Viewport = '360' | '1440'
 type PanelMode = 'edit' | 'preview'
+type Viewport = '360' | '1440'
 
-const PAD = 24 // horizontal padding around the page card
+// Edit canvas zoom level
+const EDIT_SCALE = 0.5
 
 export function PreviewPanel({ blocks, brief, imageUrls, videoUrls, step, sectionCount, onBriefUpdate }: PreviewPanelProps) {
-  const iframeRef = useRef<HTMLIFrameElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [viewport, setViewport] = useState<Viewport>('1440')
   const [mode, setMode] = useState<PanelMode>('edit')
-  const [containerWidth, setContainerWidth] = useState(0)
-  const [iframeHeight, setIframeHeight] = useState(2000)
+  const [viewport, setViewport] = useState<Viewport>('1440')
 
   const isActive = (step === 'generating' || step === 'reviewing' || step === 'publishing' || step === 'done') && !!blocks?.length
-  const canEdit = (step === 'reviewing' || step === 'publishing' || step === 'done') && !!brief
+  const canEdit  = (step === 'reviewing' || step === 'publishing' || step === 'done') && !!brief
 
-  // Switch to edit when content first arrives
+  // Auto-switch to edit when brief first arrives
   useEffect(() => { if (canEdit) setMode('edit') }, [canEdit])
 
-  // Measure container width
-  useEffect(() => {
-    const el = containerRef.current
-    if (!el) return
-    const ro = new ResizeObserver(e => setContainerWidth(e[0]?.contentRect.width ?? 0))
-    ro.observe(el)
-    setContainerWidth(el.clientWidth)
-    return () => ro.disconnect()
-  }, [])
-
-  // Listen for iframe height reports
-  useEffect(() => {
-    const handler = (e: MessageEvent) => {
-      if (e.data?.type === 'PREVIEW_HEIGHT' && typeof e.data.height === 'number') {
-        setIframeHeight(Math.max(600, e.data.height + 40))
-      }
-    }
-    window.addEventListener('message', handler)
-    return () => window.removeEventListener('message', handler)
-  }, [])
-
-  // Push blocks to iframe
-  useEffect(() => {
-    iframeRef.current?.contentWindow?.postMessage({ type: 'UPDATE_PREVIEW', blocks }, '*')
-  }, [blocks])
-
-  const handleIframeLoad = useCallback(() => {
-    iframeRef.current?.contentWindow?.postMessage({ type: 'UPDATE_PREVIEW', blocks }, '*')
-  }, [blocks])
-
-  const cardWidth = viewport === '360' ? 360 : Math.max(320, containerWidth - PAD * 2)
-  const scale = viewport === '1440' ? cardWidth / 1440 : 1
-
   return (
-    <div
-      style={{
-        height: '100vh',
-        overflowY: 'auto',
-        background: '#f2f2f2',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      {/* Sticky toolbar */}
+    <div style={{
+      height: '100vh',
+      overflowY: 'auto',
+      background: 'rgb(242,242,242)',
+      display: 'flex',
+      flexDirection: 'column',
+    }}>
+
+      {/* ── Sticky toolbar ──────────────────────────────────────────────────── */}
       <div style={{
         position: 'sticky',
         top: 0,
         zIndex: 20,
         height: 44,
+        flexShrink: 0,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         gap: 8,
-        background: 'rgba(242,242,242,0.85)',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
+        background: 'rgba(242,242,242,0.92)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
         borderBottom: '1px solid rgba(0,0,0,0.07)',
-        flexShrink: 0,
       }}>
-
-        {/* Edit / Preview */}
         {canEdit && (
           <Toggle
             options={[
-              { value: 'edit', label: 'Edit' },
+              { value: 'edit',    label: 'Edit' },
               { value: 'preview', label: 'Preview' },
             ]}
             value={mode}
@@ -106,116 +69,91 @@ export function PreviewPanel({ blocks, brief, imageUrls, videoUrls, step, sectio
           />
         )}
 
-        {/* 360 / 1440 */}
-        <Toggle
-          options={[
-            { value: '360', label: '360' },
-            { value: '1440', label: '1440' },
-          ]}
-          value={viewport}
-          onChange={v => setViewport(v as Viewport)}
-        />
-
-        {/* Scale readout */}
-        {viewport === '1440' && scale < 1 && (
-          <div style={{
-            position: 'absolute', right: 12,
-            fontSize: 10.5, color: 'rgba(0,0,0,0.3)',
-            letterSpacing: '0.02em', fontVariantNumeric: 'tabular-nums',
-          }}>
-            {Math.round(scale * 100)}%
-          </div>
+        {/* Viewport selector — only in preview mode */}
+        {mode === 'preview' && (
+          <Toggle
+            options={[
+              { value: '360',  label: '360' },
+              { value: '1440', label: '1440' },
+            ]}
+            value={viewport}
+            onChange={v => setViewport(v as Viewport)}
+          />
         )}
+
+        {/* Zoom level hint */}
+        <div style={{
+          position: 'absolute',
+          right: 12,
+          fontSize: 11,
+          color: 'rgba(0,0,0,0.3)',
+          letterSpacing: '-0.01em',
+          fontVariantNumeric: 'tabular-nums',
+        }}>
+          {mode === 'edit' ? `${EDIT_SCALE * 100}%` : `${viewport}px`}
+        </div>
       </div>
 
-      {/* Page area */}
-      <div
-        ref={containerRef}
-        style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: viewport === '360' ? 'center' : 'flex-start',
-          padding: `20px ${PAD}px 80px`,
-        }}
-      >
+      {/* ── Content area ────────────────────────────────────────────────────── */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
 
-        {/* Empty / building states */}
+        {/* Empty state */}
         {step === 'idle' && (
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', color: 'rgba(0,0,0,0.3)', fontSize: 13 }}>
+          <div style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'rgba(0,0,0,0.3)',
+            fontSize: 13,
+          }}>
             Your page preview will appear here
           </div>
         )}
 
+        {/* Generating spinner */}
         {step === 'generating' && !sectionCount && (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', gap: 14, color: 'rgba(0,0,0,0.4)', fontSize: 13 }}>
+          <div style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 14,
+            color: 'rgba(0,0,0,0.4)',
+            fontSize: 13,
+          }}>
             <Dots />
             Building your page…
           </div>
         )}
 
-        {/* Page card */}
-        {isActive && (
-          <div style={{
-            width: viewport === '360' ? 360 : '100%',
-            background: '#fff',
-            borderRadius: 12,
-            boxShadow: '0 1px 8px rgba(0,0,0,0.07), 0 4px 24px rgba(0,0,0,0.05)',
-            overflow: 'hidden',
-          }}>
-
-            {/* ── EDIT mode — inline render ── */}
-            {mode === 'edit' && canEdit && (
-              <EditablePreview
-                brief={brief}
-                imageUrls={imageUrls}
-                videoUrls={videoUrls}
-                onBriefUpdate={onBriefUpdate}
-              />
-            )}
-
-            {/* ── PREVIEW mode — iframe ── */}
-            {(mode === 'preview' || !canEdit) && (
-              <div style={{
-                width: viewport === '360' ? 360 : cardWidth,
-                overflow: 'hidden',
-                // Scale 1440 content down to fit card
-                ...(viewport === '1440' && scale < 1 ? {
-                  height: iframeHeight * scale,
-                } : {}),
-              }}>
-                <div style={{
-                  width: viewport === '1440' ? 1440 : '100%',
-                  ...(viewport === '1440' && scale < 1 ? {
-                    transformOrigin: 'top left',
-                    transform: `scale(${scale})`,
-                  } : {}),
-                }}>
-                  <iframe
-                    ref={iframeRef}
-                    src="/preview"
-                    onLoad={handleIframeLoad}
-                    style={{
-                      width: viewport === '1440' ? 1440 : '100%',
-                      height: iframeHeight,
-                      border: 'none',
-                      display: 'block',
-                    }}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
+        {/* ── Edit mode ──────────────────────────────────────────────────────
+            White 1440px page zoomed to 50%, centred on grey canvas.
+        ─────────────────────────────────────────────────────────────────── */}
+        {isActive && canEdit && mode === 'edit' && (
+          <PageCanvas padding="32px 60px 80px">
+            <EditablePreview
+              brief={brief!}
+              imageUrls={imageUrls}
+              videoUrls={videoUrls}
+              onBriefUpdate={onBriefUpdate}
+              scale={EDIT_SCALE}
+            />
+          </PageCanvas>
         )}
 
-        {/* Hidden iframe when in edit mode (keep alive for instant Preview switch) */}
-        {isActive && mode === 'edit' && (
-          <iframe
-            ref={iframeRef}
-            src="/preview"
-            onLoad={handleIframeLoad}
-            style={{ display: 'none' }}
-          />
+        {/* ── Preview mode (+ streaming state) ───────────────────────────────
+            Same white 1440px page but at 100% — scroll vertically to read.
+        ─────────────────────────────────────────────────────────────────── */}
+        {isActive && (mode === 'preview' || !canEdit) && blocks && (
+          <PageCanvas padding="32px 60px 80px">
+            <div style={{ width: viewport === '360' ? 360 : 1440, background: '#fff', flexShrink: 0 }}>
+              <ContentDsProvider>
+                <BlockRenderer blocks={blocks} />
+              </ContentDsProvider>
+            </div>
+          </PageCanvas>
         )}
 
       </div>
@@ -223,7 +161,24 @@ export function PreviewPanel({ blocks, brief, imageUrls, videoUrls, step, sectio
   )
 }
 
-// ─── Small shared UI pieces ───────────────────────────────────────────────
+// ─── Shared canvas wrapper ────────────────────────────────────────────────────
+// Centres the page on the grey background.
+
+function PageCanvas({ children, padding }: { children: React.ReactNode; padding: string }) {
+  return (
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'flex-start',
+      padding,
+      minHeight: '100%',
+    }}>
+      {children}
+    </div>
+  )
+}
+
+// ─── Toggle ───────────────────────────────────────────────────────────────────
 
 function Toggle({ options, value, onChange }: {
   options: { value: string; label: string }[]
@@ -233,8 +188,8 @@ function Toggle({ options, value, onChange }: {
   return (
     <div style={{
       display: 'flex',
-      background: 'rgba(0,0,0,0.08)',
-      borderRadius: 8,
+      background: 'rgba(0,0,0,0.06)',
+      borderRadius: 7,
       padding: 3,
       gap: 2,
     }}>
@@ -243,16 +198,16 @@ function Toggle({ options, value, onChange }: {
           key={o.value}
           onClick={() => onChange(o.value)}
           style={{
-            padding: '3px 11px',
-            borderRadius: 6,
+            padding: '3px 12px',
+            borderRadius: 5,
             border: 'none',
             background: value === o.value ? '#fff' : 'transparent',
-            color: value === o.value ? '#111' : 'rgba(0,0,0,0.45)',
+            color: value === o.value ? 'rgb(13,13,15)' : 'rgba(0,0,0,0.48)',
             fontSize: 12,
-            fontWeight: value === o.value ? 600 : 400,
+            fontWeight: value === o.value ? 500 : 400,
             fontFamily: 'inherit',
             cursor: 'pointer',
-            boxShadow: value === o.value ? '0 1px 3px rgba(0,0,0,0.12)' : 'none',
+            boxShadow: value === o.value ? '0 1px 3px rgba(0,0,0,0.10)' : 'none',
             transition: 'all 0.12s',
             letterSpacing: '-0.01em',
           }}
@@ -264,13 +219,17 @@ function Toggle({ options, value, onChange }: {
   )
 }
 
+// ─── Loading dots ─────────────────────────────────────────────────────────────
+
 function Dots() {
   return (
     <>
       <div style={{ display: 'flex', gap: 6 }}>
         {[0, 1, 2].map(i => (
           <div key={i} style={{
-            width: 8, height: 8, borderRadius: '50%',
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
             background: 'rgba(0,0,0,0.3)',
             animation: `pp 1.2s ease-in-out ${i * 0.2}s infinite`,
           }} />

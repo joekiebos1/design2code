@@ -2,7 +2,6 @@
 
 import { useRef, useState } from 'react'
 import { useDebouncedCallback } from 'use-debounce'
-import { Headline, Text, SurfaceProvider, Button } from '@marcelinodzn/ds-react'
 import type { StoryCoachInput } from './types'
 
 const CHECKLIST: Record<string, { id: string; label: string }[]> = {
@@ -26,50 +25,14 @@ const CHECKLIST: Record<string, { id: string; label: string }[]> = {
   ],
 }
 
-const grey = {
-  border: 'rgba(0, 0, 0, 0.06)',
-  label: 'rgba(0, 0, 0, 0.65)',
-  secondary: 'rgba(0, 0, 0, 0.48)',
-  tertiary: 'rgba(0, 0, 0, 0.36)',
-  checklist: 'rgba(0, 0, 0, 0.52)',
-}
+const OUTPUT_OPTIONS: { value: StoryCoachInput['outputType']; label: string }[] = [
+  { value: 'banner', label: "A banner (doesn't work yet)" },
+  { value: 'product-page', label: 'A product page' },
+  { value: 'campaign-page', label: "A campaign page (doesn't work yet)" },
+]
 
-const CHUNK_GAP = 'var(--ds-spacing-xl)'
-
-const inputStyles: React.CSSProperties = {
-  width: '100%',
-  padding: 'var(--ds-spacing-s) var(--ds-spacing-m)',
-  border: `1px solid ${grey.border}`,
-  fontSize: 'var(--ds-typography-body-xs)',
-  fontFamily: 'inherit',
-  color: 'var(--ds-color-text-high)',
-  background: 'transparent',
-  boxSizing: 'border-box',
-}
-
-const selectStyles: React.CSSProperties = {
-  ...inputStyles,
-  cursor: 'pointer',
-}
-
-const textareaStyles: React.CSSProperties = {
-  ...inputStyles,
-  resize: 'vertical',
-  minHeight: 100,
-}
-
-const labelStyles: React.CSSProperties = {
-  display: 'block',
-  marginBottom: 'var(--ds-spacing-xs)',
-  fontSize: 'var(--ds-typography-label-s)',
-  fontWeight: 'var(--ds-typography-weight-medium)',
-  color: 'var(--ds-color-text-high)',
-}
-
-type InputPanelProps = {
-  onSubmit: (input: StoryCoachInput) => void
-  isLoading: boolean
-}
+const inputClass =
+  'w-full px-3 py-2 rounded-md border border-gray-200 text-sm text-gray-900 bg-gray-50 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors'
 
 type ChecklistState = {
   whatItDoes: Record<string, boolean>
@@ -83,11 +46,26 @@ const initialChecks: ChecklistState = {
   builtFor: { devices: false, network: false, india: false },
 }
 
-const OUTPUT_OPTIONS: { value: StoryCoachInput['outputType']; label: string }[] = [
-  { value: 'banner', label: 'A banner (doesn\'t work yet)' },
-  { value: 'product-page', label: 'A product page' },
-  { value: 'campaign-page', label: 'A campaign page (doesn\'t work yet)' },
-]
+function ChecklistGroup({ field, checks }: { field: string; checks: Record<string, boolean> }) {
+  return (
+    <div className="mt-2">
+      {CHECKLIST[field].map((item, i) => (
+        <div key={item.id}>
+          {i > 0 && <div className="border-t border-gray-200" />}
+          <div className={`flex gap-3 py-2 text-xs ${checks[item.id] ? 'text-green-600' : 'text-gray-400'}`}>
+            <span>{checks[item.id] ? '✓' : '✗'}</span>
+            <span>{item.label}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+type InputPanelProps = {
+  onSubmit: (input: StoryCoachInput) => void
+  isLoading: boolean
+}
 
 export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
   const formRef = useRef<HTMLFormElement>(null)
@@ -110,18 +88,16 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
         })
         const data = await res.json()
         if (Array.isArray(data.covered)) {
-          setChecks((prev) => ({
+          setChecks(prev => ({
             ...prev,
             [field]: Object.fromEntries(
-              CHECKLIST[field].map((item) => [item.id, data.covered.includes(item.id)])
+              CHECKLIST[field].map(item => [item.id, data.covered.includes(item.id)])
             ),
           }))
         }
-      } catch {
-        // ignore
-      }
+      } catch { /* ignore */ }
     },
-    5000
+    2500,
   )
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -133,224 +109,121 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
   const canSubmit = productName.trim().length > 0 && !isLoading && outputTypeWorks
 
   return (
-    <SurfaceProvider level={0}>
-      <form ref={formRef} onSubmit={handleSubmit}>
-        <div
-          style={{
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            padding: 'var(--ds-spacing-2xl)',
-          }}
-        >
-          <Headline size="S" as="h2" style={{ marginBottom: CHUNK_GAP, fontWeight: 'var(--ds-typography-weight-medium)', color: 'var(--ds-color-text-high)', letterSpacing: '-0.02em' }}>
+    <form ref={formRef} onSubmit={handleSubmit}>
+      <div className="flex flex-col p-6">
+
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-2">
             Prompt2Code
-          </Headline>
-          <Text
-            style={{
-              marginBottom: CHUNK_GAP,
-              fontSize: 'var(--ds-typography-label-s)',
-              fontWeight: 'var(--ds-typography-weight-medium)',
-              color: grey.label,
-              letterSpacing: '-0.01em',
-            }}
-          >
-            Describe a product to generate a page
-          </Text>
-          <Text
-            style={{
-              marginBottom: CHUNK_GAP,
-              fontSize: 'var(--ds-typography-body-xs)',
-              fontWeight: 'var(--ds-typography-weight-low)',
-              color: grey.secondary,
-              lineHeight: 1.5,
-            }}
-          >
+          </h2>
+          <p className="text-sm font-medium text-gray-500 mb-1">
+            Generate a product page from a brief
+          </p>
+          <p className="text-sm text-gray-500 leading-relaxed">
             Fill in as much detail as possible to create a rich story that is uniquely Jio.
-          </Text>
+          </p>
+        </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: CHUNK_GAP, flex: 1 }}>
-            <div>
-              <label htmlFor="outputType" style={labelStyles}>
-                What do you want to make?
-              </label>
-              <select
-                id="outputType"
-                value={outputType}
-                onChange={(e) => setOutputType(e.target.value as StoryCoachInput['outputType'])}
-                style={selectStyles}
-              >
-                {OUTPUT_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+        <div className="flex flex-col gap-6">
 
-            <div>
-              <label htmlFor="productType" style={labelStyles}>
-                Product type
-              </label>
-              <select
-                id="productType"
-                value={productType}
-                onChange={(e) => setProductType(e.target.value as StoryCoachInput['productType'])}
-                style={selectStyles}
-              >
-                <option value="hardware">Hardware — Shop on JioMart</option>
-                <option value="software">Software / App — Download the app</option>
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="productName" style={labelStyles}>
-                Product name <span style={{ color: grey.tertiary }}>*</span>
-              </label>
-              <input
-                id="productName"
-                type="text"
-                value={productName}
-                onChange={(e) => setProductName(e.target.value)}
-                placeholder="e.g. JioSaavn"
-                required
-                style={inputStyles}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="whatItDoes" style={labelStyles}>
-                Describe what the product does
-              </label>
-              <textarea
-                id="whatItDoes"
-                value={whatItDoes}
-                onChange={(e) => {
-                  setWhatItDoes(e.target.value)
-                  analyseField('whatItDoes', e.target.value)
-                }}
-                rows={6}
-                style={textareaStyles}
-              />
-              <div style={{ marginTop: 'var(--ds-spacing-s)', width: '100%' }}>
-                {CHECKLIST.whatItDoes.map((item, i) => (
-                  <div key={item.id}>
-                    {i > 0 && (
-                      <div style={{ borderTop: `1px solid ${grey.border}` }} />
-                    )}
-                    <div
-                      style={{
-                        padding: 'var(--ds-spacing-s) 0',
-                        fontSize: '12px',
-                        fontWeight: 'var(--ds-typography-weight-low)',
-                        color: checks.whatItDoes[item.id]
-                          ? 'var(--ds-color-positive)'
-                          : grey.checklist,
-                        display: 'flex',
-                        gap: 'var(--ds-spacing-m)',
-                      }}
-                    >
-                      <span>{checks.whatItDoes[item.id] ? '✓' : '✗'}</span>
-                      <span>{item.label}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="whatIsInIt" style={labelStyles}>
-                Describe what is in the product or can be accessed through the product
-              </label>
-              <textarea
-                id="whatIsInIt"
-                value={whatIsInIt}
-                onChange={(e) => {
-                  setWhatIsInIt(e.target.value)
-                  analyseField('whatIsInIt', e.target.value)
-                }}
-                rows={4}
-                style={textareaStyles}
-              />
-              <div style={{ marginTop: 'var(--ds-spacing-s)', width: '100%' }}>
-                {CHECKLIST.whatIsInIt.map((item, i) => (
-                  <div key={item.id}>
-                    {i > 0 && (
-                      <div style={{ borderTop: `1px solid ${grey.border}` }} />
-                    )}
-                    <div
-                      style={{
-                        padding: 'var(--ds-spacing-s) 0',
-                        fontSize: '12px',
-                        fontWeight: 'var(--ds-typography-weight-low)',
-                        color: checks.whatIsInIt[item.id]
-                          ? 'var(--ds-color-positive)'
-                          : grey.checklist,
-                        display: 'flex',
-                        gap: 'var(--ds-spacing-m)',
-                      }}
-                    >
-                      <span>{checks.whatIsInIt[item.id] ? '✓' : '✗'}</span>
-                      <span>{item.label}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="builtFor" style={labelStyles}>
-                What is it built for?
-              </label>
-              <textarea
-                id="builtFor"
-                value={builtFor}
-                onChange={(e) => {
-                  setBuiltFor(e.target.value)
-                  analyseField('builtFor', e.target.value)
-                }}
-                rows={4}
-                style={textareaStyles}
-              />
-              <div style={{ marginTop: 'var(--ds-spacing-s)', width: '100%' }}>
-                {CHECKLIST.builtFor.map((item, i) => (
-                  <div key={item.id}>
-                    {i > 0 && (
-                      <div style={{ borderTop: `1px solid ${grey.border}` }} />
-                    )}
-                    <div
-                      style={{
-                        padding: 'var(--ds-spacing-s) 0',
-                        fontSize: '12px',
-                        fontWeight: 'var(--ds-typography-weight-low)',
-                        color: checks.builtFor[item.id]
-                          ? 'var(--ds-color-positive)'
-                          : grey.checklist,
-                        display: 'flex',
-                        gap: 'var(--ds-spacing-m)',
-                      }}
-                    >
-                      <span>{checks.builtFor[item.id] ? '✓' : '✗'}</span>
-                      <span>{item.label}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+          <div>
+            <label htmlFor="outputType" className="block text-sm font-medium text-gray-900 mb-1.5">
+              What do you want to make?
+            </label>
+            <select
+              id="outputType"
+              value={outputType}
+              onChange={e => setOutputType(e.target.value as StoryCoachInput['outputType'])}
+              className={`${inputClass} cursor-pointer`}
+            >
+              {OUTPUT_OPTIONS.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
           </div>
 
-          <Button
-            onPress={() => formRef.current?.requestSubmit()}
-            isDisabled={!canSubmit}
-            appearance="neutral"
-            size="M"
-            attention="high"
-            style={{ marginTop: CHUNK_GAP, alignSelf: 'flex-start' }}
+          <div>
+            <label htmlFor="productType" className="block text-sm font-medium text-gray-900 mb-1.5">
+              Product type
+            </label>
+            <select
+              id="productType"
+              value={productType}
+              onChange={e => setProductType(e.target.value as StoryCoachInput['productType'])}
+              className={`${inputClass} cursor-pointer`}
+            >
+              <option value="hardware">Hardware — Shop on JioMart</option>
+              <option value="software">Software / App — Download the app</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="productName" className="block text-sm font-medium text-gray-900 mb-1.5">
+              Product name <span className="text-gray-300">*</span>
+            </label>
+            <input
+              id="productName"
+              type="text"
+              value={productName}
+              onChange={e => setProductName(e.target.value)}
+              placeholder="e.g. JioSaavn"
+              required
+              className={inputClass}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="whatItDoes" className="block text-sm font-medium text-gray-900 mb-1.5">
+              Describe what the product does
+            </label>
+            <textarea
+              id="whatItDoes"
+              value={whatItDoes}
+              onChange={e => { setWhatItDoes(e.target.value); analyseField('whatItDoes', e.target.value) }}
+              rows={6}
+              className={`${inputClass} resize-y min-h-20`}
+            />
+            <ChecklistGroup field="whatItDoes" checks={checks.whatItDoes} />
+          </div>
+
+          <div>
+            <label htmlFor="whatIsInIt" className="block text-sm font-medium text-gray-900 mb-1.5">
+              Describe what is in the product or can be accessed through the product
+            </label>
+            <textarea
+              id="whatIsInIt"
+              value={whatIsInIt}
+              onChange={e => { setWhatIsInIt(e.target.value); analyseField('whatIsInIt', e.target.value) }}
+              rows={4}
+              className={`${inputClass} resize-y min-h-20`}
+            />
+            <ChecklistGroup field="whatIsInIt" checks={checks.whatIsInIt} />
+          </div>
+
+          <div>
+            <label htmlFor="builtFor" className="block text-sm font-medium text-gray-900 mb-1.5">
+              What is it built for?
+            </label>
+            <textarea
+              id="builtFor"
+              value={builtFor}
+              onChange={e => { setBuiltFor(e.target.value); analyseField('builtFor', e.target.value) }}
+              rows={4}
+              className={`${inputClass} resize-y min-h-20`}
+            />
+            <ChecklistGroup field="builtFor" checks={checks.builtFor} />
+          </div>
+
+          <button
+            type="submit"
+            disabled={!canSubmit}
+            className="self-start px-4 py-2 rounded-md bg-primary text-white text-sm font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
           >
             {isLoading ? 'Generating...' : 'Generate'}
-          </Button>
+          </button>
+
         </div>
-      </form>
-    </SurfaceProvider>
+      </div>
+    </form>
   )
 }

@@ -13,6 +13,18 @@ const PLACEHOLDER_IMAGE = '/placeholder-preview.svg'
 
 const DEFAULT_THEME = 'MyJio'
 
+/**
+ * Stable integer hash of a string.
+ * Used to pick a consistent image for a section regardless of its current sort order.
+ */
+function stableHash(str: string): number {
+  let h = 0
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(31, h) + str.charCodeAt(i) | 0
+  }
+  return Math.abs(h)
+}
+
 /** Picks an image from the DAM pool, falling back to placeholder. */
 function resolveImage(
   _raw: string | null | undefined,
@@ -31,6 +43,16 @@ function resolveVideo(
 ): string | undefined {
   if (videoUrls.length > 0) return videoUrls[index % videoUrls.length]
   return undefined
+}
+
+/** Stable image index for a section — never changes when blocks are reordered. */
+function sectionImageIndex(sectionName: string, imageUrls: string[]): number {
+  return imageUrls.length > 0 ? stableHash(sectionName) % imageUrls.length : 0
+}
+
+/** Stable image index for an item inside a section. */
+function itemImageIndex(sectionName: string, itemIndex: number, imageUrls: string[]): number {
+  return imageUrls.length > 0 ? stableHash(`${sectionName}-item-${itemIndex}`) % imageUrls.length : 0
 }
 
 type Block = {
@@ -122,7 +144,6 @@ export function briefToBlocks(
   videoUrls: string[] = [],
 ): Block[] {
   const sections = [...brief.sections].sort((a, b) => a.order - b.order)
-  let itemOffset = 0
 
   return sections.map((s, i) => {
     const slots = s.contentSlots
@@ -133,10 +154,13 @@ export function briefToBlocks(
     const pinnedImage = (s as Record<string, unknown>)._imageUrl as string | undefined
     const base: Block = {
       _type: s.component,
-      _key: `preview-${i}-${s.component}`,
+      _key: `preview-${s.sectionName}-${s.component}`,
       spacingTop: i === 0 ? 'none' : 'large',
       spacingBottom: 'large',
     }
+
+    // Stable image index — based on sectionName, never changes on reorder
+    const imgIdx = sectionImageIndex(s.sectionName, imageUrls)
 
     switch (s.component) {
       case 'hero': {
@@ -157,7 +181,7 @@ export function briefToBlocks(
           ctaLink: cta?.href ?? '#',
           cta2Text: undefined,
           cta2Link: undefined,
-          image: pinnedImage ?? resolveImage(undefined, imageUrls, 0),
+          image: pinnedImage ?? resolveImage(undefined, imageUrls, imgIdx),
         }
       }
 
@@ -165,7 +189,7 @@ export function briefToBlocks(
         const template = opts.template ?? 'stacked'
         const hasMedia = slots.mediaType === 'image' || slots.mediaType === 'video'
         const isVideo = slots.mediaType === 'video'
-        const videoUrl = isVideo ? resolveVideo(undefined, videoUrls, i) : undefined
+        const videoUrl = isVideo ? resolveVideo(undefined, videoUrls, imgIdx) : undefined
         return {
           ...base,
           template: hasMedia ? template : 'textOnly',
@@ -180,7 +204,7 @@ export function briefToBlocks(
           ctaLink: cta?.href ?? '#',
           cta2Text: undefined,
           cta2Link: undefined,
-          image: hasMedia ? (pinnedImage ?? resolveImage(undefined, imageUrls, i)) : undefined,
+          image: hasMedia ? (pinnedImage ?? resolveImage(undefined, imageUrls, imgIdx)) : undefined,
           video: videoUrl,
         }
       }
@@ -189,7 +213,6 @@ export function briefToBlocks(
         const rawVariant = opts.variant ?? 'paragraphs'
         const isAccordion = rawVariant === 'accordion'
         const isSingle = rawVariant === 'single' || (rawVariant === 'paragraphs' && opts.paragraphColumnLayout === 'single')
-        const image = resolveImage(undefined, imageUrls, i)
         const rawItems = Array.isArray(slots.items) ? slots.items : []
 
         const accordionItems = isAccordion
@@ -198,11 +221,10 @@ export function briefToBlocks(
               return {
                 subtitle: (o.question as string) ?? (o.subtitle as string) ?? (o.title as string) ?? '',
                 body: (o.answer as string) ?? (o.body as string) ?? '',
-                image: resolveImage(o.image as string | undefined, imageUrls, itemOffset + j),
+                image: resolveImage(o.image as string | undefined, imageUrls, itemImageIndex(s.sectionName, j, imageUrls)),
               }
             })
           : undefined
-        if (isAccordion) itemOffset += accordionItems?.length ?? 0
 
         const isMulti = !isAccordion && !isSingle
         const paragraphItems = isMulti
@@ -226,7 +248,7 @@ export function briefToBlocks(
           ...colours,
           headline: slots.headline ?? s.sectionName,
           description: null,
-          image: pinnedImage ?? image,
+          image: pinnedImage ?? resolveImage(undefined, imageUrls, imgIdx),
           ...(isAccordion && accordionItems ? { accordionItems } : {}),
           ...(isSingle
             ? {
@@ -239,7 +261,7 @@ export function briefToBlocks(
       }
 
       case 'mediaTextAsymmetric': {
-        const items = normalizeItems(slots.items, 'mediaTextAsymmetric', i, imageUrls, itemOffset)
+        const items = normalizeItems(slots.items, 'mediaTextAsymmetric', i, imageUrls, 0)
         const isFaq = opts.variant === 'faq'
         return {
           ...base,
@@ -247,22 +269,20 @@ export function briefToBlocks(
           variant: opts.variant ?? 'faq',
           size: (opts.size as string) ?? 'feature',
           ...colours,
-          image: pinnedImage ?? resolveImage(undefined, imageUrls, i),
+          image: pinnedImage ?? resolveImage(undefined, imageUrls, imgIdx),
           imageAspectRatio: (opts.imageAspectRatio as string) ?? '5:4',
           items: items.length > 0 ? items : undefined,
         }
       }
 
       case 'cardGrid': {
-        const items = normalizeItems(slots.items, 'cardGrid', i, imageUrls, itemOffset)
-        itemOffset += items.length
+        const items = normalizeItems(slots.items, 'cardGrid', i, imageUrls, 0)
         if (items.length === 0) {
           items.push(
-            { cardType: 'mediaTextBelow', title: 'Card 1', description: slots.body ?? '', image: resolveImage(undefined, imageUrls, itemOffset) },
-            { cardType: 'mediaTextBelow', title: 'Card 2', description: '', image: resolveImage(undefined, imageUrls, itemOffset + 1) },
-            { cardType: 'mediaTextBelow', title: 'Card 3', description: '', image: resolveImage(undefined, imageUrls, itemOffset + 2) }
+            { cardType: 'mediaTextBelow', title: 'Card 1', description: slots.body ?? '', image: resolveImage(undefined, imageUrls, itemImageIndex(s.sectionName, 0, imageUrls)) },
+            { cardType: 'mediaTextBelow', title: 'Card 2', description: '', image: resolveImage(undefined, imageUrls, itemImageIndex(s.sectionName, 1, imageUrls)) },
+            { cardType: 'mediaTextBelow', title: 'Card 3', description: '', image: resolveImage(undefined, imageUrls, itemImageIndex(s.sectionName, 2, imageUrls)) }
           )
-          itemOffset += 3
         }
         return {
           ...base,
@@ -274,16 +294,14 @@ export function briefToBlocks(
       }
 
       case 'carousel': {
-        let items = normalizeItems(slots.items, 'carousel', i, imageUrls, itemOffset)
-        itemOffset += items.length
+        let items = normalizeItems(slots.items, 'carousel', i, imageUrls, 0)
         if (items.length === 0) {
           items = [
-            { cardType: 'mediaTextBelow', title: 'Item 1', description: slots.body ?? '', image: resolveImage(undefined, imageUrls, itemOffset) },
-            { cardType: 'mediaTextBelow', title: 'Item 2', description: '', image: resolveImage(undefined, imageUrls, itemOffset + 1) },
-            { cardType: 'mediaTextBelow', title: 'Item 3', description: '', image: resolveImage(undefined, imageUrls, itemOffset + 2) },
-            { cardType: 'mediaTextBelow', title: 'Item 4', description: '', image: resolveImage(undefined, imageUrls, itemOffset + 3) },
+            { cardType: 'mediaTextBelow', title: 'Item 1', description: slots.body ?? '', image: resolveImage(undefined, imageUrls, itemImageIndex(s.sectionName, 0, imageUrls)) },
+            { cardType: 'mediaTextBelow', title: 'Item 2', description: '', image: resolveImage(undefined, imageUrls, itemImageIndex(s.sectionName, 1, imageUrls)) },
+            { cardType: 'mediaTextBelow', title: 'Item 3', description: '', image: resolveImage(undefined, imageUrls, itemImageIndex(s.sectionName, 2, imageUrls)) },
+            { cardType: 'mediaTextBelow', title: 'Item 4', description: '', image: resolveImage(undefined, imageUrls, itemImageIndex(s.sectionName, 3, imageUrls)) },
           ]
-          itemOffset += 4
         }
         return {
           ...base,
@@ -295,7 +313,7 @@ export function briefToBlocks(
       }
 
       case 'proofPoints': {
-        let items = normalizeItems(slots.items, 'proofPoints', i, imageUrls, itemOffset)
+        let items = normalizeItems(slots.items, 'proofPoints', i, imageUrls, 0)
         if (items.length === 0) {
           items = [
             { title: 'Point 1', description: '', icon: 'IcCheckboxOn' },
@@ -305,7 +323,6 @@ export function briefToBlocks(
           ]
         }
         items = items.slice(0, 4)
-        itemOffset += items.length
         return {
           ...base,
           variant: (opts.variant as string) ?? 'icon',

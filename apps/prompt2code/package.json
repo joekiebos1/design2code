@@ -12,19 +12,21 @@
     "start": "next start"
   },
   "dependencies": {
-    "@design2code/block-library": "*",
-    "@design2code/sanity": "*",
-    "@design2code/ds": "*",
     "@anthropic-ai/sdk": "^0.78.0",
+    "@design2code/block-library": "*",
+    "@design2code/ds": "*",
+    "@design2code/sanity": "*",
     "@sanity/client": "^7.16.0",
+    "@tailwindcss/postcss": "^4.2.2",
+    "html2canvas": "^1.4.1",
+    "json5": "^2.2.3",
     "next": "^16.1.6",
     "next-sanity": "^12.1.0",
     "react": "^19.2.4",
     "react-compiler-runtime": "^1.0.0",
     "react-dom": "^19.2.4",
     "styled-components": "^6.1.0",
-    "html2canvas": "^1.4.1",
-    "json5": "^2.2.3",
+    "tailwindcss": "^4.2.2",
     "use-debounce": "^10.1.0"
   },
   "devDependencies": {

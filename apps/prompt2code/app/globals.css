@@ -1,7 +1,12 @@
-/* Design System tokens – must load first for :root variables to cascade */
-@import './ds-tokens.generated.css';
-/* Fonts - Inter fallback, JioType Var via next/font (--font-jiotype) */
+/* All @imports must come first */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-primary: rgb(56, 0, 173);
+  --color-primary-hover: rgb(48, 0, 150);
+  --color-primary-light: rgb(237, 233, 254);
+}
 
 /* "JioType Var" — the name used by @marcelinodzn/ds-react inline styles (from ds-tokens) */
 @font-face {
@@ -264,5 +269,26 @@ main * {
 @keyframes stream-image-skeleton {
   0%, 100% { opacity: 0.6; }
   50% { opacity: 1; }
+}
+
+/* P2C Editor canvas – suppress DS and browser default focus outlines.
+   The indigo selection/hover rings handle all visual selection feedback. */
+.p2c-editor-canvas *:focus {
+  outline: none !important;
+}
+.p2c-editor-canvas *:focus-visible {
+  outline: none !important;
+}
+/* Suppress DS blue focus ring on contenteditable text elements */
+.p2c-editor-canvas [contenteditable]:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Block focus: snappy scale + opacity on individual blocks.
+   Transitions are set inline by JS for precise timing control.
+   These are baseline resets. */
+.p2c-editor-canvas .block-stack > * {
+  will-change: transform, opacity;
 }
 

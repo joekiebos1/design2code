@@ -14,11 +14,11 @@ import {
   mapMediaText5050BlockProps,
   mapMediaTextAsymmetricBlockProps,
 } from '@design2code/block-library'
-import type { BlockPattern, LabBlockCallToAction } from '@design2code/block-library'
+import type { BlockPattern } from '@design2code/block-library'
 
 function previewCtasToLab(
   ctas: { label?: string; link?: string }[] | null | undefined
-): LabBlockCallToAction[] | undefined {
+): { label: string; link?: string | null; style?: 'filled' | 'outlined' | null }[] | undefined {
   if (ctas == null) return undefined
   const out = ctas.filter((c): c is { label: string; link?: string } => Boolean(c.label))
   return out.length ? out : undefined

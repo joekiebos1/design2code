@@ -1,7 +1,7 @@
 import localFont from 'next/font/local'
 import type { Metadata } from 'next'
 import './globals.css'
-import { Providers } from '@design2code/ds'
+import './ds-tokens.generated.css'
 
 export const metadata: Metadata = {
   title: {
@@ -28,9 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={jioTypeVar.variable}>
       <body className={jioTypeVar.className}>
-        <Providers>
-          {children}
-        </Providers>
+        {children}
       </body>
     </html>
   )

@@ -8,6 +8,9 @@ export default function PreviewPage() {
   const [blocks, setBlocks] = useState<unknown[] | null>(null)
 
   useEffect(() => {
+    // Tell the parent we're mounted and ready to receive blocks
+    window.parent?.postMessage({ type: 'PREVIEW_READY' }, '*')
+
     const handler = (e: MessageEvent) => {
       if (e.data?.type === 'UPDATE_PREVIEW') {
         setBlocks(e.data.blocks ?? null)
