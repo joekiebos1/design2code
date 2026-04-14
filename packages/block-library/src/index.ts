@@ -5,6 +5,8 @@ export * from './production'
 export * from './lab'
 
 // Shared types and mappers
+export { BLOCK_CATALOGUE } from './shared/block-catalogue'
+export type { BlockCatalogueEntry, BlockCategory } from './shared/block-catalogue'
 export * from './shared/media-text-asymmetric-shared.types'
 export * from './shared/map-media-text-blocks'
 export type { ImageSlotState } from './shared/image-slot-state'

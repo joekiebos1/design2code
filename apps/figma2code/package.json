@@ -9,6 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@design2code/cms": "*",
     "@anthropic-ai/sdk": "^0.39.0",
     "@marcelinodzn/ds-react": "^1.0.6",
     "@marcelinodzn/ds-tokens": "^1.0.1",

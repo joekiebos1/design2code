@@ -1,6 +1,7 @@
 import { isFigmaUrl } from '../../studio/utils/is-figma-url'
 import { isAllowedStudioMediaFile } from '../../../lib/studio-inspiration-allowed-files'
 import { STUDIO_INSPIRATION_MAX_FILE_BYTES } from '../../../lib/studio-inspiration-limits'
+import { getCmsConfigFromEnv, getServiceClient, uploadMedia } from '@design2code/cms'
 
 export const runtime = 'nodejs'
 
@@ -132,39 +133,35 @@ export async function POST(req: Request) {
     }
   }
 
-  let uploadedFile: Record<string, unknown> | null = null
+  // Upload file to Supabase Storage if present
+  let mediaUrl = ''
+  let mimeType = ''
 
-  // Upload file to Strapi media library if present
   if (hasFile && file instanceof File) {
-    const safeName = (file.name || 'upload').replace(/[^a-zA-Z0-9._-]/g, '-')
-    const uploadForm = new FormData()
-    uploadForm.append('files', file, safeName)
-
-    const uploadRes = await fetch(`${cfg.baseUrl}/api/upload`, {
-      method: 'POST',
-      headers: strapiHeaders(cfg.apiToken),
-      body: uploadForm,
-    })
-
-    if (!uploadRes.ok) {
-      const errText = await uploadRes.text().catch(() => '')
-      let detail = `HTTP ${uploadRes.status}`
-      try { detail = (JSON.parse(errText) as { error?: { message?: string } })?.error?.message ?? detail } catch { detail = errText.slice(0, 200) || detail }
-      return Response.json({ error: `Failed to upload media to Strapi: ${detail}` }, { status: 502 })
+    const cmsCfg = getCmsConfigFromEnv()
+    if (!cmsCfg) {
+      return Response.json({ error: 'CMS is not configured (set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY).' }, { status: 503 })
     }
 
-    const uploaded = await uploadRes.json() as Array<Record<string, unknown>>
-    uploadedFile = uploaded[0] ?? null
+    try {
+      const client = getServiceClient(cmsCfg)
+      const folder = category === 'benchmark' ? 'benchmarks' : 'jio-designs'
+      const result = await uploadMedia(client, file, { folder, title, fileName: file.name })
+      mediaUrl = result.publicUrl
+      mimeType = file.type
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : 'Unknown error'
+      return Response.json({ error: `Failed to upload media: ${detail}` }, { status: 502 })
+    }
   }
 
-  // Build Strapi entry data — only include fields that exist in the schema
+  // Build Strapi entry data — media URL points to Supabase Storage
   const entryData: Record<string, unknown> = {
     title,
     category,
     ...(linkUrl ? { linkUrl } : {}),
-    // viewport only applies to URL entries, not media
     ...(linkUrl && viewport ? { viewport } : {}),
-    ...(uploadedFile ? { media: uploadedFile.id, mimeType: String(uploadedFile.mime ?? '') } : {}),
+    ...(mediaUrl ? { mediaUrl, mimeType } : {}),
   }
 
   const createRes = await fetch(`${cfg.baseUrl}/api/studio-inspirations`, {
@@ -184,7 +181,6 @@ export async function POST(req: Request) {
 
   const created = await createRes.json() as { data: Record<string, unknown> }
   const entry = created.data
-  const { mediaUrl, mimeType } = resolveMediaUrl(cfg.baseUrl, uploadedFile)
 
   return Response.json({
     id: String(entry.documentId ?? entry.id ?? ''),

@@ -5,7 +5,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ['@design2code/ds', '@design2code/block-library', '@design2code/sanity', '@design2code/cms-schema'],
+  transpilePackages: ['@design2code/ds', '@design2code/block-library', '@design2code/sanity', '@design2code/cms-schema', '@design2code/cms'],
   turbopack: {
     root: path.resolve(__dirname, '../..'),
   },
@@ -29,6 +29,11 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'storage.googleapis.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'rkmupomdjphheifqiblt.supabase.co',
         pathname: '/**',
       },
     ],

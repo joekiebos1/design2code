@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@design2code/ds": "*",
+    "@design2code/cms": "*",
     "@design2code/cms-schema": "*",
     "@design2code/sanity": "*",
     "@design2code/strapi": "*",
