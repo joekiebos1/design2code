@@ -6,6 +6,11 @@ export type StoryCoachInput = {
   outputType: OutputType
   productType: ProductType
   productName: string
+  /** New: discrete facts collected via the suggestion loop */
+  facts?: string[]
+  keyMessage?: string
+  primaryAction?: string
+  /** Legacy fields — kept for compat, derived from facts when using new flow */
   whatItDoes: string
   whatIsInIt: string
   builtFor: string

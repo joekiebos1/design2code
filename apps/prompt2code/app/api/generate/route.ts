@@ -275,7 +275,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json()
-  const { productName, whatItDoes = '', whatIsInIt = '', builtFor = '', productType = 'hardware' } = body
+  const { productName, whatItDoes = '', whatIsInIt = '', builtFor = '', productType = 'hardware', facts, keyMessage, primaryAction } = body
 
   if (!productName) {
     return new Response(
@@ -288,7 +288,22 @@ export async function POST(req: NextRequest) {
   const template = getTemplate(templateId)!
   const templateInstructions = templateToPrompt(template)
 
-  const userMessage = `Product: ${productName}
+  // New flow: facts[] array from suggestion loop
+  // Legacy flow: whatItDoes / whatIsInIt / builtFor freetext
+  const hasFacts = Array.isArray(facts) && facts.length > 0
+
+  const userMessage = hasFacts
+    ? `Product: ${productName} (${productType})
+${keyMessage ? `Key message: ${keyMessage}` : ''}
+${primaryAction ? `Primary action: ${primaryAction}` : ''}
+
+Facts provided by the team:
+${facts.map((f: string) => `- ${f}`).join('\n')}
+
+${templateInstructions}
+
+Generate the PageBrief as JSON. Output ONLY the JSON object.`
+    : `Product: ${productName}
 
 What it does:
 ${whatItDoes || '(not provided)'}
