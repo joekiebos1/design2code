@@ -269,8 +269,9 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
   const hideHoverTimer   = useRef<ReturnType<typeof setTimeout> | null>(null)
   const selectedSectionNameRef = useRef<string | null>(null)
 
-  // Panel: fixed positioning driven via direct DOM updates (no re-render on scroll)
+  // Panel + left-side move buttons: fixed positioning driven via direct DOM updates
   const panelRef          = useRef<HTMLDivElement>(null)
+  const leftBtnsRef       = useRef<HTMLDivElement>(null)
   const focusedBlockElRef = useRef<HTMLElement | null>(null)
 
   const [moveButtons,             setMoveButtons]             = useState<MoveButtonsState>(null)
@@ -298,29 +299,34 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
 
   const currentEmphasis = focusedSection?.blockOptions?.emphasis ?? 'ghost'
 
-  const draggable     = sections.filter(isDraggableSection)
-  const draggableIdx  = focusedSection ? draggable.findIndex(s => s.sectionName === focusedSection.sectionName) : -1
-  const isFirstInList = draggableIdx === 0
-  const isLastInList  = draggableIdx === draggable.length - 1
 
   // ── Panel position (fixed, viewport-relative) ─────────────────────────────
   // Top-aligned with the selected block, snug against the canvas right edge.
 
-  const updatePanelPosition = useCallback(() => {
-    const panel   = panelRef.current
+  const updateOverlayPositions = useCallback(() => {
     const blockEl = focusedBlockElRef.current
     const wrapper = wrapperRef.current
-    if (!panel || !blockEl || !wrapper) return
+    if (!blockEl || !wrapper) return
 
-    const wRect   = wrapper.getBoundingClientRect()
-    const bTop    = blockEl.offsetTop * scale
+    const wRect = wrapper.getBoundingClientRect()
+    const bTop  = blockEl.offsetTop * scale
 
-    const panelH     = panel.offsetHeight || 400
-    const idealTop   = wRect.top + bTop
-    const clampedTop = Math.max(8, Math.min(window.innerHeight - panelH - 8, idealTop))
+    // Right-side panel
+    const panel = panelRef.current
+    if (panel) {
+      const panelH     = panel.offsetHeight || 400
+      const idealTop   = wRect.top + bTop
+      const clampedTop = Math.max(8, Math.min(window.innerHeight - panelH - 8, idealTop))
+      panel.style.top  = `${clampedTop}px`
+      panel.style.left = `${wRect.left + 1440 * scale + 8}px`
+    }
 
-    panel.style.top  = `${clampedTop}px`
-    panel.style.left = `${wRect.left + 1440 * scale + 8}px`
+    // Left-side move buttons
+    const leftBtns = leftBtnsRef.current
+    if (leftBtns) {
+      leftBtns.style.top  = `${Math.max(8, wRect.top + bTop)}px`
+      leftBtns.style.left = `${wRect.left - 48}px`
+    }
   }, [scale])
 
   // Scroll / resize → re-sync panel position
@@ -338,19 +344,19 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
       scrollEl = scrollEl.parentElement
     }
 
-    const onUpdate = () => requestAnimationFrame(updatePanelPosition)
+    const onUpdate = () => requestAnimationFrame(updateOverlayPositions)
 
     scrollEl?.addEventListener('scroll', onUpdate, { passive: true })
     window.addEventListener('resize', onUpdate)
 
     // Initial position after panel is painted
-    requestAnimationFrame(updatePanelPosition)
+    requestAnimationFrame(updateOverlayPositions)
 
     return () => {
       scrollEl?.removeEventListener('scroll', onUpdate)
       window.removeEventListener('resize', onUpdate)
     }
-  }, [focusedBlock, updatePanelPosition])
+  }, [focusedBlock, updateOverlayPositions])
 
   // ── Scroll selected block to vertical center of viewport ─────────────────
 
@@ -535,7 +541,7 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
         focusedBlockElRef.current = blockEl
         setMoveButtons(computeMoveButtons(blockEl, prevSectionName))
         setFocusedBlock({ sectionIdx: sIdx, sectionName: prevSectionName })
-        requestAnimationFrame(updatePanelPosition)
+        requestAnimationFrame(updateOverlayPositions)
       } else {
         hideSelectionRing()
       }
@@ -684,9 +690,6 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
 
   // ─── Render ────────────────────────────────────────────────────────────────
 
-  const BTN      = 64
-  const BTN_HALF = BTN / 2
-
   return (
     <div ref={wrapperRef} className="p2c-editor-canvas" style={{ position: 'relative' }}>
 
@@ -723,50 +726,36 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
         }}
       />
 
-      {/* Move up / down buttons — only when focused block has no panel (non-panel blocks) */}
-      {!showPanel && moveButtons && (
-        <>
+      {/* ── Move up / down — fixed, left side of selected block ──────────────
+          position: fixed so scroll doesn't affect it. Updated via leftBtnsRef.
+          Only rendered when a draggable block is selected (moveButtons != null).
+      ─────────────────────────────────────────────────────────────────────── */}
+      {moveButtons && (
+        <div
+          ref={leftBtnsRef}
+          onClick={e => e.stopPropagation()}
+          className="flex flex-col gap-1"
+          style={{ position: 'fixed', top: 0, left: 0, zIndex: 10001 }}
+        >
           {!moveButtons.isFirst && (
             <button
               onClick={() => handleMove('up')}
               title="Move block up"
-              style={{
-                position: 'absolute',
-                top:  moveButtons.top - BTN_HALF,
-                left: moveButtons.left + moveButtons.width / 2 - BTN_HALF,
-                width: BTN, height: BTN, borderRadius: '50%',
-                background: '#4f46e5', border: 'none', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                zIndex: 10000, boxShadow: '0 4px 16px rgba(79,70,229,0.45)',
-                transition: 'transform 0.12s, box-shadow 0.12s',
-              }}
-              onMouseEnter={e => { const b = e.currentTarget; b.style.transform='scale(1.08)'; b.style.boxShadow='0 6px 20px rgba(79,70,229,0.55)' }}
-              onMouseLeave={e => { const b = e.currentTarget; b.style.transform='scale(1)';    b.style.boxShadow='0 4px 16px rgba(79,70,229,0.45)' }}
+              className="w-10 h-10 border border-gray-200 rounded-md bg-white hover:bg-gray-50 flex items-center justify-center cursor-pointer transition-colors text-gray-500 hover:text-gray-900 shadow-sm"
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 15 12 9 18 15" /></svg>
+              <ChevronUp />
             </button>
           )}
           {!moveButtons.isLast && (
             <button
               onClick={() => handleMove('down')}
               title="Move block down"
-              style={{
-                position: 'absolute',
-                top:  moveButtons.top + moveButtons.height - BTN_HALF,
-                left: moveButtons.left + moveButtons.width / 2 - BTN_HALF,
-                width: BTN, height: BTN, borderRadius: '50%',
-                background: '#4f46e5', border: 'none', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                zIndex: 10000, boxShadow: '0 4px 16px rgba(79,70,229,0.45)',
-                transition: 'transform 0.12s, box-shadow 0.12s',
-              }}
-              onMouseEnter={e => { const b = e.currentTarget; b.style.transform='scale(1.08)'; b.style.boxShadow='0 6px 20px rgba(79,70,229,0.55)' }}
-              onMouseLeave={e => { const b = e.currentTarget; b.style.transform='scale(1)';    b.style.boxShadow='0 4px 16px rgba(79,70,229,0.45)' }}
+              className="w-10 h-10 border border-gray-200 rounded-md bg-white hover:bg-gray-50 flex items-center justify-center cursor-pointer transition-colors text-gray-500 hover:text-gray-900 shadow-sm"
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+              <ChevronDown />
             </button>
           )}
-        </>
+        </div>
       )}
 
       {/* ── Side panel ────────────────────────────────────────────────────────
@@ -781,8 +770,8 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
           className="font-sans border border-gray-200 bg-white shadow-sm"
           style={{
             position: 'fixed',
-            top: 0,   // overwritten by updatePanelPosition
-            left: 0,  // overwritten by updatePanelPosition
+            top: 0,   // overwritten by updateOverlayPositions
+            left: 0,  // overwritten by updateOverlayPositions
             width: PANEL_WIDTH,
             zIndex: 10002,
             maxHeight: 'calc(100vh - 16px)',
@@ -830,27 +819,6 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
           {/* ── Block editing sections (hidden in image picker mode) ───────── */}
           {!selectedImageSectionName && (
             <>
-              {/* ── Move block ──────────────────────────────────────────────── */}
-              {isDraggableSection(focusedSection) && (
-                <PanelSection title="Move block">
-                  <div className="flex gap-1.5">
-                    {[
-                      { dir: 'up'   as const, label: 'Up',   icon: <ChevronUp />,   disabled: isFirstInList },
-                      { dir: 'down' as const, label: 'Down', icon: <ChevronDown />, disabled: isLastInList  },
-                    ].map(({ dir, label, icon, disabled }) => (
-                      <button
-                        key={dir}
-                        onClick={() => handleMove(dir)}
-                        disabled={disabled}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-200 rounded-md bg-white text-gray-700 hover:bg-gray-50 disabled:bg-gray-50 disabled:text-gray-300 disabled:cursor-default transition-colors cursor-pointer"
-                      >
-                        {icon} {label}
-                      </button>
-                    ))}
-                  </div>
-                </PanelSection>
-              )}
-
               {/* ── Choose block ─────────────────────────────────────────────── */}
               {CHANGE_BLOCK_COMPONENTS.includes(focusedSection.component) && (
                 <PanelSection title="Choose block">

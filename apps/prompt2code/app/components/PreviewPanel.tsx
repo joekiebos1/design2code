@@ -20,7 +20,7 @@ type PreviewPanelProps = {
 type PanelMode = 'edit' | 'preview'
 type Viewport = '360' | '1440'
 
-const EDIT_SCALE = 0.75
+const EDIT_SCALE = 0.60
 
 export function PreviewPanel({ blocks, brief, imageUrls, videoUrls, step, sectionCount, onBriefUpdate }: PreviewPanelProps) {
   const [mode, setMode]         = useState<PanelMode>('edit')
