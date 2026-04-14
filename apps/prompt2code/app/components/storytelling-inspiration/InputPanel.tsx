@@ -7,6 +7,7 @@ import type { StoryCoachInput } from './types'
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Step = 1 | 2 | 3
+type PageType = 'product-page' | 'jiostories-page' | 'other'
 
 type InferResult = {
   confidence: 'high' | 'low'
@@ -30,9 +31,74 @@ const PRIMARY_ACTIONS = [
   { value: 'Learn more',       type: null },
 ]
 
+const PAGE_TYPE_OPTIONS: { value: PageType; label: string }[] = [
+  { value: 'product-page',    label: 'Product page' },
+  { value: 'jiostories-page', label: 'JioStories page' },
+  { value: 'other',           label: 'Other type' },
+]
+
+const PRODUCT_TYPE_OPTIONS = [
+  { value: 'software', label: 'App / Software' },
+  { value: 'hardware', label: 'Hardware' },
+]
+
+const PAGE_TYPE_LABELS: Record<PageType, string> = {
+  'product-page':    'Product page',
+  'jiostories-page': 'JioStories page',
+  'other':           'Other',
+}
+
 const MIN_FACTS = 3
 
-// ─── Suggestion card ─────────────────────────────────────────────────────────
+// ─── Shared UI helpers ────────────────────────────────────────────────────────
+
+const inputCls =
+  'w-full px-3 py-2 text-sm border border-gray-200 rounded-md bg-gray-50 text-gray-900 outline-none ' +
+  'focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors placeholder:text-gray-400'
+
+const selectCls = inputCls + ' appearance-none pr-8 cursor-pointer'
+
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return <p className="text-xs font-medium text-gray-500 mb-1">{children}</p>
+}
+
+function ChevronDown() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  )
+}
+
+function SelectField({
+  value,
+  onChange,
+  options,
+}: {
+  value: string
+  onChange: (v: string) => void
+  options: { value: string; label: string }[]
+}) {
+  return (
+    <div className="relative">
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className={selectCls}
+      >
+        {options.map(o => (
+          <option key={o.value} value={o.value}>{o.label}</option>
+        ))}
+      </select>
+      <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+        <ChevronDown />
+      </div>
+    </div>
+  )
+}
+
+// ─── Suggestion card ──────────────────────────────────────────────────────────
 
 function SuggestionCard({
   index,
@@ -48,7 +114,6 @@ function SuggestionCard({
   showKeyHint: boolean
 }) {
   const [visible, setVisible] = useState(false)
-
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), index * 55)
     return () => clearTimeout(t)
@@ -57,55 +122,29 @@ function SuggestionCard({
   return (
     <div
       onClick={onAccept}
+      className="flex items-center gap-2.5 px-3 py-2 bg-primary/5 border border-primary/10 rounded-lg cursor-pointer hover:bg-primary/10 transition-colors select-none"
       style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 10,
-        padding: '9px 11px',
-        background: 'rgba(79,70,229,0.05)',
-        border: '1px solid rgba(79,70,229,0.16)',
-        borderRadius: 9,
-        cursor: 'pointer',
         opacity: visible ? 1 : 0,
         transform: visible ? 'translateY(0)' : 'translateY(5px)',
-        transition: 'opacity 0.16s, transform 0.16s, background 0.1s',
-        userSelect: 'none',
+        transition: 'opacity 0.16s, transform 0.16s, background-color 0.1s',
       }}
-      onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = 'rgba(79,70,229,0.09)' }}
-      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'rgba(79,70,229,0.05)' }}
     >
-      <div style={{
-        width: 22, height: 22, borderRadius: 6,
-        background: '#4f46e5', color: '#fff',
-        fontSize: 11, fontWeight: 700,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0, fontFamily: 'inherit',
-      }}>
+      <div className="shrink-0 w-[22px] h-[22px] rounded-[6px] bg-primary text-white text-[11px] font-bold flex items-center justify-center">
         {showKeyHint ? index + 1 : (
-          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="20 6 9 17 4 12" />
           </svg>
         )}
       </div>
-      <span style={{
-        flex: 1, fontSize: 12, color: 'rgb(13,13,15)',
-        lineHeight: 1.45, letterSpacing: '-0.01em', fontFamily: 'inherit',
-      }}>
-        {text}
-      </span>
+      <span className="flex-1 text-xs text-gray-800 leading-snug">{text}</span>
       <button
         onClick={e => { e.stopPropagation(); onDismiss() }}
-        style={{
-          width: 20, height: 20, borderRadius: 4, border: 'none',
-          background: 'transparent', cursor: 'pointer', padding: 0,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: 'rgba(0,0,0,0.3)', flexShrink: 0, transition: 'color 0.1s',
-        }}
-        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(0,0,0,0.65)' }}
-        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(0,0,0,0.3)' }}
+        className="shrink-0 w-5 h-5 flex items-center justify-center text-gray-300 hover:text-gray-500 transition-colors"
         aria-label="Dismiss"
       >
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
         </svg>
       </button>
@@ -123,7 +162,9 @@ type InputPanelProps = {
 export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
   const [step, setStep]               = useState<Step>(1)
   const [productName, setProductName] = useState('')
+  const [pageType, setPageType]       = useState<PageType>('product-page')
   const [productType, setProductType] = useState<'software' | 'hardware'>('software')
+  const [pageDescription, setPageDescription] = useState('')
 
   // Step 2 — fact loop
   const [confirmed, setConfirmed]         = useState<string[]>([])
@@ -137,12 +178,12 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
   const [lowConfidence, setLowConfidence] = useState(false)
 
   // Step 3
-  const [primaryAction, setPrimaryAction]     = useState('Download the app')
-  const [keyMessage, setKeyMessage]           = useState('')
-  const [editingMessage, setEditingMessage]   = useState(false)
+  const [primaryAction, setPrimaryAction]   = useState('Download the app')
+  const [keyMessage, setKeyMessage]         = useState('')
+  const [editingMessage, setEditingMessage] = useState(false)
 
-  const freeInputRef   = useRef<HTMLInputElement>(null)
-  const briefEndRef    = useRef<HTMLDivElement>(null)
+  const freeInputRef = useRef<HTMLInputElement>(null)
+  const briefEndRef  = useRef<HTMLDivElement>(null)
 
   // ── Queue helpers ───────────────────────────────────────────────────────────
 
@@ -257,237 +298,170 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
 
   const handleGenerate = () => {
     onSubmit({
-      outputType: 'product-page',
+      outputType: pageType,
       productType,
       productName,
       facts: confirmed,
       keyMessage,
       primaryAction,
+      pageTypeDescription: pageType === 'other' ? pageDescription : undefined,
       whatItDoes: confirmed.join('\n'),
       whatIsInIt: '',
       builtFor: '',
     })
   }
 
-  // ─── Render ─────────────────────────────────────────────────────────────────
+  // ── Step 1 validation ───────────────────────────────────────────────────────
+
+  const step1Valid =
+    productName.trim().length > 0 &&
+    (pageType !== 'other' || pageDescription.trim().length > 0)
 
   const hasBriefContent = step > 1 && productName
 
-  return (
-    <div style={{
-      display: 'flex', flexDirection: 'column', height: '100%',
-      overflow: 'hidden', fontFamily: 'inherit',
-    }}>
+  // ─── Render ─────────────────────────────────────────────────────────────────
 
-      {/* ── Title header ──────────────────────────────────────────────────── */}
-      <div style={{ padding: '24px 20px 20px', flexShrink: 0 }}>
-        <div style={{
-          fontSize: 24, fontWeight: 600, color: 'rgb(13,13,15)',
-          letterSpacing: '-0.03em', lineHeight: 1.15, marginBottom: 8,
-        }}>
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <div className="shrink-0 px-5 pt-6 pb-5">
+        <h1 className="text-2xl font-semibold tracking-tight text-gray-900 mb-2 leading-tight">
           Prompt2Code
-        </div>
-        <div style={{
-          fontSize: 13, color: 'rgba(0,0,0,0.48)', lineHeight: 1.55,
-          letterSpacing: '-0.01em',
-        }}>
+        </h1>
+        <p className="text-[13px] text-gray-400 leading-relaxed">
           Turn a product brief into a full Jio page.<br />
           Tell us what you know — we handle the rest.
-        </div>
+        </p>
       </div>
 
-      {/* ── Brief section ─────────────────────────────────────────────────── */}
-      <div style={{ flexShrink: 0, padding: '0 20px' }}>
-        <div style={{ borderTop: '1px solid rgba(0,0,0,0.08)', paddingTop: 14, paddingBottom: hasBriefContent ? 6 : 0 }}>
-          <div style={{
-            fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
-            textTransform: 'uppercase', color: 'rgba(0,0,0,0.3)',
-          }}>
+      {/* ── Brief label + divider ───────────────────────────────────────────── */}
+      <div className="shrink-0 px-5">
+        <div className="border-t border-gray-100 pt-3.5 pb-1">
+          <p className="text-[10px] font-bold tracking-[0.08em] uppercase text-gray-400">
             Brief
-          </div>
+          </p>
         </div>
       </div>
 
-      {/* Brief content — scrollable */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px' }}>
-        {!hasBriefContent && (
-          <div style={{
-            fontSize: 12, color: 'rgba(0,0,0,0.25)',
-            letterSpacing: '-0.01em', padding: '8px 0 4px',
-            fontStyle: 'italic',
-          }}>
-            Your brief will appear here
-          </div>
-        )}
-
-        {/* Product identity */}
-        {hasBriefContent && (
-          <div style={{
-            display: 'flex', alignItems: 'baseline', gap: 8,
-            padding: '8px 0 6px',
-            borderBottom: confirmed.length > 0 ? '1px solid rgba(0,0,0,0.06)' : 'none',
-          }}>
-            <span style={{
-              fontSize: 13, fontWeight: 600, color: 'rgb(13,13,15)',
-              letterSpacing: '-0.02em',
-            }}>
-              {productName}
-            </span>
-            <span style={{
-              fontSize: 11, color: 'rgba(0,0,0,0.35)',
-              letterSpacing: '-0.01em',
-            }}>
-              {productType === 'software' ? 'App / Software' : 'Hardware'}
-            </span>
-          </div>
-        )}
-
-        {/* Confirmed facts */}
-        {confirmed.map((fact, i) => (
-          <div key={i} style={{
-            display: 'flex', alignItems: 'flex-start', gap: 8,
-            padding: '5px 0',
-            borderBottom: '1px solid rgba(0,0,0,0.05)',
-          }}>
-            <div style={{
-              width: 14, height: 14, marginTop: 2,
-              borderRadius: '50%',
-              background: 'rgba(79,70,229,0.1)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            }}>
-              <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
+      {/* ── Brief content — scrollable ─────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto px-5">
+        {!hasBriefContent ? (
+          <p className="text-[12px] text-gray-300 italic py-2">Your brief will appear here</p>
+        ) : (
+          <>
+            {/* Product / page identity */}
+            <div className={`flex items-baseline gap-2 py-2 ${confirmed.length > 0 ? 'border-b border-gray-100' : ''}`}>
+              <span className="text-[13px] font-semibold text-gray-900 tracking-tight">
+                {productName}
+              </span>
+              <span className="text-[11px] text-gray-400">
+                {PAGE_TYPE_LABELS[pageType]}
+                {pageType === 'product-page' && ` · ${productType === 'software' ? 'App / Software' : 'Hardware'}`}
+              </span>
             </div>
-            <span style={{
-              flex: 1, fontSize: 12, color: 'rgba(0,0,0,0.6)',
-              lineHeight: 1.45, letterSpacing: '-0.01em',
-            }}>
-              {fact}
-            </span>
-            <button
-              onClick={() => setConfirmed(prev => prev.filter((_, j) => j !== i))}
-              style={{
-                border: 'none', background: 'transparent', cursor: 'pointer',
-                padding: '1px 3px', color: 'rgba(0,0,0,0.2)', fontSize: 10,
-                fontFamily: 'inherit', transition: 'color 0.1s',
-              }}
-              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(220,38,38,0.6)' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(0,0,0,0.2)' }}
-            >✕</button>
-          </div>
-        ))}
 
-        {/* Key message + action in brief (step 3) */}
-        {step === 3 && keyMessage && (
-          <div style={{ padding: '7px 0 4px', borderTop: confirmed.length > 0 ? '1px solid rgba(0,0,0,0.06)' : 'none', marginTop: 2 }}>
-            <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)', letterSpacing: '-0.01em', marginBottom: 3 }}>
-              Key message
-            </div>
-            <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.6)', lineHeight: 1.45, letterSpacing: '-0.01em', fontStyle: 'italic' }}>
-              "{keyMessage}"
-            </div>
-          </div>
+            {/* Confirmed facts */}
+            {confirmed.map((fact, i) => (
+              <div key={i} className="flex items-start gap-2 py-1.5 border-b border-gray-50">
+                <div className="shrink-0 mt-0.5 w-3.5 h-3.5 rounded-full bg-primary/10 flex items-center justify-center">
+                  <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="#3800AD"
+                    strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </div>
+                <span className="flex-1 text-[12px] text-gray-500 leading-snug">{fact}</span>
+                <button
+                  onClick={() => setConfirmed(prev => prev.filter((_, j) => j !== i))}
+                  className="text-[10px] text-gray-300 hover:text-red-400 transition-colors px-1"
+                >✕</button>
+              </div>
+            ))}
+
+            {/* Key message preview in step 3 */}
+            {step === 3 && keyMessage && (
+              <div className={`py-2 ${confirmed.length > 0 ? 'border-t border-gray-100 mt-1' : ''}`}>
+                <p className="text-[11px] text-gray-400 mb-1">Key message</p>
+                <p className="text-[12px] text-gray-500 leading-snug italic">"{keyMessage}"</p>
+              </div>
+            )}
+          </>
         )}
-
         <div ref={briefEndRef} />
       </div>
 
-      {/* ── Interaction area — always at bottom ──────────────────────────── */}
-      <div style={{
-        flexShrink: 0,
-        borderTop: '1px solid rgba(0,0,0,0.08)',
-        padding: '14px 20px 20px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 8,
-      }}>
+      {/* ── Interaction area — always at bottom ───────────────────────────── */}
+      <div className="shrink-0 border-t border-gray-100 px-5 pt-4 pb-5 flex flex-col gap-3">
 
-        {/* ── Step 1 ──────────────────────────────────────────────────────── */}
+        {/* ── Step 1 ────────────────────────────────────────────────────────── */}
         {step === 1 && (
           <>
-            <div style={{
-              fontSize: 12, fontWeight: 500, color: 'rgba(0,0,0,0.6)',
-              letterSpacing: '-0.01em', marginBottom: 2,
-            }}>
-              What is this page for?
+            <div>
+              <FieldLabel>What is this page for?</FieldLabel>
+              <input
+                autoFocus
+                type="text"
+                value={productName}
+                onChange={e => setProductName(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && step1Valid) setStep(2) }}
+                placeholder="e.g. JioSaavn, JioPhone 5G…"
+                className={inputCls}
+              />
             </div>
 
-            <input
-              autoFocus
-              type="text"
-              value={productName}
-              onChange={e => setProductName(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter' && productName.trim()) setStep(2) }}
-              placeholder="e.g. JioSaavn, JioPhone 5G…"
-              style={{
-                width: '100%', padding: '9px 12px',
-                fontSize: 13, fontFamily: 'inherit',
-                border: '1px solid rgba(0,0,0,0.14)', borderRadius: 8,
-                outline: 'none', background: 'rgba(0,0,0,0.02)',
-                color: 'rgb(13,13,15)', letterSpacing: '-0.01em',
-                boxSizing: 'border-box', transition: 'border-color 0.15s, box-shadow 0.15s',
-              }}
-              onFocus={e => { e.target.style.borderColor = '#4f46e5'; e.target.style.boxShadow = '0 0 0 3px rgba(79,70,229,0.1)' }}
-              onBlur={e => { e.target.style.borderColor = 'rgba(0,0,0,0.14)'; e.target.style.boxShadow = 'none' }}
-            />
-
-            {/* Type toggle */}
-            <div style={{ display: 'flex', gap: 6 }}>
-              {(['software', 'hardware'] as const).map(t => (
-                <button
-                  key={t}
-                  onClick={() => setProductType(t)}
-                  style={{
-                    flex: 1, padding: '7px 0',
-                    fontSize: 11, fontFamily: 'inherit',
-                    fontWeight: productType === t ? 600 : 400,
-                    letterSpacing: '-0.01em',
-                    border: '1px solid',
-                    borderColor: productType === t ? '#4f46e5' : 'rgba(0,0,0,0.12)',
-                    borderRadius: 7,
-                    background: productType === t ? 'rgba(79,70,229,0.06)' : 'transparent',
-                    color: productType === t ? '#4f46e5' : 'rgba(0,0,0,0.45)',
-                    cursor: 'pointer', transition: 'all 0.1s',
-                  }}
-                >
-                  {t === 'software' ? 'App / Software' : 'Hardware'}
-                </button>
-              ))}
+            <div>
+              <FieldLabel>Page type</FieldLabel>
+              <SelectField
+                value={pageType}
+                onChange={v => setPageType(v as PageType)}
+                options={PAGE_TYPE_OPTIONS}
+              />
             </div>
+
+            {/* Conditional sub-question */}
+            {pageType === 'product-page' && (
+              <div>
+                <FieldLabel>Product type</FieldLabel>
+                <SelectField
+                  value={productType}
+                  onChange={v => setProductType(v as 'software' | 'hardware')}
+                  options={PRODUCT_TYPE_OPTIONS}
+                />
+              </div>
+            )}
+
+            {pageType === 'other' && (
+              <div>
+                <FieldLabel>Describe what type of page you wish to create</FieldLabel>
+                <textarea
+                  rows={2}
+                  value={pageDescription}
+                  onChange={e => setPageDescription(e.target.value)}
+                  placeholder="e.g. A landing page for a Jio event in Mumbai…"
+                  className={inputCls + ' resize-none'}
+                />
+              </div>
+            )}
 
             <button
-              disabled={!productName.trim()}
+              disabled={!step1Valid}
               onClick={() => setStep(2)}
-              style={{
-                width: '100%', padding: '10px',
-                fontSize: 13, fontWeight: 500, fontFamily: 'inherit',
-                letterSpacing: '-0.01em', borderRadius: 8, border: 'none',
-                background: productName.trim() ? '#4f46e5' : 'rgba(0,0,0,0.07)',
-                color: productName.trim() ? '#fff' : 'rgba(0,0,0,0.3)',
-                cursor: productName.trim() ? 'pointer' : 'default',
-                transition: 'all 0.12s',
-              }}
+              className="w-full py-2.5 text-sm font-medium rounded-md bg-primary text-white transition-colors hover:bg-primary-hover disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-default"
             >
               Next →
             </button>
           </>
         )}
 
-        {/* ── Step 2 ──────────────────────────────────────────────────────── */}
+        {/* ── Step 2 ────────────────────────────────────────────────────────── */}
         {step === 2 && (
           <>
-            {/* Loading */}
             {inferring && (
-              <div style={{
-                fontSize: 12, color: 'rgba(0,0,0,0.35)', letterSpacing: '-0.01em',
-                textAlign: 'center', padding: '6px 0',
-              }}>
+              <p className="text-[12px] text-gray-400 text-center py-1.5">
                 Looking up {productName}…
-              </div>
+              </p>
             )}
 
-            {/* Suggestion cards */}
             {!inferring && visibleCards.map((text, i) => (
               <SuggestionCard
                 key={text}
@@ -499,38 +473,20 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
               />
             ))}
 
-            {/* Fetching more placeholder */}
             {fetchingMore && visibleCards.length < 3 && (
-              <div style={{
-                height: 42, borderRadius: 9,
-                background: 'rgba(79,70,229,0.02)',
-                border: '1px dashed rgba(79,70,229,0.12)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.28)', letterSpacing: '-0.01em' }}>
-                  loading more…
-                </div>
+              <div className="h-10 rounded-lg border border-dashed border-primary/10 bg-primary/[0.02] flex items-center justify-center">
+                <span className="text-[11px] text-gray-300">loading more…</span>
               </div>
             )}
 
-            {/* Claude ran dry */}
             {!inferring && !fetchingMore && !hasMore && visibleCards.length === 0 && confirmed.length > 0 && (
-              <div style={{
-                fontSize: 11, color: 'rgba(0,0,0,0.3)', letterSpacing: '-0.01em',
-                textAlign: 'center', padding: '2px 0',
-              }}>
+              <p className="text-[11px] text-gray-400 text-center">
                 That's all I know — add anything I missed below
-              </div>
+              </p>
             )}
 
             {/* Free input */}
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 8,
-              padding: '8px 11px',
-              background: 'rgba(0,0,0,0.025)',
-              border: '1px solid rgba(0,0,0,0.09)',
-              borderRadius: 9,
-            }}>
+            <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-md">
               <input
                 ref={freeInputRef}
                 type="text"
@@ -538,173 +494,111 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
                 onChange={e => setFreeInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') acceptFree() }}
                 placeholder={lowConfidence ? `Tell me about ${productName}…` : 'Add your own fact…'}
-                style={{
-                  flex: 1, border: 'none', background: 'transparent',
-                  fontSize: 12, fontFamily: 'inherit', color: 'rgb(13,13,15)',
-                  outline: 'none', letterSpacing: '-0.01em',
-                }}
+                className="flex-1 bg-transparent border-none outline-none text-sm text-gray-900 placeholder:text-gray-400"
               />
               <button
                 onClick={acceptFree}
                 disabled={!freeInput.trim()}
-                style={{
-                  border: 'none', background: 'transparent',
-                  cursor: freeInput.trim() ? 'pointer' : 'default', padding: 0,
-                  color: freeInput.trim() ? '#4f46e5' : 'rgba(0,0,0,0.2)',
-                  display: 'flex', alignItems: 'center', transition: 'color 0.1s',
-                }}
+                className="shrink-0 text-primary disabled:text-gray-300 transition-colors"
                 aria-label="Add fact"
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="9 10 4 15 9 20" /><path d="M20 4v7a4 4 0 0 1-4 4H4" />
                 </svg>
               </button>
             </div>
 
-            {/* Navigation */}
-            <div style={{ display: 'flex', gap: 7, marginTop: 2 }}>
+            <div className="flex gap-2">
               <button
                 onClick={() => setStep(1)}
-                style={{
-                  padding: '9px 13px', fontSize: 12, fontFamily: 'inherit',
-                  letterSpacing: '-0.01em',
-                  border: '1px solid rgba(0,0,0,0.1)', borderRadius: 7,
-                  background: 'transparent', color: 'rgba(0,0,0,0.4)', cursor: 'pointer',
-                }}
+                className="px-4 py-2 text-sm border border-gray-200 rounded-md text-gray-500 hover:bg-gray-50 transition-colors"
               >
                 ← Back
               </button>
               <button
                 disabled={confirmed.length < MIN_FACTS}
                 onClick={() => setStep(3)}
-                style={{
-                  flex: 1, padding: '9px', fontSize: 12, fontWeight: 500,
-                  fontFamily: 'inherit', letterSpacing: '-0.01em',
-                  border: 'none', borderRadius: 7,
-                  background: confirmed.length >= MIN_FACTS ? '#4f46e5' : 'rgba(0,0,0,0.07)',
-                  color: confirmed.length >= MIN_FACTS ? '#fff' : 'rgba(0,0,0,0.3)',
-                  cursor: confirmed.length >= MIN_FACTS ? 'pointer' : 'default',
-                  transition: 'all 0.15s',
-                }}
+                className="flex-1 py-2 text-sm font-medium rounded-md bg-primary text-white transition-colors hover:bg-primary-hover disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-default"
               >
                 {confirmed.length < MIN_FACTS
                   ? `${MIN_FACTS - confirmed.length} more to go`
-                  : `Next — ${confirmed.length} facts →`
-                }
+                  : `Next — ${confirmed.length} facts →`}
               </button>
             </div>
           </>
         )}
 
-        {/* ── Step 3 ──────────────────────────────────────────────────────── */}
+        {/* ── Step 3 ────────────────────────────────────────────────────────── */}
         {step === 3 && (
           <>
-            {/* Primary action */}
-            <div style={{
-              fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
-              textTransform: 'uppercase', color: 'rgba(0,0,0,0.3)', marginBottom: 4,
-            }}>
-              Primary action
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 4 }}>
-              {PRIMARY_ACTIONS.filter(({ type }) => type === null || type === productType).map(({ value }) => (
-                <button
-                  key={value}
-                  onClick={() => setPrimaryAction(value)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 9,
-                    padding: '8px 11px', fontSize: 12, fontFamily: 'inherit',
-                    letterSpacing: '-0.01em',
-                    border: '1px solid',
-                    borderColor: primaryAction === value ? '#4f46e5' : 'rgba(0,0,0,0.11)',
-                    borderRadius: 8,
-                    background: primaryAction === value ? 'rgba(79,70,229,0.06)' : 'transparent',
-                    color: primaryAction === value ? 'rgb(13,13,15)' : 'rgba(0,0,0,0.5)',
-                    cursor: 'pointer', fontWeight: primaryAction === value ? 500 : 400,
-                    textAlign: 'left', transition: 'all 0.1s',
-                  }}
-                >
-                  <div style={{
-                    width: 11, height: 11, borderRadius: '50%', flexShrink: 0,
-                    border: primaryAction === value ? '3.5px solid #4f46e5' : '1.5px solid rgba(0,0,0,0.22)',
-                    transition: 'border 0.1s',
-                  }} />
-                  {value}
-                </button>
-              ))}
-            </div>
-
-            {/* Key message */}
-            <div style={{
-              fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
-              textTransform: 'uppercase', color: 'rgba(0,0,0,0.3)', marginBottom: 4,
-            }}>
-              Key message
-            </div>
-            {editingMessage ? (
-              <textarea
-                autoFocus
-                value={keyMessage}
-                onChange={e => setKeyMessage(e.target.value)}
-                onBlur={() => setEditingMessage(false)}
-                rows={2}
-                style={{
-                  width: '100%', padding: '8px 11px',
-                  fontSize: 12, fontFamily: 'inherit', letterSpacing: '-0.01em',
-                  border: '1px solid #4f46e5', borderRadius: 8,
-                  outline: 'none', boxShadow: '0 0 0 3px rgba(79,70,229,0.1)',
-                  resize: 'none', color: 'rgb(13,13,15)', lineHeight: 1.5,
-                  boxSizing: 'border-box',
-                }}
-              />
-            ) : (
-              <div
-                onClick={() => setEditingMessage(true)}
-                style={{
-                  padding: '8px 11px', fontSize: 12, fontFamily: 'inherit',
-                  letterSpacing: '-0.01em',
-                  border: '1px solid rgba(0,0,0,0.11)', borderRadius: 8,
-                  color: keyMessage ? 'rgb(13,13,15)' : 'rgba(0,0,0,0.28)',
-                  lineHeight: 1.5, cursor: 'text',
-                  background: 'rgba(0,0,0,0.02)',
-                }}
-              >
-                {keyMessage || 'One sentence — the core promise…'}
-                {keyMessage && <span style={{ marginLeft: 5, fontSize: 10, color: 'rgba(0,0,0,0.28)' }}>✎</span>}
+            <div>
+              <FieldLabel>Primary action</FieldLabel>
+              <div className="flex flex-col gap-1.5">
+                {PRIMARY_ACTIONS.filter(({ type }) => type === null || type === productType).map(({ value }) => (
+                  <button
+                    key={value}
+                    onClick={() => setPrimaryAction(value)}
+                    className={[
+                      'flex items-center gap-2.5 px-3 py-2 text-sm border rounded-md text-left transition-colors',
+                      primaryAction === value
+                        ? 'border-primary bg-primary/5 text-gray-900 font-medium'
+                        : 'border-gray-200 text-gray-500 hover:bg-gray-50',
+                    ].join(' ')}
+                  >
+                    <div className={[
+                      'shrink-0 w-3 h-3 rounded-full border-2 transition-colors',
+                      primaryAction === value ? 'border-primary' : 'border-gray-300',
+                    ].join(' ')} />
+                    {value}
+                  </button>
+                ))}
               </div>
-            )}
+            </div>
 
-            {/* Navigation */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 4 }}>
+            <div>
+              <FieldLabel>Key message</FieldLabel>
+              {editingMessage ? (
+                <textarea
+                  autoFocus
+                  value={keyMessage}
+                  onChange={e => setKeyMessage(e.target.value)}
+                  onBlur={() => setEditingMessage(false)}
+                  rows={2}
+                  className={inputCls + ' resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary'}
+                />
+              ) : (
+                <div
+                  onClick={() => setEditingMessage(true)}
+                  className={[
+                    'w-full px-3 py-2 text-sm border border-gray-200 rounded-md bg-gray-50 cursor-text leading-relaxed',
+                    keyMessage ? 'text-gray-900' : 'text-gray-400 italic',
+                  ].join(' ')}
+                >
+                  {keyMessage || 'One sentence — the core promise…'}
+                  {keyMessage && <span className="ml-1.5 text-[10px] text-gray-400">✎</span>}
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-2 pt-1">
               <button
                 onClick={handleGenerate}
                 disabled={isLoading}
-                style={{
-                  width: '100%', padding: '11px',
-                  fontSize: 13, fontWeight: 600, fontFamily: 'inherit',
-                  letterSpacing: '-0.01em', borderRadius: 8, border: 'none',
-                  background: isLoading ? 'rgba(0,0,0,0.07)' : '#4f46e5',
-                  color: isLoading ? 'rgba(0,0,0,0.3)' : '#fff',
-                  cursor: isLoading ? 'default' : 'pointer',
-                  transition: 'all 0.12s',
-                }}
+                className="w-full py-2.5 text-sm font-semibold rounded-md bg-primary text-white transition-colors hover:bg-primary-hover disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-default"
               >
                 {isLoading ? 'Generating…' : 'Generate page'}
               </button>
               <button
                 onClick={() => setStep(2)}
-                style={{
-                  width: '100%', padding: '8px',
-                  fontSize: 12, fontFamily: 'inherit', letterSpacing: '-0.01em',
-                  border: '1px solid rgba(0,0,0,0.09)', borderRadius: 7,
-                  background: 'transparent', color: 'rgba(0,0,0,0.38)', cursor: 'pointer',
-                }}
+                className="w-full py-2 text-sm border border-gray-200 rounded-md text-gray-400 hover:bg-gray-50 transition-colors"
               >
                 ← Back to facts
               </button>
             </div>
           </>
         )}
+
       </div>
     </div>
   )

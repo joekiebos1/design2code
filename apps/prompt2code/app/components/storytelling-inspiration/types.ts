@@ -1,4 +1,4 @@
-export type OutputType = 'banner' | 'product-page' | 'campaign-page'
+export type OutputType = 'banner' | 'product-page' | 'jiostories-page' | 'other' | 'campaign-page'
 
 export type ProductType = 'hardware' | 'software'
 
@@ -10,6 +10,8 @@ export type StoryCoachInput = {
   facts?: string[]
   keyMessage?: string
   primaryAction?: string
+  /** For outputType === 'other': free-text description of the page type */
+  pageTypeDescription?: string
   /** Legacy fields — kept for compat, derived from facts when using new flow */
   whatItDoes: string
   whatIsInIt: string
