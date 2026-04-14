@@ -6,6 +6,19 @@
   --color-primary: rgb(56, 0, 173);
   --color-primary-hover: rgb(48, 0, 150);
   --color-primary-light: rgb(237, 233, 254);
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Studio scrollbar — thin, subtle, matches figma2code */
+.studio-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(209 213 219) transparent;
+}
+.studio-scrollbar::-webkit-scrollbar { width: 6px; }
+.studio-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.studio-scrollbar::-webkit-scrollbar-thumb {
+  background: rgb(209 213 219);
+  border-radius: 3px;
 }
 
 /* "JioType Var" — the name used by @marcelinodzn/ds-react inline styles (from ds-tokens) */

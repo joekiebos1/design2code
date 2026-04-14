@@ -245,19 +245,11 @@ function ChevronDown() {
 
 function PanelSection({ title, children }: { title?: string; children: React.ReactNode }) {
   return (
-    <div style={{ padding: '10px 16px', borderTop: '1px solid rgba(0,0,0,0.07)' }}>
+    <div className="px-4 py-3 border-t border-gray-200">
       {title && (
-        <div style={{
-          fontSize: 10,
-          fontWeight: 600,
-          letterSpacing: '0.06em',
-          textTransform: 'uppercase',
-          color: 'rgba(0,0,0,0.35)',
-          marginBottom: 8,
-          fontFamily: 'inherit',
-        }}>
+        <p className="text-[10px] font-medium uppercase tracking-wider text-gray-400 mb-2">
           {title}
-        </div>
+        </p>
       )}
       {children}
     </div>
@@ -786,34 +778,31 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
         <div
           ref={panelRef}
           onClick={e => e.stopPropagation()}
+          className="font-sans border border-gray-200 bg-white shadow-sm"
           style={{
             position: 'fixed',
             top: 0,   // overwritten by updatePanelPosition
             left: 0,  // overwritten by updatePanelPosition
             width: PANEL_WIDTH,
-            background: '#fff',
-            border: '1px solid rgba(0,0,0,0.13)',
-            borderRadius: 0,
             zIndex: 10002,
-            fontFamily: 'inherit',
             maxHeight: 'calc(100vh - 16px)',
             overflowY: 'auto',
           }}
         >
           {/* ── Title ─────────────────────────────────────────────────────── */}
-          <div style={{ padding: '12px 16px 10px', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: 'rgb(13,13,15)', letterSpacing: '-0.01em' }}>
+          <div className="px-4 py-3 border-b border-gray-200">
+            <p className="text-sm font-semibold text-gray-900">
               {selectedImageSectionName
                 ? 'Swap image'
                 : (BLOCK_LABELS[focusedSection.component] ?? focusedSection.component)
               }
-            </div>
+            </p>
           </div>
 
           {/* ── Image picker (when image was clicked) ─────────────────────── */}
           {selectedImageSectionName && imageUrls.length > 0 && (
             <PanelSection title="Choose image">
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5 }}>
+              <div className="grid grid-cols-3 gap-1.5">
                 {imageUrls.map((url, i) => (
                   <button
                     key={i}
@@ -821,28 +810,19 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
                       update(pinImage(brief, selectedImageSectionName, url))
                       setSelectedImageSectionName(null)
                     }}
-                    style={{
-                      padding: 0, border: '2px solid transparent', borderRadius: 4,
-                      background: 'transparent', cursor: 'pointer', overflow: 'hidden',
-                      aspectRatio: '1',
-                      transition: 'border-color 0.1s',
-                    }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#4f46e5' }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'transparent' }}
+                    className="p-0 border-2 border-transparent rounded hover:border-primary overflow-hidden aspect-square bg-transparent cursor-pointer transition-colors"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={url}
                       alt=""
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', pointerEvents: 'none' }}
+                      className="w-full h-full object-cover block pointer-events-none"
                     />
                   </button>
                 ))}
               </div>
               {imageUrls.length === 0 && (
-                <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)', lineHeight: 1.5 }}>
-                  No images available in DAM
-                </div>
+                <p className="text-xs text-gray-400 leading-relaxed">No images available in DAM</p>
               )}
             </PanelSection>
           )}
@@ -853,7 +833,7 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
               {/* ── Move block ──────────────────────────────────────────────── */}
               {isDraggableSection(focusedSection) && (
                 <PanelSection title="Move block">
-                  <div style={{ display: 'flex', gap: 6 }}>
+                  <div className="flex gap-1.5">
                     {[
                       { dir: 'up'   as const, label: 'Up',   icon: <ChevronUp />,   disabled: isFirstInList },
                       { dir: 'down' as const, label: 'Down', icon: <ChevronDown />, disabled: isLastInList  },
@@ -862,19 +842,7 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
                         key={dir}
                         onClick={() => handleMove(dir)}
                         disabled={disabled}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: 5,
-                          padding: '6px 12px',
-                          fontSize: 12, fontFamily: 'inherit',
-                          background: disabled ? 'rgba(0,0,0,0.04)' : '#fff',
-                          color: disabled ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.7)',
-                          border: '1px solid',
-                          borderColor: disabled ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.16)',
-                          borderRadius: 4,
-                          cursor: disabled ? 'default' : 'pointer',
-                          transition: 'all 0.1s',
-                          letterSpacing: '-0.01em',
-                        }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-200 rounded-md bg-white text-gray-700 hover:bg-gray-50 disabled:bg-gray-50 disabled:text-gray-300 disabled:cursor-default transition-colors cursor-pointer"
                       >
                         {icon} {label}
                       </button>
@@ -886,7 +854,7 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
               {/* ── Choose block ─────────────────────────────────────────────── */}
               {CHANGE_BLOCK_COMPONENTS.includes(focusedSection.component) && (
                 <PanelSection title="Choose block">
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <div className="flex flex-col gap-0.5">
                     {CHANGE_BLOCK_COMPONENTS.map(comp => {
                       const isActive = comp === focusedSection.component
                       return (
@@ -896,35 +864,23 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
                           tabIndex={0}
                           onClick={() => !isActive && handleSwapComponent(focusedSection.sectionName, comp)}
                           onKeyDown={e => { if ((e.key === 'Enter' || e.key === ' ') && !isActive) { e.preventDefault(); handleSwapComponent(focusedSection.sectionName, comp) } }}
-                          style={{
-                            display: 'flex', alignItems: 'center', gap: 10,
-                            padding: '7px 10px',
-                            background: isActive ? 'rgba(79,70,229,0.06)' : 'transparent',
-                            cursor: isActive ? 'default' : 'pointer',
-                            borderRadius: 4,
-                            transition: 'background 0.1s',
-                            userSelect: 'none',
-                          }}
+                          className={[
+                            'flex items-center gap-2.5 px-2.5 py-2 rounded-md select-none transition-colors',
+                            isActive ? 'bg-primary/5 cursor-default' : 'cursor-pointer hover:bg-gray-50',
+                          ].join(' ')}
                         >
-                          {/* Radio dot */}
-                          <div style={{
-                            width: 13, height: 13, borderRadius: '50%', flexShrink: 0,
-                            border: isActive ? '4px solid #4f46e5' : '1.5px solid rgba(0,0,0,0.22)',
-                            transition: 'border 0.1s',
-                          }} />
-                          <span style={{
-                            fontSize: 12,
-                            color: isActive ? 'rgb(13,13,15)' : 'rgba(0,0,0,0.65)',
-                            fontWeight: isActive ? 500 : 400,
-                            letterSpacing: '-0.01em',
-                            fontFamily: 'inherit',
-                          }}>
+                          <div className={[
+                            'shrink-0 w-3 h-3 rounded-full transition-all',
+                            isActive ? 'border-[3.5px] border-primary' : 'border border-gray-300',
+                          ].join(' ')} />
+                          <span className={[
+                            'text-sm flex-1',
+                            isActive ? 'text-gray-900 font-medium' : 'text-gray-600',
+                          ].join(' ')}>
                             {BLOCK_LABELS[comp] ?? comp}
                           </span>
                           {isActive && (
-                            <span style={{ marginLeft: 'auto', fontSize: 10, color: '#4f46e5', fontWeight: 600, letterSpacing: '-0.01em', fontFamily: 'inherit' }}>
-                              Current
-                            </span>
+                            <span className="text-[10px] font-medium text-primary">Current</span>
                           )}
                         </div>
                       )
@@ -936,27 +892,19 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
               {/* ── Emphasis ──────────────────────────────────────────────────── */}
               {PANEL_BLOCKS.has(focusedSection.component) && (
                 <PanelSection title="Emphasis">
-                  <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                  <div className="flex gap-1.5 flex-wrap">
                     {EMPHASIS_OPTIONS.map(({ value, label }) => {
                       const isActive = currentEmphasis === value
                       return (
                         <button
                           key={value}
                           onClick={() => handleEmphasis(focusedSection.sectionName, value)}
-                          style={{
-                            padding: '4px 10px',
-                            fontSize: 11,
-                            fontWeight: isActive ? 600 : 400,
-                            background: isActive ? 'rgb(13,13,15)' : 'transparent',
-                            color: isActive ? '#fff' : 'rgba(0,0,0,0.55)',
-                            border: '1px solid',
-                            borderColor: isActive ? 'rgb(13,13,15)' : 'rgba(0,0,0,0.14)',
-                            borderRadius: 4,
-                            cursor: 'pointer',
-                            fontFamily: 'inherit',
-                            transition: 'all 0.1s',
-                            letterSpacing: '-0.01em',
-                          }}
+                          className={[
+                            'px-3 py-1 text-xs border rounded-md transition-colors cursor-pointer',
+                            isActive
+                              ? 'bg-gray-900 text-white border-gray-900 font-medium'
+                              : 'text-gray-500 border-gray-200 hover:bg-gray-50',
+                          ].join(' ')}
                         >
                           {label}
                         </button>
@@ -971,27 +919,19 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
                 const currentVal = config.currentValue(focusedSection.blockOptions ?? {})
                 return (
                   <PanelSection key={config.key} title={config.label}>
-                    <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                    <div className="flex gap-1.5 flex-wrap">
                       {config.options.map(({ value, label }) => {
                         const isActive = currentVal === value
                         return (
                           <button
                             key={value}
                             onClick={() => handleVariantUpdate(focusedSection.sectionName, config.key, value)}
-                            style={{
-                              padding: '4px 10px',
-                              fontSize: 11,
-                              fontWeight: isActive ? 600 : 400,
-                              background: isActive ? 'rgb(13,13,15)' : 'transparent',
-                              color: isActive ? '#fff' : 'rgba(0,0,0,0.55)',
-                              border: '1px solid',
-                              borderColor: isActive ? 'rgb(13,13,15)' : 'rgba(0,0,0,0.14)',
-                              borderRadius: 4,
-                              cursor: 'pointer',
-                              fontFamily: 'inherit',
-                              transition: 'all 0.1s',
-                              letterSpacing: '-0.01em',
-                            }}
+                            className={[
+                              'px-3 py-1 text-xs border rounded-md transition-colors cursor-pointer',
+                              isActive
+                                ? 'bg-gray-900 text-white border-gray-900 font-medium'
+                                : 'text-gray-500 border-gray-200 hover:bg-gray-50',
+                            ].join(' ')}
                           >
                             {label}
                           </button>
@@ -1007,18 +947,7 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
                 <PanelSection>
                   <button
                     onClick={() => update(addItem(brief, focusedSection.sectionName))}
-                    style={{
-                      width: '100%', padding: '7px 12px', textAlign: 'left',
-                      fontSize: 12, fontFamily: 'inherit',
-                      background: 'transparent', cursor: 'pointer',
-                      border: '1px dashed rgba(0,0,0,0.2)',
-                      borderRadius: 4,
-                      color: 'rgba(0,0,0,0.55)',
-                      transition: 'border-color 0.1s, color 0.1s',
-                      letterSpacing: '-0.01em',
-                    }}
-                    onMouseEnter={e => { const b = e.currentTarget; b.style.color='rgba(0,100,220,0.8)'; b.style.borderColor='rgba(0,100,220,0.4)' }}
-                    onMouseLeave={e => { const b = e.currentTarget; b.style.color='rgba(0,0,0,0.55)'; b.style.borderColor='rgba(0,0,0,0.2)' }}
+                    className="w-full px-3 py-2 text-sm text-left border border-dashed border-gray-200 rounded-md text-gray-500 hover:border-primary hover:text-primary transition-colors cursor-pointer"
                   >
                     + Add {ITEM_LABEL[focusedSection.component] ?? 'item'}
                   </button>

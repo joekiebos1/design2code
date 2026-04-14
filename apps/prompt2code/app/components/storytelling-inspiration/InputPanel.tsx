@@ -58,8 +58,16 @@ const inputCls =
 
 const selectCls = inputCls + ' appearance-none pr-8 cursor-pointer'
 
+const primaryBtnCls =
+  'w-full px-4 py-2 rounded-md bg-primary text-white text-sm font-medium ' +
+  'hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer'
+
+const secondaryBtnCls =
+  'w-full px-4 py-2 rounded-md border border-gray-200 bg-gray-50 text-gray-600 text-sm font-medium ' +
+  'hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer'
+
 function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <p className="text-xs font-medium text-gray-500 mb-1">{children}</p>
+  return <label className="block text-sm font-medium text-gray-900 mb-1.5">{children}</label>
 }
 
 function ChevronDown() {
@@ -329,7 +337,7 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
         <h1 className="text-2xl font-semibold tracking-tight text-gray-900 mb-2 leading-tight">
           Prompt2Code
         </h1>
-        <p className="text-[13px] text-gray-400 leading-relaxed">
+        <p className="text-sm text-gray-500 leading-relaxed">
           Turn a product brief into a full Jio page.<br />
           Tell us what you know — we handle the rest.
         </p>
@@ -446,7 +454,7 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
             <button
               disabled={!step1Valid}
               onClick={() => setStep(2)}
-              className="w-full py-2.5 text-sm font-medium rounded-md bg-primary text-white transition-colors hover:bg-primary-hover disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-default"
+              className={primaryBtnCls}
             >
               Next →
             </button>
@@ -512,14 +520,14 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
             <div className="flex gap-2">
               <button
                 onClick={() => setStep(1)}
-                className="px-4 py-2 text-sm border border-gray-200 rounded-md text-gray-500 hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 rounded-md border border-gray-200 bg-gray-50 text-gray-600 text-sm font-medium hover:bg-gray-100 transition-colors cursor-pointer"
               >
                 ← Back
               </button>
               <button
                 disabled={confirmed.length < MIN_FACTS}
                 onClick={() => setStep(3)}
-                className="flex-1 py-2 text-sm font-medium rounded-md bg-primary text-white transition-colors hover:bg-primary-hover disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-default"
+                className={primaryBtnCls}
               >
                 {confirmed.length < MIN_FACTS
                   ? `${MIN_FACTS - confirmed.length} more to go`
@@ -585,13 +593,13 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
               <button
                 onClick={handleGenerate}
                 disabled={isLoading}
-                className="w-full py-2.5 text-sm font-semibold rounded-md bg-primary text-white transition-colors hover:bg-primary-hover disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-default"
+                className={primaryBtnCls}
               >
                 {isLoading ? 'Generating…' : 'Generate page'}
               </button>
               <button
                 onClick={() => setStep(2)}
-                className="w-full py-2 text-sm border border-gray-200 rounded-md text-gray-400 hover:bg-gray-50 transition-colors"
+                className={secondaryBtnCls}
               >
                 ← Back to facts
               </button>

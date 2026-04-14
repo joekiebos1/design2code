@@ -3,6 +3,7 @@
 import { useReducer, useCallback, useEffect, useState, useMemo } from 'react'
 import { InputPanel } from './components/storytelling-inspiration/InputPanel'
 import { PreviewPanel } from './components/PreviewPanel'
+import { Header } from './components/Header'
 import { briefToBlocks } from './lib/briefToBlocks'
 import type { PageBrief, Section } from './lib/types'
 import type { StoryCoachInput } from './components/storytelling-inspiration/types'
@@ -72,6 +73,13 @@ function reducer(state: PageBuilderState, action: Action): PageBuilderState {
       return state
   }
 }
+
+const HOW_TO_EDIT = [
+  { icon: '✏️', text: 'Click any text to edit it inline' },
+  { icon: '◻', text: 'Click an image to swap it from DAM' },
+  { icon: '⠿', text: 'Click any block to move, restyle, or change variant' },
+  { icon: '+', text: 'Use Add in the panel to add items to a collection' },
+]
 
 export default function Prompt2CodePage() {
   const [state, dispatch] = useReducer(reducer, initialState)
@@ -147,7 +155,7 @@ export default function Prompt2CodePage() {
     else dispatch({ type: 'SET_ERROR', error: data.error ?? 'Failed to publish' })
   }, [state.brief])
 
-  // ── Brief mutations (from direct editor) ─────────────────────────────────
+  // ── Brief mutations ───────────────────────────────────────────────────────
   const handleBriefUpdate = useCallback((brief: PageBrief) => {
     dispatch({ type: 'UPDATE_BRIEF', brief })
   }, [])
@@ -155,105 +163,100 @@ export default function Prompt2CodePage() {
   const sectionCount = state.brief?.sections?.length ?? 0
   const showInput = state.step === 'idle' || state.step === 'generating'
 
+  const statusText =
+    state.step === 'reviewing'  ? `${sectionCount} blocks · click to edit` :
+    state.step === 'publishing' ? 'Publishing…' :
+    state.step === 'done' && state.publishedSlug ? `Published · /${state.publishedSlug}` :
+    state.step === 'done' ? 'Published' : ''
+
+  // ─── Render ─────────────────────────────────────────────────────────────
+
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', height: '100vh', overflow: 'hidden' }}>
+    <div className="font-sans h-screen flex flex-col overflow-hidden bg-white">
+      <Header />
 
-      {/* Left panel */}
-      <div style={{ height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column', borderRight: '1px solid rgba(0,0,0,0.08)', background: '#fff' }}>
-        {showInput ? (
+      <div className="flex flex-1 min-h-0 overflow-hidden">
 
-          /* Input form */
-          <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto' }}>
-            <InputPanel onSubmit={handleGenerate} isLoading={state.step === 'generating'} />
-            {state.error && state.step === 'idle' && (
-              <div style={{ margin: '0 20px 20px', padding: '12px 14px', background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.2)', borderRadius: 6, fontSize: 12, color: 'rgb(185,28,28)', lineHeight: 1.55 }}>
-                {state.error}
+        {/* ── Left panel — 320px ──────────────────────────────────────────── */}
+        <div className="shrink-0 w-80 border-r border-gray-200 bg-white flex flex-col overflow-hidden">
+
+          {showInput ? (
+            /* Input form */
+            <>
+              <div className="flex-1 min-h-0 overflow-y-auto studio-scrollbar">
+                <InputPanel onSubmit={handleGenerate} isLoading={state.step === 'generating'} />
               </div>
-            )}
-          </div>
-
-        ) : (
-
-          /* Editor left panel */
-          <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-
-            {/* Header */}
-            <div style={{ padding: '19px 19px 14px', borderBottom: '1px solid rgba(0,0,0,0.06)', flexShrink: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 500, color: 'rgb(13,13,15)', letterSpacing: '-0.02em', marginBottom: 4 }}>
-                {state.input?.productName ?? 'Page'}
-              </div>
-              <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.48)', lineHeight: 1.5 }}>
-                {state.step === 'reviewing' && `${sectionCount} blocks · drag to reorder`}
-                {state.step === 'publishing' && 'Publishing…'}
-                {state.step === 'done' && state.publishedSlug ? `Published · /${state.publishedSlug}` : state.step === 'done' ? 'Published' : ''}
-              </div>
-            </div>
-
-            {/* How to edit */}
-            <div style={{ flex: 1, overflowY: 'auto' }}>
-              <div style={{ padding: '14px 19px 9px', fontSize: 12, fontWeight: 500, color: 'rgba(0,0,0,0.65)' }}>
-                How to edit
-              </div>
-              {[
-                { icon: '✏️', text: 'Click any text to edit it inline' },
-                { icon: '⟳', text: 'Hover an image and click Swap to change from DAM' },
-                { icon: '⠿', text: 'Drag the Move handle on any block to reorder' },
-                { icon: '+', text: 'Use the Add bar below collections to add items' },
-              ].map((item, i) => (
-                <div key={i} style={{
-                  display: 'flex', alignItems: 'flex-start', gap: 12,
-                  padding: '9px 19px',
-                  borderTop: i === 0 ? '1px solid rgba(0,0,0,0.06)' : undefined,
-                  borderBottom: '1px solid rgba(0,0,0,0.06)',
-                }}>
-                  <span style={{ fontSize: 12, color: 'rgba(0,0,0,0.36)', width: 16, flexShrink: 0, marginTop: 1 }}>{item.icon}</span>
-                  <span style={{ fontSize: 12, color: 'rgba(0,0,0,0.48)', lineHeight: 1.55 }}>{item.text}</span>
+              {state.error && state.step === 'idle' && (
+                <div className="mx-5 mb-5 px-4 py-3 bg-red-50 border border-red-100 rounded-md text-xs text-red-700 leading-relaxed">
+                  {state.error}
                 </div>
-              ))}
-            </div>
+              )}
+            </>
+          ) : (
 
-            {/* Actions */}
-            <div style={{ padding: '14px 19px 19px', borderTop: '1px solid rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', gap: 7, flexShrink: 0 }}>
-              <button
-                onClick={handleApprove}
-                disabled={state.step === 'done' || state.step === 'publishing'}
-                style={{
-                  width: '100%', padding: '10px 16px', borderRadius: 7, border: 'none',
-                  background: state.step === 'done' ? 'rgba(0,0,0,0.06)' : 'rgb(13,13,15)',
-                  color: state.step === 'done' ? 'rgba(0,0,0,0.36)' : '#fff',
-                  fontSize: 13, fontWeight: 500, fontFamily: 'inherit',
-                  cursor: state.step === 'done' || state.step === 'publishing' ? 'default' : 'pointer',
-                  letterSpacing: '-0.01em',
-                }}
-              >
-                {state.step === 'done' ? '✓ Published' : state.step === 'publishing' ? 'Publishing…' : 'Approve & publish draft'}
-              </button>
-              <button
-                onClick={() => dispatch({ type: 'RESET' })}
-                style={{
-                  width: '100%', padding: '9px 16px', borderRadius: 7,
-                  border: '1px solid rgba(0,0,0,0.12)', background: 'transparent',
-                  color: 'rgba(0,0,0,0.48)', fontSize: 12, fontFamily: 'inherit', cursor: 'pointer',
-                  letterSpacing: '-0.01em',
-                }}
-              >
-                Start over
-              </button>
+            /* Editor left panel */
+            <div className="flex flex-col h-full">
+
+              {/* Page identity */}
+              <div className="px-5 py-4 border-b border-gray-200 shrink-0">
+                <p className="text-sm font-semibold text-gray-900 leading-tight">
+                  {state.input?.productName ?? 'Page'}
+                </p>
+                {statusText && (
+                  <p className="text-xs text-gray-500 mt-0.5">{statusText}</p>
+                )}
+              </div>
+
+              {/* How to edit */}
+              <div className="flex-1 overflow-y-auto studio-scrollbar">
+                <p className="px-5 pt-4 pb-2 text-[10px] font-medium uppercase tracking-wider text-gray-400">
+                  How to edit
+                </p>
+                {HOW_TO_EDIT.map((item, i) => (
+                  <div key={i} className="flex items-start gap-3 px-5 py-2.5 border-b border-gray-100">
+                    <span className="shrink-0 text-[11px] text-gray-400 w-4 mt-px leading-none">
+                      {item.icon}
+                    </span>
+                    <span className="text-xs text-gray-500 leading-relaxed">{item.text}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Actions */}
+              <div className="px-5 py-4 border-t border-gray-200 flex flex-col gap-2 shrink-0">
+                <button
+                  onClick={handleApprove}
+                  disabled={state.step === 'done' || state.step === 'publishing'}
+                  className="w-full px-4 py-2 rounded-md bg-primary text-white text-sm font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                >
+                  {state.step === 'done'
+                    ? '✓ Published'
+                    : state.step === 'publishing'
+                    ? 'Publishing…'
+                    : 'Approve & publish draft'}
+                </button>
+                <button
+                  onClick={() => dispatch({ type: 'RESET' })}
+                  className="w-full px-4 py-2 rounded-md border border-gray-200 bg-gray-50 text-gray-600 text-sm font-medium hover:bg-gray-100 transition-colors cursor-pointer"
+                >
+                  Start over
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+
+        {/* ── Right panel ─────────────────────────────────────────────────── */}
+        <PreviewPanel
+          blocks={blocks}
+          brief={state.brief}
+          imageUrls={damMedia.urls}
+          videoUrls={damMedia.videoUrls}
+          step={state.step}
+          sectionCount={sectionCount}
+          onBriefUpdate={handleBriefUpdate}
+        />
       </div>
-
-      {/* Right panel */}
-      <PreviewPanel
-        blocks={blocks}
-        brief={state.brief}
-        imageUrls={damMedia.urls}
-        videoUrls={damMedia.videoUrls}
-        step={state.step}
-        sectionCount={sectionCount}
-        onBriefUpdate={handleBriefUpdate}
-      />
     </div>
   )
 }
