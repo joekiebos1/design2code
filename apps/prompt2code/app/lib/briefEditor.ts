@@ -164,7 +164,7 @@ export function addSection(
         ...heroSections,
         ...engageSections,
         newSection,
-        ...resolveSections.map(s => ({ ...s, order: s.order + 1 })),
+        ...resolveSections.map((s, i) => ({ ...s, order: maxOrder + 2 + i })),
       ],
     },
   }

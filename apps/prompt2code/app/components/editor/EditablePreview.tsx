@@ -635,7 +635,8 @@ function LayersPanel({
 
   // ── Add dropdown ──────────────────────────────────────────────────────────
   const [addOpen, setAddOpen] = useState(false)
-  const addBtnRef = useRef<HTMLDivElement>(null)
+  const addBtnRef  = useRef<HTMLDivElement>(null)
+  const addMenuRef = useRef<HTMLDivElement>(null)
   const [addMenuPos, setAddMenuPos] = useState<{ top: number; left: number; width: number } | null>(null)
 
   const openAdd = () => {
@@ -643,13 +644,15 @@ function LayersPanel({
       const r = addBtnRef.current.getBoundingClientRect()
       setAddMenuPos({ top: r.bottom + 4, left: r.left, width: r.width })
     }
-    setAddOpen(true)
+    setAddOpen(v => !v)
   }
 
   useEffect(() => {
     if (!addOpen) return
     const close = (e: MouseEvent) => {
-      if (addBtnRef.current && !addBtnRef.current.contains(e.target as Node)) setAddOpen(false)
+      const inBtn  = addBtnRef.current?.contains(e.target as Node)
+      const inMenu = addMenuRef.current?.contains(e.target as Node)
+      if (!inBtn && !inMenu) setAddOpen(false)
     }
     document.addEventListener('mousedown', close)
     return () => document.removeEventListener('mousedown', close)
@@ -756,9 +759,9 @@ function LayersPanel({
       {/* Add block dropdown — fixed so it escapes overflow:hidden */}
       {addOpen && addMenuPos && (
         <div
+          ref={addMenuRef}
           style={{ position: 'fixed', top: addMenuPos.top, left: addMenuPos.left, width: addMenuPos.width, zIndex: 200 }}
           className="bg-white rounded-[10px] shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-[#ebebeb] py-1 font-sans"
-          onMouseDown={e => e.stopPropagation()}
         >
           {ADDABLE_COMPONENTS.map(component => (
             <button
@@ -910,6 +913,8 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
       if (blockEl) centerBlock(blockEl)
     }
     if (selectName) {
+      // Clear stale ref so selectBlockOnCanvas does a fresh DOM query
+      blockElsRef.current = []
       selectBlockOnCanvas(selectName)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
