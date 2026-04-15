@@ -48,6 +48,8 @@ const TEST_BRIEF: PageBrief = {
         body: 'Select blocks, move them, swap images, and change emphasis.',
         eyebrow: 'Dev only',
         cta: { label: 'Get started', destination: '#', rationale: null },
+        mediaType: null,
+        items: null,
       },
     },
     {
@@ -63,7 +65,9 @@ const TEST_BRIEF: PageBrief = {
         subhead: 'Click any block to select it',
         body: 'Use the left arrows to reorder blocks. Use the right panel to change emphasis, variant, or swap images.',
         eyebrow: 'How it works',
-        cta: { label: 'Learn more', url: '#' },
+        cta: { label: 'Learn more', destination: '#', rationale: null },
+        mediaType: null,
+        items: null,
       },
     },
     {
@@ -77,6 +81,7 @@ const TEST_BRIEF: PageBrief = {
       contentSlots: {
         headline: 'Carousel block',
         subhead: 'Swipe through cards',
+        mediaType: null,
         items: [
           { title: 'Card one', description: 'First item description here' },
           { title: 'Card two', description: 'Second item description here' },
@@ -95,6 +100,7 @@ const TEST_BRIEF: PageBrief = {
       blockOptions: { columns: 3 },
       contentSlots: {
         headline: 'Card grid block',
+        mediaType: null,
         items: [
           { title: 'Feature one', description: 'Description for feature one' },
           { title: 'Feature two', description: 'Description for feature two' },
@@ -112,6 +118,7 @@ const TEST_BRIEF: PageBrief = {
       blockOptions: {},
       contentSlots: {
         headline: 'Frequently asked questions',
+        mediaType: null,
         items: [
           { subtitle: 'What is this?', body: 'A dev test page for the editor.' },
           { subtitle: 'Will this be removed?', body: 'Yes, once editor testing is complete.' },
@@ -129,6 +136,7 @@ const TEST_BRIEF: PageBrief = {
       blockOptions: {},
       contentSlots: {
         headline: 'Why it works',
+        mediaType: null,
         items: [
           { title: '60%', description: 'Canvas zoom scale' },
           { title: '120px', description: 'Panel offset from top' },
