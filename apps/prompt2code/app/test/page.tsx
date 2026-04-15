@@ -81,6 +81,8 @@ const TEST_BRIEF: PageBrief = {
       contentSlots: {
         headline: 'Carousel block',
         subhead: 'Swipe through cards',
+        body: null,
+        cta: null,
         mediaType: null,
         items: [
           { title: 'Card one', description: 'First item description here' },
@@ -100,6 +102,9 @@ const TEST_BRIEF: PageBrief = {
       blockOptions: { columns: 3 },
       contentSlots: {
         headline: 'Card grid block',
+        subhead: null,
+        body: null,
+        cta: null,
         mediaType: null,
         items: [
           { title: 'Feature one', description: 'Description for feature one' },
@@ -118,6 +123,9 @@ const TEST_BRIEF: PageBrief = {
       blockOptions: {},
       contentSlots: {
         headline: 'Frequently asked questions',
+        subhead: null,
+        body: null,
+        cta: null,
         mediaType: null,
         items: [
           { subtitle: 'What is this?', body: 'A dev test page for the editor.' },
@@ -136,6 +144,9 @@ const TEST_BRIEF: PageBrief = {
       blockOptions: {},
       contentSlots: {
         headline: 'Why it works',
+        subhead: null,
+        body: null,
+        cta: null,
         mediaType: null,
         items: [
           { title: '60%', description: 'Canvas zoom scale' },
