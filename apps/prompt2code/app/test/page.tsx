@@ -19,7 +19,7 @@ const TEST_BRIEF: PageBrief = {
   version: 1,
   meta: {
     pageName: 'Test Page',
-    pageType: 'product-page',
+    pageType: 'product-launch',
     slug: 'test-page',
     intent: 'Test the editor',
     audience: 'Developers',
