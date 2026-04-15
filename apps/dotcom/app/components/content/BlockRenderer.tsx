@@ -172,7 +172,7 @@ export function BlockRenderer({ blocks, images }: BlockRendererProps) {
                 key={block._key || block._type}
                 title={block.title as string}
                 description={block.description as string | null | undefined}
-                callToActions={block.callToActions as import('@design2code/block-library').LabBlockCallToAction[] | null | undefined}
+                callToActions={block.callToActions as { label: string; link?: string | null; style?: 'filled' | 'outlined' | null }[] | null | undefined}
                 interaction={(block.interaction as 'information' | 'navigation') ?? 'information'}
                 cardSize={block.cardSize as 'compact' | 'medium' | 'large'}
                 emphasis={block.emphasis as 'ghost' | 'minimal' | 'subtle' | 'bold'}
@@ -205,7 +205,7 @@ export function BlockRenderer({ blocks, images }: BlockRendererProps) {
                 key={block._key || block._type}
                 title={block.title as string}
                 description={block.description as string | null | undefined}
-                callToActions={block.callToActions as import('@design2code/block-library').LabBlockCallToAction[] | null | undefined}
+                callToActions={block.callToActions as { label: string; link?: string | null; style?: 'filled' | 'outlined' | null }[] | null | undefined}
                 variant={block.variant as 'icon' | 'stat'}
                 emphasis={block.emphasis as 'ghost' | 'minimal' | 'subtle' | 'bold'}
                 minimalBackgroundStyle={(block.minimalBackgroundStyle as string)?.toLowerCase?.() === 'gradient' ? 'gradient' : 'block'}
@@ -231,7 +231,7 @@ export function BlockRenderer({ blocks, images }: BlockRendererProps) {
                 key={block._key || block._type}
                 title={block.title as string | null | undefined}
                 description={block.description as string | null | undefined}
-                callToActions={block.callToActions as import('@design2code/block-library').LabBlockCallToAction[] | null | undefined}
+                callToActions={block.callToActions as { label: string; link?: string | null; style?: 'filled' | 'outlined' | null }[] | null | undefined}
                 items={items}
                 columns={block.columns as 3 | 4 | 5 | 6 | undefined}
                 emphasis={block.emphasis as 'ghost' | 'minimal' | 'subtle' | 'bold'}

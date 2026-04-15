@@ -1,30 +1,34 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@sanity/client'
-import { briefToSanityBlocks } from '../../lib/briefToSanityBlocks'
+import { briefToStrapiBlocks } from '../../lib/briefToStrapiBlocks'
 import type { PageBrief } from '../../lib/types'
 
-const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || process.env.SANITY_STUDIO_PROJECT_ID
-const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || process.env.SANITY_STUDIO_DATASET || 'production'
-const token = process.env.SANITY_API_TOKEN
+const STRAPI_URL = process.env.STRAPI_URL
+const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN
 
 export async function POST(request: Request) {
-  if (!projectId || projectId === 'your-project-id') {
+  if (!STRAPI_URL) {
     return NextResponse.json(
-      { error: 'SANITY_STUDIO_PROJECT_ID or NEXT_PUBLIC_SANITY_PROJECT_ID not configured' },
+      { error: 'STRAPI_URL is not configured' },
       { status: 500 }
     )
   }
-  if (!token) {
+  if (!STRAPI_API_TOKEN) {
     return NextResponse.json(
-      { error: 'SANITY_API_TOKEN is required for creating pages. Add it to .env' },
+      { error: 'STRAPI_API_TOKEN is required for publishing pages. Add it to .env' },
       { status: 500 }
     )
   }
 
   let brief: PageBrief
+  let providedImageUrls: string[] | undefined
+  let providedVideoUrls: string[] | undefined
+
   try {
     const body = await request.json()
-    brief = body as PageBrief
+    brief = body.brief ?? (body as PageBrief)
+    providedImageUrls = body.imageUrls
+    providedVideoUrls = body.videoUrls
+
     if (!brief?.meta?.pageName || !brief?.meta?.slug || !Array.isArray(brief?.sections)) {
       return NextResponse.json(
         { error: 'Invalid brief: meta.pageName, meta.slug, and sections are required' },
@@ -35,27 +39,37 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const client = createClient({
-    projectId,
-    dataset,
-    apiVersion: '2024-01-01',
-    token,
-    useCdn: false,
-  })
+  const authHeaders = {
+    Authorization: `Bearer ${STRAPI_API_TOKEN}`,
+    'Content-Type': 'application/json',
+  }
 
   try {
-    const imageAssets = await client.fetch<{ _id: string }[]>(
-      `*[_type == "sanity.imageAsset"]{ _id }`
-    )
-    const imageAssetIds = imageAssets.map((a) => a._id)
+    // Fetch media from Strapi if not provided
+    let imageUrls: string[] = providedImageUrls ?? []
+    let videoUrls: string[] = providedVideoUrls ?? []
 
-    const videoAssets = await client.fetch<{ _id: string }[]>(
-      `*[_type == "sanity.fileAsset" && mimeType match "video*"]{ _id }`
-    )
-    const videoAssetIds = videoAssets.map((a) => a._id)
+    if (!providedImageUrls || !providedVideoUrls) {
+      const mediaRes = await fetch(`${STRAPI_URL}/api/upload/files`, {
+        headers: authHeaders,
+      })
+      if (mediaRes.ok) {
+        const mediaData = await mediaRes.json()
+        const files: { url: string; mime: string }[] = Array.isArray(mediaData) ? mediaData : (mediaData.data ?? [])
 
-    const sections = briefToSanityBlocks(brief, imageAssetIds, videoAssetIds)
+        if (!providedImageUrls) {
+          imageUrls = files.filter((f) => f.mime?.startsWith('image/')).map((f) => f.url)
+        }
+        if (!providedVideoUrls) {
+          videoUrls = files.filter((f) => f.mime?.startsWith('video/')).map((f) => f.url)
+        }
+      }
+    }
 
+    // Convert brief to Strapi blocks
+    const blocks = briefToStrapiBlocks(brief, imageUrls, videoUrls)
+
+    // Normalize slug
     const slug = brief.meta.slug.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
     if (!slug) {
       return NextResponse.json(
@@ -64,50 +78,62 @@ export async function POST(request: Request) {
       )
     }
 
-    const existing = await client.fetch<{ _id: string } | null>(
-      `*[_type == "page" && slug.current == $slug][0]{ _id }`,
-      { slug }
+    const title = brief.meta.pageName
+
+    // Check if page exists
+    const existingRes = await fetch(
+      `${STRAPI_URL}/api/pages?filters[slug][$eq]=${encodeURIComponent(slug)}&fields[0]=documentId&fields[1]=id`,
+      { headers: authHeaders }
     )
+    const existingData = await existingRes.json()
+    const existingItems: { documentId: string; id: number }[] = existingData?.data ?? []
+    const existing = existingItems[0] ?? null
 
     if (existing) {
-      await client
-        .patch(existing._id)
-        .set({
-          title: brief.meta.pageName,
-          sections,
-        })
-        .commit()
+      const updateRes = await fetch(`${STRAPI_URL}/api/pages/${existing.documentId}`, {
+        method: 'PUT',
+        headers: authHeaders,
+        body: JSON.stringify({ data: { title, blocks } }),
+      })
+      const updateData = await updateRes.json()
+      if (!updateRes.ok) {
+        throw new Error(updateData?.error?.message ?? `Strapi PUT failed: ${updateRes.status}`)
+      }
 
       return NextResponse.json({
         success: true,
-        id: existing._id,
+        id: existing.documentId,
         slug,
-        title: brief.meta.pageName,
-        message: `Page "${brief.meta.pageName}" updated. Visit /${slug} to view.`,
+        title,
+        message: `Page "${title}" updated. Visit /${slug} to view.`,
       })
     }
 
-    const pageDoc = {
-      _type: 'page',
-      title: brief.meta.pageName,
-      slug: { _type: 'slug', current: slug },
-      sections,
+    // Create new page
+    const createRes = await fetch(`${STRAPI_URL}/api/pages`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ data: { title, slug, blocks } }),
+    })
+    const createData = await createRes.json()
+    if (!createRes.ok) {
+      throw new Error(createData?.error?.message ?? `Strapi POST failed: ${createRes.status}`)
     }
 
-    const created = await client.create(pageDoc)
+    const createdId = createData?.data?.documentId ?? createData?.data?.id
 
     return NextResponse.json({
       success: true,
-      id: created._id,
+      id: createdId,
       slug,
-      title: brief.meta.pageName,
-      message: `Page "${brief.meta.pageName}" created. Visit /${slug} to view.`,
+      title,
+      message: `Page "${title}" created. Visit /${slug} to view.`,
     })
   } catch (err) {
-    console.error('JioKarna create-page error:', err)
+    console.error('Publish route error:', err)
     return NextResponse.json(
       {
-        error: err instanceof Error ? err.message : 'Failed to create page in Sanity',
+        error: err instanceof Error ? err.message : 'Failed to publish page to Strapi',
       },
       { status: 500 }
     )

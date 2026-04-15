@@ -2,20 +2,19 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { getMotionDurationCSS, getMotionEasing, createTransition } from '@marcelinodzn/ds-tokens'
-import { Headline, Text, SurfaceProvider } from '@marcelinodzn/ds-react'
+import { Headline, Text, SurfaceProvider, Button } from '@marcelinodzn/ds-react'
 import { useCarouselReveal } from '@design2code/ds'
 import { Grid, useCell } from '../../components/blocks/Grid'
 import { WidthCap } from '../../production/WidthCap'
 import { useGridBreakpoint } from '@design2code/ds'
 import { normalizeHeadingLevel } from '@design2code/ds'
-import { LabBlockFramingCallToActions } from '../../components/LabBlockFramingCallToActions'
 import {
   labBlockFramingDescriptionStyle,
   labBlockFramingIntroStackStyle,
   labBlockFramingTitleStyle,
 } from '../../lab-utils/lab-block-framing-typography'
-import type { LabBlockCallToAction } from '../../lab-utils/lab-block-framing-typography'
 import { hasLabBlockFraming } from '../../lab-utils/has-lab-block-framing'
 import { labHeadlinePresets, labTextPresets } from '@design2code/ds'
 type CarouselItem = {
@@ -30,7 +29,7 @@ type FullBleedVerticalCarouselProps = {
   appearance?: 'primary' | 'secondary' | 'sparkle' | 'neutral'
   title?: string | null
   description?: string | null
-  callToActions?: LabBlockCallToAction[] | null
+  callToActions?: { label: string; link?: string | null; style?: 'filled' | 'outlined' | null }[] | null
   items?: CarouselItem[] | null
 }
 
@@ -78,12 +77,13 @@ function MediaLayer({ item }: { item: CarouselItem }) {
  * 2. While sticky, images show in a fixed overlay; text scrolls; when item text crosses top, fade to next image
  * 3. When last item's text center reaches viewport center, container unsticks
  */
-export function LabFullBleedVerticalCarousel({
+export function FullBleedVerticalCarousel({
   title,
   description,
   callToActions,
   items,
 }: FullBleedVerticalCarouselProps) {
+  const router = useRouter()
   const framingHeadingLevel = normalizeHeadingLevel('h2')
   const framingCell = useCell('L')
   const { isMobile } = useGridBreakpoint()
@@ -199,7 +199,26 @@ export function LabFullBleedVerticalCarousel({
                     {description}
                   </Text>
                 )}
-                <LabBlockFramingCallToActions actions={callToActions} />
+                {callToActions?.filter((a) => a?.label?.trim()).length ? (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 'var(--ds-spacing-m)' }}>
+                    {callToActions.filter((a) => a.label.trim()).map((a) => (
+                      <Button
+                        key={a.label}
+                        appearance={a.style === 'outlined' ? 'secondary' : 'primary'}
+                        size="M"
+                        attention="high"
+                        onPress={() => {
+                          const h = (a.link ?? '').trim()
+                          if (!h) return
+                          if (h.startsWith('/')) router.push(h)
+                          else window.location.href = h
+                        }}
+                      >
+                        {a.label}
+                      </Button>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             </WidthCap>
           </div>

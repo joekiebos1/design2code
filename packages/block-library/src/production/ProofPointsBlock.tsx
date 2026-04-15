@@ -1,6 +1,7 @@
 'use client'
 
-import { Headline, Text, Icon } from '@marcelinodzn/ds-react'
+import { useRouter } from 'next/navigation'
+import { Headline, Text, Icon, Button } from '@marcelinodzn/ds-react'
 import { createTransition } from '@marcelinodzn/ds-tokens'
 import { Grid, useCell } from '../components/blocks/Grid'
 import { WidthCap } from './WidthCap'
@@ -13,7 +14,6 @@ import {
   TYPOGRAPHY,
   type HeadingLevel,
 } from '@design2code/ds'
-import type { LabBlockCallToAction } from '../lab-utils/lab-block-framing-typography'
 import {
   labBlockFramingDescriptionStyle,
   labBlockFramingDescriptionTextProps,
@@ -22,7 +22,6 @@ import {
   labBlockFramingTitleStyle,
 } from '../lab-utils/lab-block-framing-typography'
 import { hasLabBlockFraming } from '../lab-utils/has-lab-block-framing'
-import { LabBlockFramingCallToActions } from '../components/LabBlockFramingCallToActions'
 
 const DEFAULT_ICON_NAME = 'IcCheckboxOn'
 const MAX_ITEMS = 8
@@ -41,7 +40,7 @@ type ProofPointsBlockVariant = 'icon' | 'stat'
 type ProofPointsBlockProps = {
   title?: string | null
   description?: string | null
-  callToActions?: LabBlockCallToAction[] | null
+  callToActions?: { label: string; link?: string | null; style?: 'filled' | 'outlined' | null }[] | null
   variant?: ProofPointsBlockVariant
   emphasis?: ProofPointsBlockEmphasis
   minimalBackgroundStyle?: 'block' | 'gradient' | null
@@ -115,6 +114,7 @@ export function ProofPointsBlock({
   variant,
   items,
 }: ProofPointsBlockProps) {
+  const router = useRouter()
   const level = normalizeHeadingLevel('h2')
   const items_ = (items?.filter((i) => i?.title) ?? []).slice(0, MAX_ITEMS)
   const itemLevel = getChildLevel(level)
@@ -157,7 +157,26 @@ export function ProofPointsBlock({
                   {description}
                 </Text>
               )}
-              <LabBlockFramingCallToActions actions={callToActions} />
+              {callToActions?.filter((a) => a?.label?.trim()).length ? (
+                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 'var(--ds-spacing-m)' }}>
+                  {callToActions.filter((a) => a.label.trim()).map((a) => (
+                    <Button
+                      key={a.label}
+                      appearance={a.style === 'outlined' ? 'secondary' : 'primary'}
+                      size="M"
+                      attention="high"
+                      onPress={() => {
+                        const h = (a.link ?? '').trim()
+                        if (!h) return
+                        if (h.startsWith('/')) router.push(h)
+                        else window.location.href = h
+                      }}
+                    >
+                      {a.label}
+                    </Button>
+                  ))}
+                </div>
+              ) : null}
             </div>
           </WidthCap>
         )}

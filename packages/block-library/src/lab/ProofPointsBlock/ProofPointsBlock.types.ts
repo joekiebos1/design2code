@@ -1,24 +1,22 @@
-import type { LabBlockCallToAction } from '../../lab-utils/lab-block-framing-typography'
-
 export type LabProofPointItem = {
   title?: string | null
   description?: string | null
   icon?: string | null
 }
 
-export type LabProofPointsBlockEmphasis = 'ghost' | 'minimal' | 'subtle' | 'bold'
+export type ProofPointsBlockEmphasis = 'ghost' | 'minimal' | 'subtle' | 'bold'
 
-export type LabProofPointsBlockAppearance = 'primary' | 'secondary' | 'sparkle' | 'neutral'
+export type ProofPointsBlockAppearance = 'primary' | 'secondary' | 'sparkle' | 'neutral'
 
-export type LabProofPointsBlockVariant = 'icon' | 'stat'
+export type ProofPointsBlockVariant = 'icon' | 'stat'
 
-export type LabProofPointsBlockProps = {
+export type ProofPointsBlockProps = {
   title?: string | null
   description?: string | null
-  callToActions?: LabBlockCallToAction[] | null
-  variant?: LabProofPointsBlockVariant
-  emphasis?: LabProofPointsBlockEmphasis
+  callToActions?: { label: string; link?: string | null; style?: 'filled' | 'outlined' | null }[] | null
+  variant?: ProofPointsBlockVariant
+  emphasis?: ProofPointsBlockEmphasis
   minimalBackgroundStyle?: 'block' | 'gradient' | null
-  appearance?: LabProofPointsBlockAppearance
+  appearance?: ProofPointsBlockAppearance
   items?: LabProofPointItem[] | null
 }

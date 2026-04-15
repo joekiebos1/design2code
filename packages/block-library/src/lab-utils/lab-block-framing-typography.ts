@@ -6,13 +6,6 @@ import type { CSSProperties } from 'react'
 import { LAB_TYPOGRAPHY_VARS } from '../typography/block-typography'
 import { labHeadlinePresets, labTextPresets } from '../typography/lab-typography-presets'
 
-export type LabBlockCallToAction = {
-  _key?: string
-  label: string
-  link?: string | null
-  style?: 'filled' | 'outlined' | null
-}
-
 /** DS `Headline` props for section titles (centre-aligned blocks). */
 export const labBlockFramingHeadlineProps = {
   ...labHeadlinePresets.block,

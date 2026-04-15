@@ -7,41 +7,40 @@
  */
 
 import { useEffect, useState } from 'react'
-import { Headline, Text } from '@marcelinodzn/ds-react'
+import { useRouter } from 'next/navigation'
+import { Headline, Text, Button } from '@marcelinodzn/ds-react'
 import { WidthCap } from '../../production/WidthCap'
 import { BlockReveal } from '../../production/BlockReveal'
-import { LabCardRenderer } from '../LabCardRenderer'
+import { CardRenderer } from '../CardRenderer'
 import { useGridBreakpoint } from '@design2code/ds'
 import { normalizeHeadingLevel } from '@design2code/ds'
-import { LabBlockFramingCallToActions } from '../../components/LabBlockFramingCallToActions'
 import {
   labBlockFramingDescriptionStyle,
   labBlockFramingIntroStackStyle,
   labBlockFramingTitleStyle,
 } from '../../lab-utils/lab-block-framing-typography'
-import type { LabBlockCallToAction } from '../../lab-utils/lab-block-framing-typography'
 import { hasLabBlockFraming } from '../../lab-utils/has-lab-block-framing'
 import { labHeadlinePresets, labTextPresets } from '@design2code/ds'
-import type { LabCardItem, CardSurface } from '../LabCardRenderer'
+import type { CardItem, CardSurface } from '../CardRenderer'
 import type { BlockInteraction } from '../../production/CardGridBlock/CardGridBlock.types'
 
-export type LabCardGridBlockProps = {
+export type CardGridBlockProps = {
   columns?: 2 | 3 | 4
   interaction?: BlockInteraction
   cardSurface?: CardSurface
   title?: string | null
   description?: string | null
-  callToActions?: LabBlockCallToAction[] | null
+  callToActions?: { label: string; link?: string | null; style?: 'filled' | 'outlined' | null }[] | null
   emphasis?: 'ghost' | 'minimal' | 'subtle' | 'bold'
   minimalBackgroundStyle?: 'block' | 'gradient' | null
   appearance?: 'primary' | 'secondary' | 'sparkle' | 'neutral'
-  items?: LabCardItem[] | null
+  items?: CardItem[] | null
   images?: Record<string, import('../../shared/image-slot-state').ImageSlotState>
 }
 
 const MAX_ITEMS = 12
 
-export function LabCardGridBlock({
+export function CardGridBlock({
   columns,
   interaction = 'information',
   cardSurface,
@@ -51,7 +50,8 @@ export function LabCardGridBlock({
   emphasis,
   items,
   images,
-}: LabCardGridBlockProps) {
+}: CardGridBlockProps) {
+  const router = useRouter()
   const level = normalizeHeadingLevel('h2')
   const items_ = (items ?? []).filter((i) => i?.title || (i as { image?: string })?.image || (i as { video?: string })?.video).slice(0, MAX_ITEMS)
   const { columns: gridColumns, isMobile } = useGridBreakpoint()
@@ -67,7 +67,7 @@ export function LabCardGridBlock({
 
   if (items_.length === 0) return null
 
-  const colsDesktop = Math.min(columns!, 4)
+  const colsDesktop = Math.min(columns ?? 3, 4)
   const cols =
     gridColumns <= 4 ? 1 : gridColumns <= 8 ? Math.min(2, colsDesktop) : colsDesktop
   const gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`
@@ -102,7 +102,26 @@ export function LabCardGridBlock({
                     {description}
                   </Text>
                 )}
-                <LabBlockFramingCallToActions actions={callToActions} />
+                {callToActions?.filter((a) => a?.label?.trim()).length ? (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 'var(--ds-spacing-m)' }}>
+                    {callToActions.filter((a) => a.label.trim()).map((a) => (
+                      <Button
+                        key={a.label}
+                        appearance={a.style === 'outlined' ? 'secondary' : 'primary'}
+                        size="M"
+                        attention="high"
+                        onPress={() => {
+                          const h = (a.link ?? '').trim()
+                          if (!h) return
+                          if (h.startsWith('/')) router.push(h)
+                          else window.location.href = h
+                        }}
+                      >
+                        {a.label}
+                      </Button>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             </WidthCap>
           )}
@@ -118,8 +137,8 @@ export function LabCardGridBlock({
               {items_.map((item, i) => (
                 <div key={(item as { _key?: string })._key ?? i} style={{ minHeight: 0, display: 'flex', flexDirection: 'column', width: '100%' }}>
                   <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', width: '100%', minWidth: 0 }}>
-                    <LabCardRenderer
-                      item={item as import('../LabCardRenderer').LabCardItem}
+                    <CardRenderer
+                      item={item as import('../CardRenderer').CardItem}
                       prefersReducedMotion={prefersReducedMotion}
                       gridColumns={cols}
                       context="grid"

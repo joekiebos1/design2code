@@ -1,22 +1,24 @@
 /**
  * Lab blocks – experimental components.
- * Use same DS, Grid, WidthCap, semantic-headline as production blocks.
- * Promote to app/blocks/ when ready.
+ * Import from '@design2code/block-library/lab'.
+ * Promote to production/ when ready.
  */
 
-export { LabHeroBlock } from './HeroBlock/LabHeroBlock'
-export type { LabHeroBlockProps } from './HeroBlock/LabHeroBlock'
-export type { MediaTextBlockProps as LabMediaTextBlockProps } from './MediaTextBlock/MediaTextBlock.types'
-export { LabIconGridBlock } from './IconGridBlock/IconGridBlock'
-export { LabTopNavBlock } from './TopNavBlock/TopNavBlock'
-export { LabFullBleedVerticalCarousel } from './FullBleedVerticalCarousel/FullBleedVerticalCarousel'
-export { LabCarouselBlock } from './CarouselBlock/CarouselBlock'
-export { LabRotatingMediaBlock } from './RotatingMediaBlock/RotatingMediaBlock'
-export { LabMediaText5050Block } from './MediaText5050Block/LabMediaText5050Block'
-export { LabCardGridBlock } from './CardGridBlock/LabCardGridBlock'
+export { HeroBlock } from './HeroBlock/HeroBlock'
+export type { HeroBlockProps } from './HeroBlock/HeroBlock'
+export type { MediaTextStackedBlockProps } from './MediaTextBlock/MediaTextBlock.types'
+export { IconGridBlock } from './IconGridBlock/IconGridBlock'
+export { TopNavBlock } from './TopNavBlock/TopNavBlock'
+export { FullBleedVerticalCarousel } from './FullBleedVerticalCarousel/FullBleedVerticalCarousel'
+export { CarouselBlock } from './CarouselBlock/CarouselBlock'
+export { RotatingMediaBlock } from './RotatingMediaBlock/RotatingMediaBlock'
+export { MediaText5050Block } from './MediaText5050Block/MediaText5050Block'
+export { CardGridBlock } from './CardGridBlock/CardGridBlock'
+export type { CardGridBlockProps } from './CardGridBlock/CardGridBlock'
 export { EditorialBlock } from './EditorialBlock'
-export { LabMediaTextBlock } from './MediaTextBlock/LabMediaTextBlock'
-export { LabProofPointsBlock } from './ProofPointsBlock/LabProofPointsBlock'
-export type { LabProofPointsBlockProps } from './ProofPointsBlock/LabProofPointsBlock.types'
-export { LabMediaTextAsymmetricBlock } from './MediaTextAsymmetricBlock/LabMediaTextAsymmetricBlock'
-export type { LabCardItem, CardSurface } from './LabCardRenderer'
+export { MediaTextStackedBlock } from './MediaTextBlock/MediaTextBlock'
+export { ProofPointsBlock } from './ProofPointsBlock/ProofPointsBlock'
+export type { ProofPointsBlockProps } from './ProofPointsBlock/ProofPointsBlock.types'
+export { MediaTextAsymmetricBlock } from './MediaTextAsymmetricBlock/MediaTextAsymmetricBlock'
+export type { MediaTextAsymmetricBlockProps, MediaTextAsymmetricImageAspectRatio, MediaTextAsymmetricParagraphRow } from './MediaTextAsymmetricBlock/MediaTextAsymmetricBlock.types'
+export type { CardItem, CardSurface } from './CardRenderer'

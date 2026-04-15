@@ -5,7 +5,7 @@ import type { IntentFormData, PageBrief } from '../lib/types'
 
 type Message = { role: 'user' | 'assistant'; content: string }
 
-export type PreviewImageSource = 'artDirector' | 'sanityOnly'
+export type PreviewImageSource = 'artDirector' | 'strapiOnly'
 
 type JioKarnaContextValue = {
   intentData: IntentFormData

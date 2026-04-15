@@ -3,23 +3,22 @@
 import React from 'react'
 
 import {
-  LabHeroBlock,
-  LabCardGridBlock,
-  LabFullBleedVerticalCarousel,
-  LabCarouselBlock,
-  LabRotatingMediaBlock,
-  LabTopNavBlock,
+  HeroBlock,
+  CardGridBlock,
+  FullBleedVerticalCarousel,
+  CarouselBlock,
+  RotatingMediaBlock,
+  TopNavBlock,
   EditorialBlock,
-  LabIconGridBlock,
-  LabMediaTextBlock,
-  LabProofPointsBlock,
-  LabMediaTextAsymmetricBlock,
-  LabMediaText5050Block,
-  WidthCap,
-  BlockShell,
-  mapMediaText5050BlockProps,
-} from '@design2code/block-library'
-import type { BlockPattern, LabHeroBlockProps, MediaTextBlockProps, LabCardItem, LabBlockCallToAction } from '@design2code/block-library'
+  IconGridBlock,
+  MediaTextStackedBlock,
+  ProofPointsBlock,
+  MediaTextAsymmetricBlock,
+  MediaText5050Block,
+} from '@design2code/block-library/lab'
+import type { HeroBlockProps, MediaTextStackedBlockProps, CardItem } from '@design2code/block-library/lab'
+import { WidthCap, BlockShell, mapMediaText5050BlockProps } from '@design2code/block-library'
+import type { BlockPattern } from '@design2code/block-library'
 import { Headline, Text } from '@marcelinodzn/ds-react'
 import { labStyleHeadlineVariantRail } from '@design2code/ds'
 import { labHeadlinePresets, labTextPresets } from '@design2code/ds'
@@ -248,7 +247,7 @@ function deriveLabPattern(block: LabBlock): BlockPattern {
   return 'contained'
 }
 
-function mapMediaTextBlock(block: LabBlock): MediaTextBlockProps {
+function mapMediaTextBlock(block: LabBlock): MediaTextStackedBlockProps {
   const rawTemplate = block.template as string
   /** Legacy: SideBySide is now mediaText5050; treat as Stacked. MediaOverlay → Overlay. */
   const template = (rawTemplate === 'SideBySide' || rawTemplate === 'sideBySide')
@@ -259,14 +258,14 @@ function mapMediaTextBlock(block: LabBlock): MediaTextBlockProps {
   /** Same aspect ratio for Stacked and Overlay so contained media containers match (2:1). */
   const imageAspectRatio = '2:1'
 
-  const variantMap: Record<string, MediaTextBlockProps['variant']> = {
+  const variantMap: Record<string, MediaTextStackedBlockProps['variant']> = {
     overlay: 'full-bleed',
     stacked: 'centered-media-below',
     textOnly: 'text-only',
   }
   const variant = variantMap[template] ?? 'centered-media-below'
 
-  const aspectRatioMap: Record<string, NonNullable<MediaTextBlockProps['media']>['aspectRatio']> = {
+  const aspectRatioMap: Record<string, NonNullable<MediaTextStackedBlockProps['media']>['aspectRatio']> = {
     '16:7': '16:9',
     '21:9': '16:9',
     '16:9': '16:9',
@@ -326,12 +325,12 @@ function mapMediaTextBlock(block: LabBlock): MediaTextBlockProps {
         : undefined,
     media,
     variant,
-    emphasis: block.emphasis as MediaTextBlockProps['emphasis'],
+    emphasis: block.emphasis as MediaTextStackedBlockProps['emphasis'],
     minimalBackgroundStyle: block.minimalBackgroundStyle as 'block' | 'gradient' | undefined,
-    appearance: (block.appearance ?? block.surfaceColour) as MediaTextBlockProps['appearance'] | undefined,
-    spacing: normalizeSpacing(block.spacing) as MediaTextBlockProps['spacing'],
-    spacingTop: block.spacingTop ? (normalizeSpacing(block.spacingTop) as MediaTextBlockProps['spacingTop']) : undefined,
-    spacingBottom: block.spacingBottom ? (normalizeSpacing(block.spacingBottom) as MediaTextBlockProps['spacingBottom']) : undefined,
+    appearance: (block.appearance ?? block.surfaceColour) as MediaTextStackedBlockProps['appearance'] | undefined,
+    spacing: normalizeSpacing(block.spacing) as MediaTextStackedBlockProps['spacing'],
+    spacingTop: block.spacingTop ? (normalizeSpacing(block.spacingTop) as MediaTextStackedBlockProps['spacingTop']) : undefined,
+    spacingBottom: block.spacingBottom ? (normalizeSpacing(block.spacingBottom) as MediaTextStackedBlockProps['spacingBottom']) : undefined,
     width,
     align: alignSource === 'center' || alignSource === 'left' ? alignSource : undefined,
     mediaStyle: 'contained',
@@ -353,16 +352,16 @@ function mapHeroBlockProps(block: LabBlock) {
     cta2Link: block.cta2Link as string | null,
     image: block.image as string | null,
     videoUrl: block.videoUrl as string | null,
-    contentLayout: (['stacked', 'sideBySide', 'category', 'mediaOverlay', 'textOnly'].includes(contentLayout) ? contentLayout : 'stacked') as LabHeroBlockProps['contentLayout'],
-    containerLayout: (containerLayout === 'contained' ? 'contained' : 'edgeToEdge') as LabHeroBlockProps['containerLayout'],
-    imageAnchor: ((block.imageAnchor as string) === 'bottom' ? 'bottom' : 'center') as LabHeroBlockProps['imageAnchor'],
-    textAlign: ((block.textAlign as string) === 'center' ? 'center' : 'left') as LabHeroBlockProps['textAlign'],
-    emphasis: block.emphasis as LabHeroBlockProps['emphasis'],
-    appearance: (block.appearance ?? block.surfaceColour) as LabHeroBlockProps['appearance'],
+    contentLayout: (['stacked', 'sideBySide', 'category', 'mediaOverlay', 'textOnly'].includes(contentLayout) ? contentLayout : 'stacked') as HeroBlockProps['contentLayout'],
+    containerLayout: (containerLayout === 'contained' ? 'contained' : 'edgeToEdge') as HeroBlockProps['containerLayout'],
+    imageAnchor: ((block.imageAnchor as string) === 'bottom' ? 'bottom' : 'center') as HeroBlockProps['imageAnchor'],
+    textAlign: ((block.textAlign as string) === 'center' ? 'center' : 'left') as HeroBlockProps['textAlign'],
+    emphasis: block.emphasis as HeroBlockProps['emphasis'],
+    appearance: (block.appearance ?? block.surfaceColour) as HeroBlockProps['appearance'],
   }
 }
 
-type LabBlockRendererProps = {
+type BlockRendererProps = {
   blocks: LabBlock[] | null | undefined
   /** When provided (e.g. block variant pages), use these as section titles instead of block type. */
   variantLabels?: string[]
@@ -372,7 +371,7 @@ type LabBlockRendererProps = {
   asymmetricBlockOpenLinksInNewTab?: boolean
 }
 
-export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlockOpenLinksInNewTab }: LabBlockRendererProps) {
+export function BlockRenderer({ blocks, variantLabels, clean, asymmetricBlockOpenLinksInNewTab }: BlockRendererProps) {
   if (!blocks?.length) return null
 
   const wrapSection = (content: React.ReactNode, block: LabBlock, i: number) => {
@@ -448,27 +447,27 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
         switch (block._type) {
           case 'hero': {
             const props = mapHeroBlockProps(block)
-            return wrapSection(<LabHeroBlock {...props} />, block, i)
+            return wrapSection(<HeroBlock {...props} />, block, i)
           }
           case 'mediaTextStacked': {
             const mapped = mapMediaTextBlock(block)
-            return wrapSection(<LabMediaTextBlock {...mapped} />, block, i)
+            return wrapSection(<MediaTextStackedBlock {...mapped} />, block, i)
           }
           case 'mediaText5050': {
             const mapped = mapMediaText5050BlockProps(block)
-            return wrapSection(<LabMediaText5050Block {...mapped} />, block, i)
+            return wrapSection(<MediaText5050Block {...mapped} />, block, i)
           }
           case 'cardGrid': {
             const cols = block.columns as string
-            const items = (block.items ?? []) as LabCardItem[]
+            const items = (block.items ?? []) as CardItem[]
             return wrapSection(
-              <LabCardGridBlock
+              <CardGridBlock
                 columns={parseInt(cols, 10) as 2 | 3 | 4}
                 interaction={(block.interaction as 'information' | 'navigation') ?? 'information'}
                 cardSurface={block.cardSurface as 'minimal' | 'subtle' | 'moderate' | 'bold' | 'inverted' | undefined}
                 title={block.title as string}
                 description={block.description as string | null | undefined}
-                callToActions={block.callToActions as LabBlockCallToAction[] | undefined}
+                callToActions={block.callToActions as { label: string; link?: string | null; style?: 'filled' | 'outlined' | null }[] | undefined}
                 emphasis={block.emphasis as 'ghost' | 'minimal' | 'subtle' | 'bold'}
                 minimalBackgroundStyle={(block.minimalBackgroundStyle as string)?.toLowerCase?.() === 'gradient' ? 'gradient' : 'block'}
                 appearance={(block.appearance ?? block.surfaceColour) as 'primary' | 'secondary' | 'sparkle' | 'neutral'}
@@ -492,13 +491,13 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
               aspectRatio: (it.aspectRatio as '4:5' | '8:5' | '2:1') ?? '4:5',
               imageSlot: it.imageSlot,
               backgroundColor: (it as { backgroundColor?: string | null }).backgroundColor,
-            })) as LabCardItem[]
+            })) as CardItem[]
             return wrapSection(
-              <LabCarouselBlock
+              <CarouselBlock
                 eyebrow={block.eyebrow as string | null | undefined}
                 title={block.title as string}
                 description={block.description as string | null | undefined}
-                callToActions={block.callToActions as LabBlockCallToAction[] | undefined}
+                callToActions={block.callToActions as { label: string; link?: string | null; style?: 'filled' | 'outlined' | null }[] | undefined}
                 interaction={(block.interaction as 'information' | 'navigation') ?? 'information'}
                 cardSurface={block.cardSurface as 'minimal' | 'subtle' | 'moderate' | 'bold' | 'inverted' | undefined}
                 cardSize={(block.cardSize as 'compact' | 'medium' | 'large') ?? 'medium'}
@@ -513,10 +512,10 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
           }
           case 'fullBleedVerticalCarousel': {
             return wrapSection(
-              <LabFullBleedVerticalCarousel
+              <FullBleedVerticalCarousel
                 title={block.title as string | null | undefined}
                 description={block.description as string | null | undefined}
-                callToActions={block.callToActions as LabBlockCallToAction[] | undefined}
+                callToActions={block.callToActions as { label: string; link?: string | null; style?: 'filled' | 'outlined' | null }[] | undefined}
                 emphasis={block.emphasis as 'ghost' | 'minimal' | 'subtle' | 'bold'}
                 appearance={(block.appearance ?? block.surfaceColour) as 'primary' | 'secondary' | 'sparkle' | 'neutral'}
                 items={block.items as { title?: string; description?: string; image?: string; video?: string }[]}
@@ -527,10 +526,10 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
           }
           case 'rotatingMedia': {
             return wrapSection(
-              <LabRotatingMediaBlock
+              <RotatingMediaBlock
                 title={block.title as string | null | undefined}
                 description={block.description as string | null | undefined}
-                callToActions={block.callToActions as LabBlockCallToAction[] | undefined}
+                callToActions={block.callToActions as { label: string; link?: string | null; style?: 'filled' | 'outlined' | null }[] | undefined}
                 variant={(block.variant as 'small' | 'large' | 'combined') ?? 'small'}
                 emphasis={block.emphasis as 'ghost' | 'minimal' | 'subtle' | 'bold'}
                 appearance={(block.appearance ?? block.surfaceColour) as 'primary' | 'secondary' | 'sparkle' | 'neutral'}
@@ -556,10 +555,10 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
                 }))
               : []
             return wrapSection(
-              <LabIconGridBlock
+              <IconGridBlock
                 title={block.title as string | null | undefined}
                 description={block.description as string | null | undefined}
-                callToActions={block.callToActions as LabBlockCallToAction[] | undefined}
+                callToActions={block.callToActions as { label: string; link?: string | null; style?: 'filled' | 'outlined' | null }[] | undefined}
                 items={items}
                 columns={(block.columns as 3 | 4 | 5 | 6) ?? undefined}
                 emphasis={block.emphasis as 'ghost' | 'minimal' | 'subtle' | 'bold'}
@@ -576,10 +575,10 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
             const ppAccValid = ppAcc && ['primary', 'secondary', 'sparkle', 'neutral'].includes(ppAcc) ? ppAcc : undefined
             const ppVariant = (block.variant as string)?.toLowerCase?.() === 'stat' ? 'stat' : 'icon'
             return wrapSection(
-              <LabProofPointsBlock
+              <ProofPointsBlock
                 title={block.title as string | null}
                 description={block.description as string | null | undefined}
-                callToActions={block.callToActions as LabBlockCallToAction[] | undefined}
+                callToActions={block.callToActions as { label: string; link?: string | null; style?: 'filled' | 'outlined' | null }[] | undefined}
                 variant={ppVariant}
                 emphasis={ppSurfValid as 'ghost' | 'minimal' | 'subtle' | 'bold'}
                 minimalBackgroundStyle={(block.minimalBackgroundStyle as string)?.toLowerCase?.() === 'gradient' ? 'gradient' : 'block'}
@@ -591,7 +590,7 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
             )
           }
           case 'topNavBlock': {
-            return wrapSection(<LabTopNavBlock />, block, i)
+            return wrapSection(<TopNavBlock />, block, i)
           }
           case 'editorialBlock': {
             const textArea = block.textArea as { topLeft?: { column?: number; row?: number }; bottomRight?: { column?: number; row?: number } } | undefined
@@ -600,7 +599,7 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
               <EditorialBlock
                 headline={block.headline as string | null}
                 description={block.description as string | null | undefined}
-                callToActions={block.callToActions as LabBlockCallToAction[] | undefined}
+                callToActions={block.callToActions as { label: string; link?: string | null; style?: 'filled' | 'outlined' | null }[] | undefined}
                 body={block.body as string | null}
                 backgroundImage={block.backgroundImage as string | null}
                 backgroundImagePositionX={block.backgroundImagePositionX as number | null}
@@ -654,7 +653,7 @@ export function LabBlockRenderer({ blocks, variantLabels, clean, asymmetricBlock
             const imageAspectRatio =
               ar === '5:4' || ar === '1:1' || ar === '4:5' ? (ar as '5:4' | '1:1' | '4:5') : undefined
             return wrapSection(
-              <LabMediaTextAsymmetricBlock
+              <MediaTextAsymmetricBlock
                 blockTitle={block.blockTitle as string | null}
                 variant={(block.variant as 'paragraphs' | 'faq' | 'links' | 'image') ?? 'paragraphs'}
                 paragraphLayout={paragraphLayout}

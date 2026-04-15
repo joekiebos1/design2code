@@ -12,12 +12,12 @@
  */
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { createTransition } from '@marcelinodzn/ds-tokens'
 import { Button, Icon, Headline, Text } from '@marcelinodzn/ds-react'
 import { WidthCap } from '../../production/WidthCap'
 import { getHeadlineSize, normalizeHeadingLevel } from '@design2code/ds'
 import { useGridBreakpoint } from '@design2code/ds'
-import { LabBlockFramingCallToActions } from '../../components/LabBlockFramingCallToActions'
 import {
   labBlockFramingDescriptionStyle,
   labBlockFramingIntroStackStyle,
@@ -316,13 +316,14 @@ function CombinedLayout({
   )
 }
 
-export function LabRotatingMediaBlock({
+export function RotatingMediaBlock({
   variant = 'small',
   title,
   description,
   callToActions,
   items,
 }: RotatingMediaBlockProps) {
+  const router = useRouter()
   const level = normalizeHeadingLevel('h2')
   const { isMobile } = useGridBreakpoint()
   const [isPaused, setIsPaused] = useState(false)
@@ -376,7 +377,26 @@ export function LabRotatingMediaBlock({
                     {description}
                   </Text>
                 )}
-                <LabBlockFramingCallToActions actions={callToActions} />
+                {callToActions?.filter((a) => a?.label?.trim()).length ? (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 'var(--ds-spacing-m)' }}>
+                    {callToActions.filter((a) => a.label.trim()).map((a) => (
+                      <Button
+                        key={a.label}
+                        appearance={a.style === 'outlined' ? 'secondary' : 'primary'}
+                        size="M"
+                        attention="high"
+                        onPress={() => {
+                          const h = (a.link ?? '').trim()
+                          if (!h) return
+                          if (h.startsWith('/')) router.push(h)
+                          else window.location.href = h
+                        }}
+                      >
+                        {a.label}
+                      </Button>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             </WidthCap>
           )}

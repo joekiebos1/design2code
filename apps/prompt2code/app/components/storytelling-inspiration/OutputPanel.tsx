@@ -413,7 +413,7 @@ function BlockRow({ block }: { block: Block }) {
                 color: grey.label,
                 fontWeight: 'var(--ds-typography-weight-low)',
                 lineHeight: 1.45,
-                fontStyle: 'italic',
+                fontStyle: 'normal',
               }}
             >
               {block.proof}

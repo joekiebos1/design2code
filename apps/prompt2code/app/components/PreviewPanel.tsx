@@ -32,7 +32,7 @@ export function PreviewPanel({ blocks, brief, imageUrls, videoUrls, step, sectio
   useEffect(() => { if (canEdit) setMode('edit') }, [canEdit])
 
   return (
-    <div className="flex-1 min-w-0 flex flex-col overflow-y-auto bg-[#f2f2f2]">
+    <div className="flex-1 min-w-0 flex flex-col bg-[#f2f2f2]">
 
       {/* ── Toolbar ─────────────────────────────────────────────────────────── */}
       <div className="sticky top-0 z-20 h-11 shrink-0 flex items-center justify-center gap-2 border-b border-black/[0.07] bg-[rgba(242,242,242,0.92)] backdrop-blur-md">
@@ -56,7 +56,7 @@ export function PreviewPanel({ blocks, brief, imageUrls, videoUrls, step, sectio
       </div>
 
       {/* ── Content ─────────────────────────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 min-h-0 flex flex-col">
 
         {step === 'idle' && (
           <div className="flex-1 flex items-center justify-center text-sm text-black/30">
@@ -72,25 +72,25 @@ export function PreviewPanel({ blocks, brief, imageUrls, videoUrls, step, sectio
         )}
 
         {isActive && canEdit && mode === 'edit' && (
-          <PageCanvas>
-            <EditablePreview
-              brief={brief!}
-              imageUrls={imageUrls}
-              videoUrls={videoUrls}
-              onBriefUpdate={onBriefUpdate}
-              scale={EDIT_SCALE}
-            />
-          </PageCanvas>
+          <EditablePreview
+            brief={brief!}
+            imageUrls={imageUrls}
+            videoUrls={videoUrls}
+            onBriefUpdate={onBriefUpdate}
+            scale={EDIT_SCALE}
+          />
         )}
 
         {isActive && (mode === 'preview' || !canEdit) && blocks && (
-          <PageCanvas>
-            <div style={{ width: viewport === '360' ? 360 : 1440, background: '#fff', flexShrink: 0 }}>
-              <ContentDsProvider>
-                <BlockRenderer blocks={blocks} />
-              </ContentDsProvider>
-            </div>
-          </PageCanvas>
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            <PageCanvas>
+              <div style={{ width: viewport === '360' ? 360 : 1440, background: '#fff', flexShrink: 0 }}>
+                <ContentDsProvider>
+                  <BlockRenderer blocks={blocks} />
+                </ContentDsProvider>
+              </div>
+            </PageCanvas>
+          </div>
         )}
       </div>
     </div>

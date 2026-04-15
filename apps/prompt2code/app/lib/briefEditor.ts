@@ -11,13 +11,14 @@ export function updateField(
   brief: PageBrief,
   sectionName: string,
   field: 'headline' | 'body' | 'subhead' | 'eyebrow',
-  value: string,
+  value: string | null,
 ): PageBrief {
+  const normalised = value === '' ? null : value
   return {
     ...brief,
     sections: brief.sections.map(s =>
       s.sectionName === sectionName
-        ? { ...s, contentSlots: { ...s.contentSlots, [field]: value } }
+        ? { ...s, contentSlots: { ...s.contentSlots, [field]: normalised } }
         : s
     ),
   }
@@ -26,16 +27,24 @@ export function updateField(
 export function updateCtaLabel(
   brief: PageBrief,
   sectionName: string,
-  value: string,
+  value: string | null,
 ): PageBrief {
+  const normalised = value === '' ? null : value
   return {
     ...brief,
     sections: brief.sections.map(s => {
       if (s.sectionName !== sectionName) return s
       const prev = s.contentSlots.cta
+      if (!normalised) {
+        // Clear label but keep destination if it already exists as an object
+        const cta = typeof prev === 'object' && prev != null
+          ? { ...prev, label: null }
+          : null
+        return { ...s, contentSlots: { ...s.contentSlots, cta } }
+      }
       const cta: SectionCTA = typeof prev === 'string' || prev == null
-        ? { label: value, destination: null, rationale: null }
-        : { ...prev, label: value }
+        ? { label: normalised, destination: null, rationale: null }
+        : { ...prev, label: normalised }
       return { ...s, contentSlots: { ...s.contentSlots, cta } }
     }),
   }
@@ -105,6 +114,55 @@ export function pinImage(brief: PageBrief, sectionName: string, imageUrl: string
         ? { ...s, _imageUrl: imageUrl } as Section & { _imageUrl: string }
         : s
     ),
+  }
+}
+
+// ─── Component swap ───────────────────────────────────────────────────────
+
+/** Block types that require an `items` array to render meaningfully. */
+const ITEMS_REQUIRED = new Set([
+  'cardGrid', 'carousel', 'proofPoints', 'mediaTextAsymmetric', 'mediaText5050',
+])
+
+/** Default number of placeholder items injected when swapping to an items-based block. */
+const DEFAULT_ITEM_COUNT: Record<string, number> = {
+  cardGrid: 3, carousel: 4, proofPoints: 3, mediaTextAsymmetric: 3, mediaText5050: 2,
+}
+
+/**
+ * Swaps the component type on a section.
+ * - All contentSlots are preserved (nothing wiped).
+ * - emphasis / appearance in blockOptions are preserved; variant-specific keys are reset.
+ * - If the new component needs items and none exist, placeholder items are injected.
+ */
+export function swapComponent(
+  brief: PageBrief,
+  sectionName: string,
+  newComponent: string,
+): PageBrief {
+  return {
+    ...brief,
+    sections: brief.sections.map(s => {
+      if (s.sectionName !== sectionName) return s
+
+      // Keep visual style, discard component-specific layout keys
+      const { emphasis, appearance } = s.blockOptions ?? {}
+      const nextOptions = { emphasis: emphasis ?? null, appearance: appearance ?? null }
+
+      // Ensure items exist if the new component requires them
+      const existingItems = Array.isArray(s.contentSlots.items) ? s.contentSlots.items : []
+      const count = DEFAULT_ITEM_COUNT[newComponent] ?? 3
+      const items = ITEMS_REQUIRED.has(newComponent) && existingItems.length === 0
+        ? Array.from({ length: count }, () => defaultItem(newComponent))
+        : s.contentSlots.items
+
+      return {
+        ...s,
+        component: newComponent,
+        blockOptions: nextOptions,
+        contentSlots: { ...s.contentSlots, items },
+      }
+    }),
   }
 }
 

@@ -13,7 +13,7 @@ import {
   labStyleLabPageMeta,
   labStyleLabPageTitle,
 } from '@design2code/ds'
-import { LabBlockRenderer, getBlockLayoutTitle } from '../LabBlockRenderer'
+import { BlockRenderer, getBlockLayoutTitle } from '../BlockRenderer'
 
 type LabBlockDetailClientProps = {
   title: string
@@ -58,7 +58,7 @@ export function LabBlockDetailClient({ title, blocks }: LabBlockDetailClientProp
           {blockList.length} layout variant{blockList.length !== 1 ? 's' : ''}
         </p>
       </div>
-      <LabBlockRenderer blocks={blockList as { _type: string; _key?: string; [key: string]: unknown }[]} variantLabels={variantLabels} />
+      <BlockRenderer blocks={blockList as { _type: string; _key?: string; [key: string]: unknown }[]} variantLabels={variantLabels} />
     </main>
   )
 }

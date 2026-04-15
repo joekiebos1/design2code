@@ -11,7 +11,6 @@ import type { CSSProperties } from 'react'
 import { createTransition } from '@marcelinodzn/ds-tokens'
 import { Headline, Text, Button, Icon, IcChevronLeft, IcChevronRight } from '@marcelinodzn/ds-react'
 import { getHeadlineSize, normalizeHeadingLevel } from '@design2code/ds'
-import type { LabBlockCallToAction } from '../lab-utils/lab-block-framing-typography'
 import {
   labBlockFramingDescriptionStyle,
   labBlockFramingDescriptionTextProps,
@@ -20,7 +19,7 @@ import {
   labBlockFramingTitleStyle,
 } from '../lab-utils/lab-block-framing-typography'
 import { hasLabBlockFraming } from '../lab-utils/has-lab-block-framing'
-import { LabBlockFramingCallToActions } from '../components/LabBlockFramingCallToActions'
+import { useRouter } from 'next/navigation'
 import { useGridBreakpoint, getBreakpointName } from '@design2code/ds'
 import { Grid, useCell } from '../components/blocks/Grid'
 import { WidthCap } from './WidthCap'
@@ -50,7 +49,7 @@ type CarouselAppearance = 'primary' | 'secondary' | 'sparkle' | 'neutral'
 type CarouselBlockProps = {
   title?: string | null
   description?: string | null
-  callToActions?: LabBlockCallToAction[] | null
+  callToActions?: { label: string; link?: string | null; style?: 'filled' | 'outlined' | null }[] | null
   interaction?: BlockInteraction
   cardSize?: CarouselCardSize
   emphasis?: CarouselEmphasis
@@ -218,6 +217,7 @@ export function CarouselBlock({
   items,
   images,
 }: CarouselBlockProps) {
+  const router = useRouter()
   const level = normalizeHeadingLevel('h2')
   const { columns, contentMaxL, columnWidth, gutter, isMobile, isTablet, isDesktop } = useGridBreakpoint()
 
@@ -496,7 +496,26 @@ export function CarouselBlock({
                   {description}
                 </Text>
               )}
-              <LabBlockFramingCallToActions actions={callToActions} />
+              {callToActions?.filter((a) => a?.label?.trim()).length ? (
+                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 'var(--ds-spacing-m)' }}>
+                  {callToActions.filter((a) => a.label.trim()).map((a) => (
+                    <Button
+                      key={a.label}
+                      appearance={a.style === 'outlined' ? 'secondary' : 'primary'}
+                      size="M"
+                      attention="high"
+                      onPress={() => {
+                        const h = (a.link ?? '').trim()
+                        if (!h) return
+                        if (h.startsWith('/')) router.push(h)
+                        else window.location.href = h
+                      }}
+                    >
+                      {a.label}
+                    </Button>
+                  ))}
+                </div>
+              ) : null}
             </div>
           </WidthCap>
         )}

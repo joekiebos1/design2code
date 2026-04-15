@@ -19,7 +19,7 @@ import { VideoWithControls } from '../../components/blocks/VideoWithControls'
 import { StreamImage } from '../../components/blocks/StreamImage'
 import { getSurfaceProviderProps, useBlockBackgroundColor } from '@design2code/ds'
 import { EDGE_TO_EDGE_BREAKOUT, useEdgeToEdgeMediaStyles } from '@design2code/ds'
-import type { MediaTextBlockProps } from './MediaTextBlock.types'
+import type { MediaTextStackedBlockProps } from './MediaTextBlock.types'
 import {
   LAB_TYPOGRAPHY_VARS,
   labPlainBodyStyle,
@@ -42,7 +42,7 @@ const ASPECT_RATIOS: Record<string, string> = {
   auto: 'auto',
 }
 
-export function LabMediaTextBlock({
+export function MediaTextStackedBlock({
   size,
   variant,
   width,
@@ -64,7 +64,7 @@ export function LabMediaTextBlock({
   media,
   imageSlot,
   imageState,
-}: MediaTextBlockProps) {
+}: MediaTextStackedBlockProps) {
   const router = useRouter()
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
 

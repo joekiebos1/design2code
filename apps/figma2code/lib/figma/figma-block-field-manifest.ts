@@ -5,7 +5,6 @@
  */
 
 import type { FigmaMappedSanityBlockType } from './figma-block-types.ts'
-import { BLOCK_ACCENT_OPTIONS, EMPHASIS_OPTIONS, DS_THEMES } from '@design2code/cms-schema'
 import {
   collectFigmaStringComponentProperties,
   figmaPropertyKeyMatchesFieldName,
@@ -14,6 +13,29 @@ import {
 
 /** Single-select enum field: value + Studio label (for Figma variant matching). */
 export type FigmaEnumOption = { value: string | number; title: string }
+
+const DS_THEMES: FigmaEnumOption[] = [
+  { value: 'MyJio', title: 'MyJio' },
+  { value: 'JioHome', title: 'JioHome' },
+  { value: 'JioMart', title: 'JioMart' },
+  { value: 'JioFinance', title: 'JioFinance' },
+  { value: 'JioGauSamridhhi', title: 'JioGauSamridhhi' },
+  { value: 'JioKrishi', title: 'JioKrishi' },
+]
+
+const BLOCK_ACCENT_OPTIONS: FigmaEnumOption[] = [
+  { value: 'primary', title: 'Primary' },
+  { value: 'secondary', title: 'Secondary' },
+  { value: 'sparkle', title: 'Sparkle' },
+  { value: 'neutral', title: 'Neutral' },
+]
+
+const EMPHASIS_OPTIONS: FigmaEnumOption[] = [
+  { value: 'ghost', title: 'Ghost (no background)' },
+  { value: 'minimal', title: 'Minimal' },
+  { value: 'subtle', title: 'Subtle' },
+  { value: 'bold', title: 'Bold' },
+]
 
 export type FigmaBlockEnumManifest = Record<string, readonly FigmaEnumOption[]>
 

@@ -1,9 +1,7 @@
-import type { LabBlockCallToAction } from './lab-block-framing-typography'
-
 export function hasLabBlockFraming(
   title?: string | null,
   description?: string | null,
-  callToActions?: LabBlockCallToAction[] | null,
+  callToActions?: { label: string; link?: string | null; style?: 'filled' | 'outlined' | null }[] | null,
   eyebrow?: string | null,
 ): boolean {
   const e = (eyebrow ?? '').toString().trim()

@@ -11,6 +11,7 @@ import {
   type TransitionEvent,
 } from 'react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import {
   Headline,
   Text,
@@ -18,6 +19,7 @@ import {
   IcChevronDown,
   IcChevronUp,
   SurfaceProvider,
+  Button,
 } from '@marcelinodzn/ds-react'
 import { createTransition } from '@marcelinodzn/ds-tokens'
 import { Grid, useCell } from '../../components/blocks/Grid'
@@ -40,7 +42,6 @@ import {
   labStyleHeadlineAltProminent,
 } from '@design2code/ds'
 import { labHeadlinePresets, labTextPresets } from '@design2code/ds'
-import { LabBlockFramingCallToActions } from '../../components/LabBlockFramingCallToActions'
 import {
   labBlockFramingDescriptionStyle,
   labBlockFramingIntroStackStyle,
@@ -374,6 +375,7 @@ export function MediaText5050Block({
   imageSlot,
   imageState,
 }: MediaText5050BlockProps) {
+  const router = useRouter()
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
   /** `null` = all panels closed — media column uses first panel’s asset (index 0). */
   const [accordionOpenIndex, setAccordionOpenIndex] = useState<number | null>(0)
@@ -627,10 +629,26 @@ export function MediaText5050Block({
                   {description}
                 </Text>
               ) : null}
-              <LabBlockFramingCallToActions
-                actions={callToActions}
-                align={blockFramingAlignment === 'center' ? 'center' : 'left'}
-              />
+              {callToActions?.filter((a) => a?.label?.trim()).length ? (
+                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: blockFramingAlignment === 'center' ? 'center' : 'flex-start', gap: 'var(--ds-spacing-m)' }}>
+                  {callToActions.filter((a) => a.label.trim()).map((a) => (
+                    <Button
+                      key={a.label}
+                      appearance={a.style === 'outlined' ? 'secondary' : 'primary'}
+                      size="M"
+                      attention="high"
+                      onPress={() => {
+                        const h = (a.link ?? '').trim()
+                        if (!h) return
+                        if (h.startsWith('/')) router.push(h)
+                        else window.location.href = h
+                      }}
+                    >
+                      {a.label}
+                    </Button>
+                  ))}
+                </div>
+              ) : null}
             </div>
           </WidthCap>
         </div>

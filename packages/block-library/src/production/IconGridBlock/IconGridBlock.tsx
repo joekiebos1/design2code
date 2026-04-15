@@ -6,7 +6,8 @@
  * Supports block surface (ghost, minimal, subtle, bold) for dark/coloured backgrounds.
  */
 
-import { Headline, Text, Icon } from '@marcelinodzn/ds-react'
+import { useRouter } from 'next/navigation'
+import { Headline, Text, Icon, Button } from '@marcelinodzn/ds-react'
 import { Grid, useCell } from '../../components/blocks/Grid'
 import { WidthCap } from '../WidthCap'
 import { useGridBreakpoint } from '@design2code/ds'
@@ -19,7 +20,6 @@ import {
   labBlockFramingTitleStyle,
 } from '../../lab-utils/lab-block-framing-typography'
 import { hasLabBlockFraming } from '../../lab-utils/has-lab-block-framing'
-import { LabBlockFramingCallToActions } from '../../components/LabBlockFramingCallToActions'
 import { getPrimaryColor } from '@design2code/ds'
 import { getIconGridIcon } from './icon-grid-icons'
 import type { IconGridItem, IconGridAccentColor, IconGridBlockProps } from './IconGridBlock.types'
@@ -135,6 +135,7 @@ export function IconGrid({
   items,
   columns,
 }: IconGridBlockProps) {
+  const router = useRouter()
   const level = normalizeHeadingLevel('h2')
   const { columns: gridColumns, isMobile } = useGridBreakpoint()
   const items_ = (items ?? []).filter((i) => i?.title).slice(0, 20)
@@ -183,7 +184,26 @@ export function IconGrid({
                   {description}
                 </Text>
               )}
-              <LabBlockFramingCallToActions actions={callToActions} />
+              {callToActions?.filter((a) => a?.label?.trim()).length ? (
+                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 'var(--ds-spacing-m)' }}>
+                  {callToActions.filter((a) => a.label.trim()).map((a) => (
+                    <Button
+                      key={a.label}
+                      appearance={a.style === 'outlined' ? 'secondary' : 'primary'}
+                      size="M"
+                      attention="high"
+                      onPress={() => {
+                        const h = (a.link ?? '').trim()
+                        if (!h) return
+                        if (h.startsWith('/')) router.push(h)
+                        else window.location.href = h
+                      }}
+                    >
+                      {a.label}
+                    </Button>
+                  ))}
+                </div>
+              ) : null}
             </div>
           </WidthCap>
         )}

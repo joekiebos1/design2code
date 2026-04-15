@@ -5,12 +5,12 @@
  * Top nav + main content area. DsProvider comes from root layout.
  */
 
-import { LabTopNavBlock } from '@design2code/block-library'
+import { TopNavBlock } from '@design2code/block-library/lab'
 
 export function LabShell({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
-      <LabTopNavBlock />
+      <TopNavBlock />
       {children}
     </div>
   )

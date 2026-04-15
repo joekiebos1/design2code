@@ -1,13 +1,14 @@
 'use client'
 
 /**
- * LabCarouselBlock — Lab carousel. All cards overflow (visible).
+ * CarouselBlock — Lab carousel. All cards overflow (visible).
  *
  * Per lib/blocks/layout-rules.md (Carousel section). WidthCap only. Cards overflow the viewport.
  */
 
 import { useRef, useState, useEffect } from 'react'
 import type { CSSProperties } from 'react'
+import { useRouter } from 'next/navigation'
 import { createTransition } from '@marcelinodzn/ds-tokens'
 import { Headline, Text, Label, Button, Icon, IcChevronLeft, IcChevronRight } from '@marcelinodzn/ds-react'
 import { getHeadlineSize, normalizeHeadingLevel } from '@design2code/ds'
@@ -15,8 +16,7 @@ import { useGridBreakpoint, getBreakpointName } from '@design2code/ds'
 import { Grid, useCell } from '../../components/blocks/Grid'
 import { WidthCap } from '../../production/WidthCap'
 import { useCarouselReveal } from '@design2code/ds'
-import { LabCardRenderer, type LabCardItem, type CardSurface } from '../LabCardRenderer'
-import { LabBlockFramingCallToActions } from '../../components/LabBlockFramingCallToActions'
+import { CardRenderer, type CardItem, type CardSurface } from '../CardRenderer'
 import {
   labBlockFramingDescriptionStyle,
   labBlockFramingEyebrowStyle,
@@ -24,11 +24,10 @@ import {
   labBlockFramingTitleStyle,
 } from '../../lab-utils/lab-block-framing-typography'
 import { hasLabBlockFraming } from '../../lab-utils/has-lab-block-framing'
-import type { LabBlockCallToAction } from '../../lab-utils/lab-block-framing-typography'
 import { labHeadlinePresets, labTextPresets } from '@design2code/ds'
 import type { BlockInteraction } from '../../production/CardGridBlock/CardGridBlock.types'
 
-type CarouselItem = LabCardItem
+type CarouselItem = CardItem
 
 type CarouselCardSize = 'compact' | 'medium' | 'large'
 
@@ -36,11 +35,11 @@ type CarouselEmphasis = 'ghost' | 'minimal' | 'subtle' | 'bold'
 
 type CarouselAppearance = 'primary' | 'secondary' | 'sparkle' | 'neutral'
 
-export type LabCarouselBlockProps = {
+export type CarouselBlockProps = {
   eyebrow?: string | null
   title?: string | null
   description?: string | null
-  callToActions?: LabBlockCallToAction[] | null
+  callToActions?: { label: string; link?: string | null; style?: 'filled' | 'outlined' | null }[] | null
   interaction?: BlockInteraction
   cardSurface?: CardSurface
   cardSize?: CarouselCardSize
@@ -207,7 +206,7 @@ function NavButton({
   )
 }
 
-export function LabCarouselBlock({
+export function CarouselBlock({
   eyebrow,
   title,
   description,
@@ -218,7 +217,8 @@ export function LabCarouselBlock({
   emphasis = 'ghost',
   items,
   images,
-}: LabCarouselBlockProps) {
+}: CarouselBlockProps) {
+  const router = useRouter()
   const level = normalizeHeadingLevel('h2')
   const { columns, contentMaxL, columnWidth, gutter, isMobile, isTablet } = useGridBreakpoint()
 
@@ -518,7 +518,26 @@ export function LabCarouselBlock({
                   {description}
                 </Text>
               )}
-              <LabBlockFramingCallToActions actions={callToActions} />
+              {callToActions?.filter((a) => a?.label?.trim()).length ? (
+                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 'var(--ds-spacing-m)' }}>
+                  {callToActions.filter((a) => a.label.trim()).map((a) => (
+                    <Button
+                      key={a.label}
+                      appearance={a.style === 'outlined' ? 'secondary' : 'primary'}
+                      size="M"
+                      attention="high"
+                      onPress={() => {
+                        const h = (a.link ?? '').trim()
+                        if (!h) return
+                        if (h.startsWith('/')) router.push(h)
+                        else window.location.href = h
+                      }}
+                    >
+                      {a.label}
+                    </Button>
+                  ))}
+                </div>
+              ) : null}
             </div>
           </WidthCap>
         )}
@@ -610,7 +629,7 @@ export function LabCarouselBlock({
                               transition: isWrapping || prefersReducedMotion ? 'none' : cardEntranceTransition,
                             }}
                           >
-                            <LabCardRenderer
+                            <CardRenderer
                               item={item}
                               prefersReducedMotion={prefersReducedMotion}
                               context="carousel"
@@ -657,7 +676,7 @@ export function LabCarouselBlock({
                             transition: cardEntranceTransition,
                           }}
                         >
-                          <LabCardRenderer
+                          <CardRenderer
                             item={item}
                             prefersReducedMotion={prefersReducedMotion}
                             context="carousel"

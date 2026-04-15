@@ -1,17 +1,17 @@
 'use client'
 
 /**
- * Lab entry for Hero — delegates to production `HeroBlock` after promotion.
- * Edit `app/blocks/HeroBlock.tsx` for behaviour; extend here only for lab-only experiments.
+ * Lab entry for Hero — delegates to production HeroBlock.
+ * Edit production/HeroBlock.tsx for behaviour; extend here for lab-only experiments.
  */
 
 export {
-  HeroBlock as LabHeroBlock,
-  type HeroBlockProps as LabHeroBlockProps,
-  type HeroContentLayout as LabHeroContentLayout,
-  type HeroContainerLayout as LabHeroContainerLayout,
-  type HeroImageAnchor as LabHeroImageAnchor,
-  type HeroTextAlign as LabHeroTextAlign,
-  type HeroEmphasis as LabHeroEmphasis,
-  type HeroSurfaceColour as LabHeroSurfaceColour,
+  HeroBlock,
+  type HeroBlockProps,
+  type HeroContentLayout,
+  type HeroContainerLayout,
+  type HeroImageAnchor,
+  type HeroTextAlign,
+  type HeroEmphasis,
+  type HeroSurfaceColour,
 } from '../../production/HeroBlock'

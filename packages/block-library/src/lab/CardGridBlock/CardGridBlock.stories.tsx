@@ -1,14 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { LabCardGridBlock } from './LabCardGridBlock'
+import { CardGridBlock } from './CardGridBlock'
 
-const meta: Meta<typeof LabCardGridBlock> = {
-  component: LabCardGridBlock,
+const meta: Meta<typeof CardGridBlock> = {
+  component: CardGridBlock,
   title: 'Blocks/Lab/CardGrid',
   parameters: { layout: 'fullscreen' },
 }
 export default meta
 
-type Story = StoryObj<typeof LabCardGridBlock>
+type Story = StoryObj<typeof CardGridBlock>
 
 const colourIconItems = [
   {

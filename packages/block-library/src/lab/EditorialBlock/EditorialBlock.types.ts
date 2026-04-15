@@ -1,12 +1,10 @@
 export type GridPosition = { column?: number; row?: number } | null
 
-import type { LabBlockCallToAction } from '../../lab-utils/lab-block-framing-typography'
-
 export type EditorialBlockProps = {
   headline?: string | null
   /** Section intro below headline (Sanity field name: description). */
   description?: string | null
-  callToActions?: LabBlockCallToAction[] | null
+  callToActions?: { label: string; link?: string | null; style?: 'filled' | 'outlined' | null }[] | null
   body?: string | null
   backgroundImage?: string | null
   /** Background image position X: 0 = left, 50 = center, 100 = right. */

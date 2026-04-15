@@ -5,7 +5,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ['@design2code/ds', '@design2code/block-library', '@design2code/sanity', '@design2code/cms-schema', '@design2code/cms'],
+  transpilePackages: ['@design2code/ds', '@design2code/block-library', '@design2code/strapi'],
   turbopack: {
     root: path.resolve(__dirname, '../..'),
   },
@@ -13,7 +13,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'cdn.sanity.io',
+        hostname: 'fearless-power-59058e4b71.strapiapp.com',
         pathname: '/**',
       },
       {
@@ -29,11 +29,6 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'storage.googleapis.com',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'rkmupomdjphheifqiblt.supabase.co',
         pathname: '/**',
       },
     ],

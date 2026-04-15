@@ -59,15 +59,15 @@ const inputCls =
 const selectCls = inputCls + ' appearance-none pr-8 cursor-pointer'
 
 const primaryBtnCls =
-  'w-full px-4 py-2 rounded-md bg-primary text-white text-sm font-medium ' +
+  'h-9 w-full flex items-center justify-center px-4 rounded-md bg-primary text-white text-sm font-medium ' +
   'hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer'
 
 const secondaryBtnCls =
-  'w-full px-4 py-2 rounded-md border border-gray-200 bg-gray-50 text-gray-600 text-sm font-medium ' +
-  'hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer'
+  'h-9 w-full flex items-center justify-center px-4 rounded-md bg-secondary text-secondary-text text-sm font-medium ' +
+  'hover:bg-secondary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer'
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <label className="block text-sm font-medium text-gray-900 mb-1.5">{children}</label>
+  return <label className="block text-sm text-gray-500 mb-1.5">{children}</label>
 }
 
 function ChevronDown() {
@@ -145,7 +145,7 @@ function SuggestionCard({
           </svg>
         )}
       </div>
-      <span className="flex-1 text-xs text-gray-800 leading-snug">{text}</span>
+      <span className="flex-1 text-sm text-gray-800 leading-snug">{text}</span>
       <button
         onClick={e => { e.stopPropagation(); onDismiss() }}
         className="shrink-0 w-5 h-5 flex items-center justify-center text-gray-300 hover:text-gray-500 transition-colors"
@@ -355,15 +355,15 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
       {/* ── Brief content — scrollable ─────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto px-5">
         {!hasBriefContent ? (
-          <p className="text-[12px] text-gray-300 italic py-2">Your brief will appear here</p>
+          <p className="text-sm text-gray-300 py-2">Your brief will appear here</p>
         ) : (
           <>
             {/* Product / page identity */}
             <div className={`flex items-baseline gap-2 py-2 ${confirmed.length > 0 ? 'border-b border-gray-100' : ''}`}>
-              <span className="text-[13px] font-semibold text-gray-900 tracking-tight">
+              <span className="text-sm font-semibold text-gray-900">
                 {productName}
               </span>
-              <span className="text-[11px] text-gray-400">
+              <span className="text-sm text-gray-400">
                 {PAGE_TYPE_LABELS[pageType]}
                 {pageType === 'product-page' && ` · ${productType === 'software' ? 'App / Software' : 'Hardware'}`}
               </span>
@@ -378,10 +378,10 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                 </div>
-                <span className="flex-1 text-[12px] text-gray-500 leading-snug">{fact}</span>
+                <span className="flex-1 text-sm text-gray-500 leading-snug">{fact}</span>
                 <button
                   onClick={() => setConfirmed(prev => prev.filter((_, j) => j !== i))}
-                  className="text-[10px] text-gray-300 hover:text-red-400 transition-colors px-1"
+                  className="text-sm text-gray-300 hover:text-red-400 transition-colors px-1"
                 >✕</button>
               </div>
             ))}
@@ -389,8 +389,8 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
             {/* Key message preview in step 3 */}
             {step === 3 && keyMessage && (
               <div className={`py-2 ${confirmed.length > 0 ? 'border-t border-gray-100 mt-1' : ''}`}>
-                <p className="text-[11px] text-gray-400 mb-1">Key message</p>
-                <p className="text-[12px] text-gray-500 leading-snug italic">"{keyMessage}"</p>
+                <p className="text-sm text-gray-400 mb-1">Key message</p>
+                <p className="text-sm text-gray-500 leading-snug">"{keyMessage}"</p>
               </div>
             )}
           </>
@@ -465,7 +465,7 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
         {step === 2 && (
           <>
             {inferring && (
-              <p className="text-[12px] text-gray-400 text-center py-1.5">
+              <p className="text-sm text-gray-400 text-center py-1.5">
                 Looking up {productName}…
               </p>
             )}
@@ -483,12 +483,12 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
 
             {fetchingMore && visibleCards.length < 3 && (
               <div className="h-10 rounded-lg border border-dashed border-primary/10 bg-primary/[0.02] flex items-center justify-center">
-                <span className="text-[11px] text-gray-300">loading more…</span>
+                <span className="text-sm text-gray-300">loading more…</span>
               </div>
             )}
 
             {!inferring && !fetchingMore && !hasMore && visibleCards.length === 0 && confirmed.length > 0 && (
-              <p className="text-[11px] text-gray-400 text-center">
+              <p className="text-sm text-gray-400 text-center">
                 That's all I know — add anything I missed below
               </p>
             )}
@@ -520,14 +520,14 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
             <div className="flex gap-2">
               <button
                 onClick={() => setStep(1)}
-                className="px-4 py-2 rounded-md border border-gray-200 bg-gray-50 text-gray-600 text-sm font-medium hover:bg-gray-100 transition-colors cursor-pointer"
+                className="h-9 flex items-center justify-center px-4 rounded-md bg-secondary text-secondary-text text-sm font-medium hover:bg-secondary-hover transition-colors cursor-pointer"
               >
                 ← Back
               </button>
               <button
                 disabled={confirmed.length < MIN_FACTS}
                 onClick={() => setStep(3)}
-                className={primaryBtnCls}
+                className="h-9 flex-1 flex items-center justify-center px-4 rounded-md bg-primary text-white text-sm font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
                 {confirmed.length < MIN_FACTS
                   ? `${MIN_FACTS - confirmed.length} more to go`
@@ -542,22 +542,18 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
           <>
             <div>
               <FieldLabel>Primary action</FieldLabel>
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-2">
                 {PRIMARY_ACTIONS.filter(({ type }) => type === null || type === productType).map(({ value }) => (
                   <button
                     key={value}
                     onClick={() => setPrimaryAction(value)}
                     className={[
-                      'flex items-center gap-2.5 px-3 py-2 text-sm border rounded-md text-left transition-colors',
+                      'h-9 w-full flex items-center px-3 rounded-md text-sm font-medium text-left transition-colors cursor-pointer',
                       primaryAction === value
-                        ? 'border-primary bg-primary/5 text-gray-900 font-medium'
-                        : 'border-gray-200 text-gray-500 hover:bg-gray-50',
+                        ? 'bg-primary text-white'
+                        : 'bg-secondary text-secondary-text hover:bg-secondary-hover',
                     ].join(' ')}
                   >
-                    <div className={[
-                      'shrink-0 w-3 h-3 rounded-full border-2 transition-colors',
-                      primaryAction === value ? 'border-primary' : 'border-gray-300',
-                    ].join(' ')} />
                     {value}
                   </button>
                 ))}
@@ -580,16 +576,16 @@ export function InputPanel({ onSubmit, isLoading }: InputPanelProps) {
                   onClick={() => setEditingMessage(true)}
                   className={[
                     'w-full px-3 py-2 text-sm border border-gray-200 rounded-md bg-gray-50 cursor-text leading-relaxed',
-                    keyMessage ? 'text-gray-900' : 'text-gray-400 italic',
+                    keyMessage ? 'text-gray-900' : 'text-gray-400',
                   ].join(' ')}
                 >
                   {keyMessage || 'One sentence — the core promise…'}
-                  {keyMessage && <span className="ml-1.5 text-[10px] text-gray-400">✎</span>}
+                  {keyMessage && <span className="ml-1.5 text-sm text-gray-400">✎</span>}
                 </div>
               )}
             </div>
 
-            <div className="flex flex-col gap-2 pt-1">
+            <div className="flex flex-col gap-2">
               <button
                 onClick={handleGenerate}
                 disabled={isLoading}

@@ -6,12 +6,12 @@
  * Column count (3–6) derived from item count; responsive on smaller screens.
  */
 
-import { Text, Icon, Headline } from '@marcelinodzn/ds-react'
+import { useRouter } from 'next/navigation'
+import { Text, Icon, Headline, Button } from '@marcelinodzn/ds-react'
 import { Grid, useCell } from '../../components/blocks/Grid'
 import { WidthCap } from '../../production/WidthCap'
 import { useGridBreakpoint } from '@design2code/ds'
 import { normalizeHeadingLevel } from '@design2code/ds'
-import { LabBlockFramingCallToActions } from '../../components/LabBlockFramingCallToActions'
 import {
   labBlockFramingDescriptionStyle,
   labBlockFramingIntroStackStyle,
@@ -106,14 +106,15 @@ function IconGridCard({ item }: { item: IconGridItem }) {
   )
 }
 
-export function LabIconGridBlock({ title, description, callToActions, items, columns }: IconGridBlockProps) {
+export function IconGridBlock({ title, description, callToActions, items, columns }: IconGridBlockProps) {
+  const router = useRouter()
   const level = normalizeHeadingLevel('h2')
   const { columns: gridColumns, isMobile } = useGridBreakpoint()
   const items_ = (items ?? []).filter((i) => i?.title).slice(0, 20)
   const cols = deriveColumns(items_.length, columns)
 
   const colsResponsive =
-    gridColumns <= 4 ? 2 : gridColumns <= 8 ? Math.min(3, cols) : 6
+    gridColumns <= 4 ? 2 : gridColumns <= 8 ? Math.min(3, cols) : cols
   const gridTemplateColumns = `repeat(${colsResponsive}, minmax(0, 1fr))`
 
   if (items_.length === 0) return null
@@ -150,7 +151,26 @@ export function LabIconGridBlock({ title, description, callToActions, items, col
                   {description}
                 </Text>
               )}
-              <LabBlockFramingCallToActions actions={callToActions} />
+              {callToActions?.filter((a) => a?.label?.trim()).length ? (
+                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 'var(--ds-spacing-m)' }}>
+                  {callToActions.filter((a) => a.label.trim()).map((a) => (
+                    <Button
+                      key={a.label}
+                      appearance={a.style === 'outlined' ? 'secondary' : 'primary'}
+                      size="M"
+                      attention="high"
+                      onPress={() => {
+                        const h = (a.link ?? '').trim()
+                        if (!h) return
+                        if (h.startsWith('/')) router.push(h)
+                        else window.location.href = h
+                      }}
+                    >
+                      {a.label}
+                    </Button>
+                  ))}
+                </div>
+              ) : null}
             </div>
           </WidthCap>
         )}
@@ -158,7 +178,7 @@ export function LabIconGridBlock({ title, description, callToActions, items, col
           style={{
             display: 'grid',
             gridTemplateColumns,
-            gap: 'var(--ds-spacing-2xl)',
+            gap: isMobile ? 'var(--ds-spacing-l)' : 'var(--ds-spacing-2xl)',
             alignItems: 'stretch',
           }}
         >

@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * Renders LabCardItem for both grid and carousel.
+ * Renders CardItem for both grid and carousel.
  * Single renderer for unified lab cards.
  */
 
@@ -12,7 +12,7 @@ import type { BlockInteraction } from '../production/CardGridBlock/CardGridBlock
 
 export type CardSurface = 'minimal' | 'subtle' | 'moderate' | 'bold' | 'inverted'
 
-export type LabCardItem = {
+export type CardItem = {
   _type?: 'labCardItem'
   cardType?: string
   title?: string | null
@@ -53,7 +53,7 @@ function resolveCardSurface(
   }
 }
 
-export function LabCardRenderer({
+export function CardRenderer({
   item,
   prefersReducedMotion,
   imageState,
@@ -67,7 +67,7 @@ export function LabCardRenderer({
   cardSurface,
   emphasis,
 }: {
-  item: LabCardItem
+  item: CardItem
   prefersReducedMotion: boolean
   imageState?: ImageSlotState
   gridColumns?: number

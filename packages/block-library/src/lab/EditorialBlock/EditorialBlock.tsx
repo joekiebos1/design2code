@@ -29,7 +29,6 @@ import {
   labHeadlinePresets,
   labTextPresets,
 } from '@design2code/ds'
-import { LabBlockFramingCallToActions } from '../../components/LabBlockFramingCallToActions'
 import { labBlockFramingDescriptionStyle } from '../../lab-utils/lab-block-framing-typography'
 
 function fromCorners(
@@ -179,7 +178,22 @@ export function EditorialBlock({
         )}
         {callToActions?.some((a) => (a?.label ?? '').toString().trim().length > 0) ? (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--ds-spacing-m)', justifyContent: textAlignStyle === 'center' ? 'center' : 'flex-start' }}>
-            <LabBlockFramingCallToActions actions={callToActions} />
+            {callToActions.filter((a) => (a?.label ?? '').toString().trim()).map((a) => (
+              <Button
+                key={a.label}
+                appearance={a.style === 'outlined' ? 'secondary' : 'primary'}
+                size="M"
+                attention="high"
+                onPress={() => {
+                  const h = (a.link ?? '').trim()
+                  if (!h) return
+                  if (h.startsWith('/')) router.push(h)
+                  else window.location.href = h
+                }}
+              >
+                {a.label}
+              </Button>
+            ))}
           </div>
         ) : (
           ctaText &&

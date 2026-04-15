@@ -74,7 +74,7 @@ function isL2MainItemObject(item: L2MainItem): item is { label: string; showArro
   return typeof item === 'object' && item !== null && 'label' in item
 }
 
-export function LabTopNavBlock() {
+export function TopNavBlock() {
   const [openL1, setOpenL1] = useState<string | null>(null)
   const [mobileExpandedL2, setMobileExpandedL2] = useState<string | null>(null)
   const [businessHoverL2, setBusinessHoverL2] = useState<string | null>(null)

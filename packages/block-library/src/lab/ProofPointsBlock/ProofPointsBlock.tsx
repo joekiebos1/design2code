@@ -1,17 +1,17 @@
 'use client'
 
 import type { CSSProperties } from 'react'
-import { Headline, Text, Icon, SurfaceProvider } from '@marcelinodzn/ds-react'
+import { useRouter } from 'next/navigation'
+import { Headline, Text, Icon, SurfaceProvider, Button } from '@marcelinodzn/ds-react'
 import { createTransition } from '@marcelinodzn/ds-tokens'
 import { Grid, useCell } from '../../components/blocks/Grid'
 import { useCarouselReveal, getSurfaceProviderProps, useGridBreakpoint } from '@design2code/ds'
 import { getProofPointIcon } from '../../lib/proof-point-icons'
 import { normalizeHeadingLevel, type HeadingLevel } from '@design2code/ds'
 import { labHeadlinePresets, labTextPresets } from '@design2code/ds'
-import { LabBlockFramingCallToActions } from '../../components/LabBlockFramingCallToActions'
 import { labBlockFramingDescriptionStyle } from '../../lab-utils/lab-block-framing-typography'
 import { hasLabBlockFraming } from '../../lab-utils/has-lab-block-framing'
-import type { LabProofPointsBlockProps, LabProofPointItem } from './LabProofPointsBlock.types'
+import type { ProofPointsBlockProps, LabProofPointItem } from './ProofPointsBlock.types'
 
 const DEFAULT_ICON_NAME = 'IcCheckboxOn'
 const MAX_ITEMS = 8
@@ -104,9 +104,10 @@ function FramingColumn({
 }: {
   title?: string | null
   description?: string | null
-  callToActions: LabProofPointsBlockProps['callToActions']
+  callToActions: ProofPointsBlockProps['callToActions']
   level: HeadingLevel
 }) {
+  const router = useRouter()
   return (
     <div
       style={{
@@ -142,19 +143,38 @@ function FramingColumn({
           {description}
         </Text>
       )}
-      <LabBlockFramingCallToActions actions={callToActions} align="left" />
+      {callToActions?.filter((a) => a?.label?.trim()).length ? (
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-start', gap: 'var(--ds-spacing-m)' }}>
+          {callToActions.filter((a) => a.label.trim()).map((a) => (
+            <Button
+              key={a.label}
+              appearance={a.style === 'outlined' ? 'secondary' : 'primary'}
+              size="M"
+              attention="high"
+              onPress={() => {
+                const h = (a.link ?? '').trim()
+                if (!h) return
+                if (h.startsWith('/')) router.push(h)
+                else window.location.href = h
+              }}
+            >
+              {a.label}
+            </Button>
+          ))}
+        </div>
+      ) : null}
     </div>
   )
 }
 
-export function LabProofPointsBlock({
+export function ProofPointsBlock({
   title,
   description,
   callToActions,
   variant,
   emphasis,
   items,
-}: LabProofPointsBlockProps) {
+}: ProofPointsBlockProps) {
   const level = normalizeHeadingLevel('h2')
   const items_ = (items?.filter((i) => i?.title) ?? []).slice(0, MAX_ITEMS)
   const cell = useCell('L')
@@ -179,7 +199,7 @@ export function LabProofPointsBlock({
   })
 
   const listColumnStyle: CSSProperties = {
-    paddingLeft: 'var(--ds-spacing-4xl)',
+    paddingLeft: hasFraming && !isMobile ? 'var(--ds-spacing-4xl)' : undefined,
     minWidth: 0,
   }
 

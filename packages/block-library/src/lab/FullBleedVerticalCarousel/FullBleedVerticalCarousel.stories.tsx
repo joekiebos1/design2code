@@ -1,14 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { LabFullBleedVerticalCarousel } from './FullBleedVerticalCarousel'
+import { FullBleedVerticalCarousel } from './FullBleedVerticalCarousel'
 
-const meta: Meta<typeof LabFullBleedVerticalCarousel> = {
-  component: LabFullBleedVerticalCarousel,
+const meta: Meta<typeof FullBleedVerticalCarousel> = {
+  component: FullBleedVerticalCarousel,
   title: 'Blocks/Lab/FullBleedVerticalCarousel',
   parameters: { layout: 'fullscreen' },
 }
 export default meta
 
-type Story = StoryObj<typeof LabFullBleedVerticalCarousel>
+type Story = StoryObj<typeof FullBleedVerticalCarousel>
 
 const items = [
   { title: 'Story 1', description: 'First story description.', image: '/placeholder-preview.svg' },

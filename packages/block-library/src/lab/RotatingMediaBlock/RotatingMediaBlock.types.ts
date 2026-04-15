@@ -1,5 +1,3 @@
-import type { LabBlockCallToAction } from '../../lab-utils/lab-block-framing-typography'
-
 export type RotatingMediaVariant = 'small' | 'large' | 'combined'
 
 export type RotatingMediaItem = {
@@ -17,7 +15,7 @@ export type RotatingMediaBlockProps = {
   variant?: RotatingMediaVariant
   title?: string | null
   description?: string | null
-  callToActions?: LabBlockCallToAction[] | null
+  callToActions?: { label: string; link?: string | null; style?: 'filled' | 'outlined' | null }[] | null
   items?: RotatingMediaItem[] | null
   emphasis?: 'ghost' | 'minimal' | 'subtle' | 'bold'
   appearance?: RotatingMediaBlockAppearance

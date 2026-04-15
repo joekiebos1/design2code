@@ -13,8 +13,6 @@
       "@design2code/block-library/*": ["../../packages/block-library/src/*"],
       "@design2code/ds": ["../../packages/ds/src/index.ts"],
       "@design2code/ds/*": ["../../packages/ds/src/*"],
-      "@design2code/sanity": ["../../packages/sanity/src/index.ts"],
-      "@design2code/cms-schema": ["../../packages/cms-schema/src/index.ts"],
       "@marcelinodzn/ds-react": ["../../node_modules/@marcelinodzn/ds-react"],
       "@marcelinodzn/ds-react/*": ["../../node_modules/@marcelinodzn/ds-react/*"],
       "@marcelinodzn/ds-tokens": ["../../node_modules/@marcelinodzn/ds-tokens"],

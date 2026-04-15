@@ -227,7 +227,7 @@ export default function Prompt2CodePage() {
                 <button
                   onClick={handleApprove}
                   disabled={state.step === 'done' || state.step === 'publishing'}
-                  className="w-full px-4 py-2 rounded-md bg-primary text-white text-sm font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                  className="h-9 w-full flex items-center justify-center px-4 rounded-md bg-primary text-white text-sm font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
                 >
                   {state.step === 'done'
                     ? '✓ Published'
@@ -237,7 +237,7 @@ export default function Prompt2CodePage() {
                 </button>
                 <button
                   onClick={() => dispatch({ type: 'RESET' })}
-                  className="w-full px-4 py-2 rounded-md border border-gray-200 bg-gray-50 text-gray-600 text-sm font-medium hover:bg-gray-100 transition-colors cursor-pointer"
+                  className="h-9 w-full flex items-center justify-center px-4 rounded-md bg-secondary text-secondary-text text-sm font-medium hover:bg-secondary-hover transition-colors cursor-pointer"
                 >
                   Start over
                 </button>

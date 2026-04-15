@@ -1,14 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { LabRotatingMediaBlock } from './RotatingMediaBlock'
+import { RotatingMediaBlock } from './RotatingMediaBlock'
 
-const meta: Meta<typeof LabRotatingMediaBlock> = {
-  component: LabRotatingMediaBlock,
+const meta: Meta<typeof RotatingMediaBlock> = {
+  component: RotatingMediaBlock,
   title: 'Blocks/Lab/RotatingMediaBlock',
   parameters: { layout: 'fullscreen' },
 }
 export default meta
 
-type Story = StoryObj<typeof LabRotatingMediaBlock>
+type Story = StoryObj<typeof RotatingMediaBlock>
 
 const items = [
   { image: '/placeholder-preview.svg', title: 'Card 1', label: 'Label 1' },

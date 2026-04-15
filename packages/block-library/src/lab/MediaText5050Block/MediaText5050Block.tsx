@@ -11,6 +11,7 @@ import {
   type TransitionEvent,
 } from 'react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import {
   Headline,
   Text,
@@ -18,6 +19,7 @@ import {
   IcChevronDown,
   IcChevronUp,
   SurfaceProvider,
+  Button,
 } from '@marcelinodzn/ds-react'
 import { createTransition } from '@marcelinodzn/ds-tokens'
 import { Grid, useCell } from '../../components/blocks/Grid'
@@ -39,7 +41,6 @@ import {
   labStyleHeadlineAltProminent,
 } from '@design2code/ds'
 import { labHeadlinePresets, labTextPresets } from '@design2code/ds'
-import { LabBlockFramingCallToActions } from '../../components/LabBlockFramingCallToActions'
 import {
   labBlockFramingDescriptionStyle,
   labBlockFramingIntroStackStyle,
@@ -352,7 +353,7 @@ function MediaText5050CrossfadeMedia({
   )
 }
 
-export function LabMediaText5050Block({
+export function MediaText5050Block({
   variant: rawVariant,
   paragraphColumnLayout,
   imagePosition = 'right',
@@ -374,6 +375,7 @@ export function LabMediaText5050Block({
   imageSlot,
   imageState,
 }: MediaText5050BlockProps) {
+  const router = useRouter()
   const resolvedHeadingAlignment = headingAlignment ?? blockFramingAlignment ?? 'left'
 
   const variant = rawVariant === 'singleParagraph'
@@ -632,10 +634,26 @@ export function LabMediaText5050Block({
                   {description}
                 </Text>
               ) : null}
-              <LabBlockFramingCallToActions
-                actions={callToActions}
-                align={resolvedHeadingAlignment === 'center' ? 'center' : 'left'}
-              />
+              {callToActions?.filter((a) => a?.label?.trim()).length ? (
+                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: resolvedHeadingAlignment === 'center' ? 'center' : 'flex-start', gap: 'var(--ds-spacing-m)' }}>
+                  {callToActions.filter((a) => a.label.trim()).map((a) => (
+                    <Button
+                      key={a.label}
+                      appearance={a.style === 'outlined' ? 'secondary' : 'primary'}
+                      size="M"
+                      attention="high"
+                      onPress={() => {
+                        const h = (a.link ?? '').trim()
+                        if (!h) return
+                        if (h.startsWith('/')) router.push(h)
+                        else window.location.href = h
+                      }}
+                    >
+                      {a.label}
+                    </Button>
+                  ))}
+                </div>
+              ) : null}
             </div>
           </WidthCap>
         </div>

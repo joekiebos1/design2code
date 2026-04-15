@@ -3,9 +3,11 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: rgb(56, 0, 173);
-  --color-primary-hover: rgb(48, 0, 150);
-  --color-primary-light: rgb(237, 233, 254);
+  --color-primary:        #3900AD;
+  --color-primary-hover:  #2d0090;
+  --color-secondary:      #E7E9FF;
+  --color-secondary-hover:#d4d7ff;
+  --color-secondary-text: #220071;
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
@@ -282,6 +284,19 @@ main * {
 @keyframes stream-image-skeleton {
   0%, 100% { opacity: 0.6; }
   50% { opacity: 1; }
+}
+
+/* P2C Editor – block dimming: when any block is selected, all others fade out */
+.p2c-editor-canvas[data-has-selection] .block-stack > * {
+  opacity: 0.4;
+  transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.p2c-editor-canvas[data-has-selection] .block-stack > [data-selected] {
+  opacity: 1;
+}
+/* Baseline transition so restore is also animated */
+.p2c-editor-canvas .block-stack > * {
+  transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* P2C Editor canvas – suppress DS and browser default focus outlines.

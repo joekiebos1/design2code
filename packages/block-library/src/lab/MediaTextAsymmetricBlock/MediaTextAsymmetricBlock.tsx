@@ -23,16 +23,16 @@ import {
 } from '@design2code/ds'
 import { labHeadlinePresets, labTextPresets } from '@design2code/ds'
 import type {
-  LabMediaTextAsymmetricBlockProps,
-  LabMediaTextAsymmetricImageAspectRatio,
-  LabMediaTextAsymmetricParagraphRow,
-} from './LabMediaTextAsymmetricBlock.types'
+  MediaTextAsymmetricBlockProps,
+  MediaTextAsymmetricImageAspectRatio,
+  MediaTextAsymmetricParagraphRow,
+} from './MediaTextAsymmetricBlock.types'
 import type {
   MediaTextAsymmetricFaqItem,
   MediaTextAsymmetricLinkItem,
 } from '../../shared/media-text-asymmetric-shared.types'
 
-const MAIN_IMAGE_ASPECT_CSS: Record<LabMediaTextAsymmetricImageAspectRatio, string> = {
+const MAIN_IMAGE_ASPECT_CSS: Record<MediaTextAsymmetricImageAspectRatio, string> = {
   '5:4': '5 / 4',
   '1:1': '1 / 1',
   '4:5': '4 / 5',
@@ -50,7 +50,7 @@ function MainColumnImage({
 }: {
   src: string
   alt: string
-  aspectRatio: LabMediaTextAsymmetricImageAspectRatio
+  aspectRatio: MediaTextAsymmetricImageAspectRatio
 }) {
   const ar = MAIN_IMAGE_ASPECT_CSS[aspectRatio]
   return (
@@ -75,7 +75,7 @@ function ParagraphRow({
   openInNewTab,
   revealStyle,
 }: {
-  row: LabMediaTextAsymmetricParagraphRow & { body: string }
+  row: MediaTextAsymmetricParagraphRow & { body: string }
   itemLevel: HeadingLevel
   router: ReturnType<typeof useRouter>
   openInNewTab?: boolean
@@ -290,15 +290,15 @@ function LinksItem({
   )
 }
 
-function paragraphRowsWithBody(rows: LabMediaTextAsymmetricParagraphRow[] | null | undefined) {
+function paragraphRowsWithBody(rows: MediaTextAsymmetricParagraphRow[] | null | undefined) {
   if (rows == null || !Array.isArray(rows)) return []
   return rows.filter(
-    (r): r is LabMediaTextAsymmetricParagraphRow & { body: string } =>
+    (r): r is MediaTextAsymmetricParagraphRow & { body: string } =>
       r != null && typeof r.body === 'string' && r.body.trim().length > 0,
   )
 }
 
-export function LabMediaTextAsymmetricBlock({
+export function MediaTextAsymmetricBlock({
   blockTitle,
   variant: contentVariant = 'paragraphs',
   paragraphLayout,
@@ -310,7 +310,7 @@ export function LabMediaTextAsymmetricBlock({
   imageAlt,
   size: _size = 'feature',
   openLinksInNewTab,
-}: LabMediaTextAsymmetricBlockProps) {
+}: MediaTextAsymmetricBlockProps) {
   const router = useRouter()
   const [faqOpenIndex, setFaqOpenIndex] = useState<number | null>(null)
   const blockTitleLevel = normalizeHeadingLevel('h3')
@@ -327,7 +327,7 @@ export function LabMediaTextAsymmetricBlock({
     typeof singleColumnBody === 'string' ? singleColumnBody.trim() : ''
   const rows_ = paragraphRowsWithBody(paragraphRows)
   const imageSrc = typeof mainImageSrc === 'string' && mainImageSrc.trim().length > 0 ? mainImageSrc.trim() : ''
-  const resolvedAspect: LabMediaTextAsymmetricImageAspectRatio =
+  const resolvedAspect: MediaTextAsymmetricImageAspectRatio =
     imageAspectRatio === '5:4' || imageAspectRatio === '1:1' || imageAspectRatio === '4:5' ? imageAspectRatio : '4:5'
   const showTitleColumn = typeof blockTitle === 'string' && blockTitle.trim().length > 0
 

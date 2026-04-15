@@ -33,7 +33,7 @@ export interface MediaTextBlockCTA {
   appearance?: 'primary' | 'secondary' | 'ghost'
 }
 
-export interface MediaTextBlockProps {
+export interface MediaTextStackedBlockProps {
   size?: MediaTextBlockSize
   variant?: MediaTextBlockVariant
   width?: MediaTextBlockWidth
