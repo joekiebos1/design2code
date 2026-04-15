@@ -104,6 +104,12 @@ function normalizeItems(
           title: (o.question as string) ?? title,
           body: (o.answer as string) ?? description,
         }
+      case 'mediaText5050':
+        return {
+          subtitle: (o.subtitle as string) ?? title,
+          body: (o.body as string) ?? description,
+          image: resolveImage(o.image as string, imageUrls, imgIndex),
+        }
       case 'cardGrid':
         return {
           cardType: (o.cardType as string) ?? 'mediaTextBelow',

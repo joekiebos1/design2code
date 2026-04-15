@@ -87,8 +87,8 @@ const ITEM_LABEL: Record<string, string> = {
 }
 
 const IMAGE_BLOCKS = new Set(['hero', 'mediaTextStacked', 'mediaText5050', 'mediaTextAsymmetric', 'cardGrid', 'carousel'])
-/** Item-based blocks whose individual cards support per-item image picking. */
-const ITEM_IMAGE_BLOCKS = new Set(['cardGrid', 'carousel'])
+/** Item-based blocks whose individual items support per-item image picking. */
+const ITEM_IMAGE_BLOCKS = new Set(['cardGrid', 'carousel', 'mediaText5050'])
 
 const isDraggableSection = (s: Section) => s.component !== 'hero' && s.narrativeRole !== 'resolve'
 
