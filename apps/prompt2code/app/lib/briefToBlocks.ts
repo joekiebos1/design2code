@@ -25,12 +25,13 @@ function stableHash(str: string): number {
   return Math.abs(h)
 }
 
-/** Picks an image from the DAM pool, falling back to placeholder. */
+/** Picks an image: uses a pinned URL when set, otherwise draws from the DAM pool. */
 function resolveImage(
-  _raw: string | null | undefined,
+  raw: string | null | undefined,
   imageUrls: string[],
   index: number
 ): string {
+  if (raw && typeof raw === 'string' && (raw.startsWith('http') || raw.startsWith('/'))) return raw
   if (imageUrls.length > 0) return imageUrls[index % imageUrls.length]
   return PLACEHOLDER_IMAGE
 }

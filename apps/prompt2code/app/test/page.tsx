@@ -66,7 +66,7 @@ const TEST_BRIEF: PageBrief = {
         body: 'Use the left arrows to reorder blocks. Use the right panel to change emphasis, variant, or swap images.',
         eyebrow: 'How it works',
         cta: { label: 'Learn more', destination: '#', rationale: null },
-        mediaType: null,
+        mediaType: 'image',
         items: null,
       },
     },

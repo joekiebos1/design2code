@@ -87,6 +87,8 @@ const ITEM_LABEL: Record<string, string> = {
 }
 
 const IMAGE_BLOCKS = new Set(['hero', 'mediaTextStacked', 'mediaText5050', 'mediaTextAsymmetric', 'cardGrid', 'carousel'])
+/** Item-based blocks whose individual cards support per-item image picking. */
+const ITEM_IMAGE_BLOCKS = new Set(['cardGrid', 'carousel'])
 
 const isDraggableSection = (s: Section) => s.component !== 'hero' && s.narrativeRole !== 'resolve'
 
@@ -1476,17 +1478,42 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
                 const item = items[panelLayer.itemIndex]
                 const fields = ITEM_TEXT_FIELDS[focusedSection.component] ?? []
                 if (!item) return <div className="px-5 pb-5 text-xs text-gray-400">Item not found.</div>
+                const hasItemImages = ITEM_IMAGE_BLOCKS.has(focusedSection.component)
                 return (
-                  <PanelSection title="Content">
-                    {fields.map(({ key, label }) => (
-                      <PanelRow key={key} label={label}>
-                        <PanelTextField
-                          value={(item[key] as string | null | undefined) ?? null}
-                          onChange={v => update(updateItemField(brief, focusedSection.sectionName, panelLayer.itemIndex, key, v ?? ''))}
-                        />
-                      </PanelRow>
-                    ))}
-                  </PanelSection>
+                  <>
+                    <PanelSection title="Content">
+                      {fields.map(({ key, label }) => (
+                        <PanelRow key={key} label={label}>
+                          <PanelTextField
+                            value={(item[key] as string | null | undefined) ?? null}
+                            onChange={v => update(updateItemField(brief, focusedSection.sectionName, panelLayer.itemIndex, key, v ?? ''))}
+                          />
+                        </PanelRow>
+                      ))}
+                    </PanelSection>
+                    {hasItemImages && (
+                      <PanelSection title="Image">
+                        {imageUrls.length > 0 ? (
+                          <div className="grid grid-cols-3 gap-1.5">
+                            {imageUrls.map((url, i) => {
+                              const isActive = (item.image as string | undefined) === url
+                              return (
+                                <button key={i}
+                                  onClick={e => { e.stopPropagation(); update(updateItemField(brief, focusedSection.sectionName, panelLayer.itemIndex, 'image', url)) }}
+                                  className={['p-0 border-2 rounded overflow-hidden aspect-square bg-transparent cursor-pointer transition-colors',
+                                    isActive ? 'border-primary' : 'border-transparent hover:border-primary/50'].join(' ')}>
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img src={url} alt="" className="w-full h-full object-cover block" />
+                                </button>
+                              )
+                            })}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-gray-400">No images available.</p>
+                        )}
+                      </PanelSection>
+                    )}
+                  </>
                 )
               })()}
             </>
