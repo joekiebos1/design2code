@@ -146,9 +146,7 @@ function getVariantConfigs(component: string, template?: string | null): Variant
       return [
         {
           key: 'template', label: 'Template', rowLabel: 'Style', control: 'select',
-          options: isProductPage
-            ? [{ value: 'stacked', label: 'Stacked' }, { value: 'textOnly', label: 'Text only' }]
-            : [{ value: 'stacked', label: 'Stacked' }, { value: 'textOnly', label: 'Text only' }, { value: 'overlay', label: 'Overlay' }],
+          options: [{ value: 'stacked', label: 'Contained' }, { value: 'textOnly', label: 'Text only' }],
           currentValue: opts => (opts.template as string) ?? 'stacked',
         },
         {

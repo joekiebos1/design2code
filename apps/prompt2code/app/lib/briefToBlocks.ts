@@ -200,7 +200,7 @@ export function briefToBlocks(
         return {
           ...base,
           template: hasMedia ? template : 'textOnly',
-          mediaSize: hasMedia && template !== 'textOnly' ? (opts.mediaSize ?? 'edgeToEdge') : undefined,
+          mediaSize: hasMedia && template !== 'textOnly' ? (opts.mediaSize ?? 'contained') : undefined,
           alignment: (opts.alignment as string) ?? 'left',
           ...colours,
           eyebrow: slots.eyebrow,
