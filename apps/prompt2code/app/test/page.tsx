@@ -47,7 +47,7 @@ const TEST_BRIEF: PageBrief = {
         subhead: 'Use this page to test the editor without burning tokens',
         body: 'Select blocks, move them, swap images, and change emphasis.',
         eyebrow: 'Dev only',
-        cta: { label: 'Get started', url: '#' },
+        cta: { label: 'Get started', destination: '#', rationale: null },
       },
     },
     {
