@@ -103,6 +103,73 @@ export function removeItem(brief: PageBrief, sectionName: string, itemIndex: num
   }
 }
 
+// ─── Add section ─────────────────────────────────────────────────────────────
+
+/**
+ * Appends a new section to the end of the engage zone (before resolve sections).
+ * Seeds default content so the block renders immediately without placeholders.
+ */
+/** Block types that can be added via the Layers panel Add button (hero excluded). */
+export const ADDABLE_COMPONENTS = [
+  'mediaTextStacked',
+  'mediaText5050',
+  'mediaTextAsymmetric',
+  'cardGrid',
+  'carousel',
+  'proofPoints',
+] as const
+
+export function addSection(
+  brief: PageBrief,
+  component: string,
+): { brief: PageBrief; sectionName: string } {
+  const heroSections    = brief.sections.filter(s => s.component === 'hero')
+  const engageSections  = brief.sections.filter(s => s.component !== 'hero' && s.narrativeRole !== 'resolve')
+  const resolveSections = brief.sections.filter(s => s.narrativeRole === 'resolve')
+
+  const maxOrder = brief.sections.reduce((m, s) => Math.max(m, s.order), 0)
+  const sectionName = `${component}-${Date.now()}`
+
+  const needsItems = ITEMS_REQUIRED.has(component)
+  const count = DEFAULT_ITEM_COUNT[component] ?? 3
+  const items = needsItems
+    ? Array.from({ length: count }, () => defaultItem(component))
+    : null
+
+  const hasMedia = component === 'mediaTextStacked' || component === 'mediaText5050'
+
+  const newSection: Section = {
+    order: maxOrder + 1,
+    sectionName,
+    component,
+    rationale: '',
+    narrativeRole: 'explain',
+    flags: [],
+    blockOptions: {},
+    contentSlots: {
+      headline: 'New block',
+      subhead: null,
+      body: null,
+      cta: null,
+      mediaType: hasMedia ? 'image' : null,
+      items,
+    },
+  }
+
+  return {
+    sectionName,
+    brief: {
+      ...brief,
+      sections: [
+        ...heroSections,
+        ...engageSections,
+        newSection,
+        ...resolveSections.map(s => ({ ...s, order: s.order + 1 })),
+      ],
+    },
+  }
+}
+
 // ─── Image override ────────────────────────────────────────────────────────
 
 /** Pins a specific DAM image URL to a section (stored as _imageUrl, read by briefToBlocks). */

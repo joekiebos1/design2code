@@ -13,6 +13,8 @@ import {
   pinImage,
   reorderSections,
   swapComponent,
+  addSection,
+  ADDABLE_COMPONENTS,
 } from '../../lib/briefEditor'
 import type { PageBrief, Section, BlockOptions } from '../../lib/types'
 
@@ -599,7 +601,7 @@ function LayerBlockRow({
 
 function LayersPanel({
   pageName, sections, expandedSectionName, activeLayer, moveButtons,
-  onSelectBlock, onSelectLayer, onMove,
+  onSelectBlock, onSelectLayer, onMove, onReorder, onAddBlock,
 }: {
   pageName: string
   sections: Section[]
@@ -609,11 +611,62 @@ function LayersPanel({
   onSelectBlock: (sectionName: string) => void
   onSelectLayer: (layer: LayerSelection) => void
   onMove: (dir: 'up' | 'down') => void
+  onReorder: (newOrder: string[]) => void
+  onAddBlock: (component: string) => void
 }) {
   const sorted         = [...sections].sort((a, b) => a.order - b.order)
   const setupSections  = sorted.filter(s => s.component === 'hero')
   const engageSections = sorted.filter(s => s.component !== 'hero' && s.narrativeRole !== 'resolve')
   const resolveSections= sorted.filter(s => s.narrativeRole === 'resolve')
+
+  // ── Drag state ────────────────────────────────────────────────────────────
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null)
+
+  const handleDrop = (dropIdx: number) => {
+    if (draggedIdx === null || draggedIdx === dropIdx) { setDraggedIdx(null); setDragOverIdx(null); return }
+    const reordered = [...engageSections]
+    const [moved] = reordered.splice(draggedIdx, 1)
+    reordered.splice(dropIdx > draggedIdx ? dropIdx - 1 : dropIdx, 0, moved)
+    onReorder(reordered.map(s => s.sectionName))
+    setDraggedIdx(null)
+    setDragOverIdx(null)
+  }
+
+  // ── Add dropdown ──────────────────────────────────────────────────────────
+  const [addOpen, setAddOpen] = useState(false)
+  const addBtnRef = useRef<HTMLDivElement>(null)
+  const [addMenuPos, setAddMenuPos] = useState<{ top: number; left: number; width: number } | null>(null)
+
+  const openAdd = () => {
+    if (addBtnRef.current) {
+      const r = addBtnRef.current.getBoundingClientRect()
+      setAddMenuPos({ top: r.bottom + 4, left: r.left, width: r.width })
+    }
+    setAddOpen(true)
+  }
+
+  useEffect(() => {
+    if (!addOpen) return
+    const close = (e: MouseEvent) => {
+      if (addBtnRef.current && !addBtnRef.current.contains(e.target as Node)) setAddOpen(false)
+    }
+    document.addEventListener('mousedown', close)
+    return () => document.removeEventListener('mousedown', close)
+  }, [addOpen])
+
+  // Drop zone indicator helper
+  const dropLine = (idx: number) => {
+    const show = draggedIdx !== null && dragOverIdx === idx && draggedIdx !== idx && draggedIdx !== idx - 1
+    return (
+      <div
+        onDragOver={e => { e.preventDefault(); setDragOverIdx(idx) }}
+        onDrop={e => { e.preventDefault(); handleDrop(idx) }}
+        className="mx-5 transition-all"
+        style={{ height: show ? 2 : 0, background: show ? '#4f46e5' : 'transparent', borderRadius: 1, margin: show ? '2px 20px' : '0 20px' }}
+      />
+    )
+  }
 
   return (
     <div className="flex flex-col h-full bg-white font-sans">
@@ -643,26 +696,42 @@ function LayersPanel({
           <div className="h-px bg-[#ebebeb] mx-5 my-3" />
         )}
 
-        {/* ── Engage (moveable) ──────────────────────────────────────────── */}
-        {engageSections.map(s => (
-          <LayerBlockRow
-            key={s.sectionName} section={s} locked={false}
-            expanded={expandedSectionName === s.sectionName}
-            activeLayer={expandedSectionName === s.sectionName ? activeLayer : null}
-            moveButtons={expandedSectionName === s.sectionName ? moveButtons : null}
-            onSelect={() => onSelectBlock(s.sectionName)}
-            onSelectLayer={onSelectLayer} onMove={onMove}
-          />
+        {/* ── Engage (draggable) ─────────────────────────────────────────── */}
+        {engageSections.map((s, idx) => (
+          <div key={s.sectionName}>
+            {dropLine(idx)}
+            <div
+              draggable
+              onDragStart={e => { e.dataTransfer.effectAllowed = 'move'; setDraggedIdx(idx) }}
+              onDragEnd={() => { setDraggedIdx(null); setDragOverIdx(null) }}
+              style={{ opacity: draggedIdx === idx ? 0.35 : 1, transition: 'opacity 0.15s', cursor: 'grab' }}
+            >
+              <LayerBlockRow
+                section={s} locked={false}
+                expanded={expandedSectionName === s.sectionName}
+                activeLayer={expandedSectionName === s.sectionName ? activeLayer : null}
+                moveButtons={expandedSectionName === s.sectionName ? moveButtons : null}
+                onSelect={() => onSelectBlock(s.sectionName)}
+                onSelectLayer={onSelectLayer} onMove={onMove}
+              />
+            </div>
+          </div>
         ))}
+        {/* Drop zone after last engage row */}
+        {dropLine(engageSections.length)}
 
         {/* Add… row */}
-        <div className="px-5 py-0.5">
-          <div className="h-8 flex items-center gap-2 pl-2 pr-2 rounded-[8px] bg-[#f5f5f6] cursor-pointer select-none hover:bg-[#ebebeb] group">
-            <span className="shrink-0 w-4 h-4 flex items-center justify-center text-[#a5a8ad] group-hover:text-[#696d76]">
-              {/* empty slot — mirrors chevron indent */}
-            </span>
-            <span className="flex-1 text-[12px] font-medium text-[#a5a8ad] group-hover:text-[#696d76]">Add...</span>
-            <span className="shrink-0 text-[#a5a8ad] group-hover:text-[#696d76]"><IconPlus /></span>
+        <div className="px-5 py-0.5" ref={addBtnRef}>
+          <div
+            onClick={openAdd}
+            className={[
+              'h-8 flex items-center gap-2 pl-2 pr-2 rounded-[8px] cursor-pointer select-none group transition-colors',
+              addOpen ? 'bg-[#ebebeb]' : 'bg-[#f5f5f6] hover:bg-[#ebebeb]',
+            ].join(' ')}
+          >
+            <span className="shrink-0 w-4 h-4" />
+            <span className={['flex-1 text-[12px] font-medium transition-colors', addOpen ? 'text-[#696d76]' : 'text-[#a5a8ad] group-hover:text-[#696d76]'].join(' ')}>Add block…</span>
+            <span className={['shrink-0 transition-colors', addOpen ? 'text-[#696d76]' : 'text-[#a5a8ad] group-hover:text-[#696d76]'].join(' ')}><IconPlus /></span>
           </div>
         </div>
 
@@ -683,6 +752,25 @@ function LayersPanel({
           />
         ))}
       </div>
+
+      {/* Add block dropdown — fixed so it escapes overflow:hidden */}
+      {addOpen && addMenuPos && (
+        <div
+          style={{ position: 'fixed', top: addMenuPos.top, left: addMenuPos.left, width: addMenuPos.width, zIndex: 200 }}
+          className="bg-white rounded-[10px] shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-[#ebebeb] py-1 font-sans"
+          onMouseDown={e => e.stopPropagation()}
+        >
+          {ADDABLE_COMPONENTS.map(component => (
+            <button
+              key={component}
+              onClick={() => { onAddBlock(component); setAddOpen(false) }}
+              className="w-full text-left px-3 h-8 text-[12px] font-medium text-[#24262b] hover:bg-[#f3f4ff] cursor-pointer flex items-center"
+            >
+              {BLOCK_LABELS[component] ?? component}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -704,8 +792,9 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
   const hideHoverTimer     = useRef<ReturnType<typeof setTimeout> | null>(null)
   const selectedSectionNameRef = useRef<string | null>(null)
   const selectedElTypeRef      = useRef<ElType>('block')
-  const pendingCenterSectionRef   = useRef<string | null>(null)
-  const isProgrammaticScrollRef   = useRef(false)
+  const pendingCenterSectionRef  = useRef<string | null>(null)
+  const pendingSelectSectionRef  = useRef<string | null>(null)
+  const isProgrammaticScrollRef  = useRef(false)
   const programmaticScrollTimer   = useRef<ReturnType<typeof setTimeout> | null>(null)
   /** Live snapshot of block DOM elements, updated at the start of every interaction effect. */
   const blockElsRef = useRef<HTMLElement[]>([])
@@ -801,21 +890,30 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
     scrollEl.scrollTo({ top: targetScrollTop, behavior: 'smooth' })
   }, [scale])
 
-  // ── Re-center after block reorder ────────────────────────────────────────
+  // ── Re-center + optionally select after block reorder / add ─────────────
   useEffect(() => {
-    const sectionName = pendingCenterSectionRef.current
-    if (!sectionName) return
+    const centerName = pendingCenterSectionRef.current
+    const selectName = pendingSelectSectionRef.current
+    if (!centerName && !selectName) return
     pendingCenterSectionRef.current = null
+    pendingSelectSectionRef.current = null
 
     const container = containerRef.current
     if (!container) return
     const blockStack = container.querySelector('.block-stack')
     if (!blockStack) return
     const blockEls = Array.from(blockStack.children) as HTMLElement[]
-    const idx = blocks.findIndex(b => b._key.includes(`-${sectionName}-`))
-    const blockEl = idx !== -1 ? blockEls[idx] : null
-    if (blockEl) centerBlock(blockEl)
-  }, [blocks, centerBlock])
+
+    if (centerName) {
+      const idx = blocks.findIndex(b => b._key.includes(`-${centerName}-`))
+      const blockEl = idx !== -1 ? blockEls[idx] : null
+      if (blockEl) centerBlock(blockEl)
+    }
+    if (selectName) {
+      selectBlockOnCanvas(selectName)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [blocks])
 
   // ── Move block up / down ──────────────────────────────────────────────────
 
@@ -845,6 +943,23 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
     pendingCenterSectionRef.current = sectionName
     update(reorderSections(brief, newOrder))
   }, [sections, brief, update])
+
+  // ── Drag-reorder from layers panel ───────────────────────────────────────
+
+  const handleReorder = useCallback((newOrder: string[]) => {
+    const sectionName = selectedSectionNameRef.current
+    if (sectionName) pendingCenterSectionRef.current = sectionName
+    update(reorderSections(brief, newOrder))
+  }, [brief, update])
+
+  // ── Add block from layers panel ───────────────────────────────────────────
+
+  const handleAddBlock = useCallback((component: string) => {
+    const { brief: newBrief, sectionName } = addSection(brief, component)
+    pendingCenterSectionRef.current = sectionName
+    pendingSelectSectionRef.current = sectionName
+    update(newBrief)
+  }, [brief, update])
 
   // ── Emphasis update ───────────────────────────────────────────────────────
 
@@ -1297,6 +1412,8 @@ export function EditablePreview({ brief, imageUrls, videoUrls, onBriefUpdate, sc
             onSelectBlock={selectBlockOnCanvas}
             onSelectLayer={handleLayerSelect}
             onMove={handleMove}
+            onReorder={handleReorder}
+            onAddBlock={handleAddBlock}
           />
         </div>
       )}
