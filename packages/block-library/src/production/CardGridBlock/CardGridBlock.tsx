@@ -16,11 +16,12 @@ export function CardGrid({
   columns,
   interaction = 'information',
   title,
+  headingAlignment = 'center',
   items,
   images,
 }: CardGridBlockProps) {
   const level = normalizeHeadingLevel('h2')
-  const items_ = (items ?? []).filter((i) => i?.title || (i as { image?: string })?.image || (i as { video?: string })?.video).slice(0, MAX_ITEMS)
+  const items_ = (items ?? []).filter((i) => i?.title || (i as { image?: string })?.image || (i as { video?: string })?.video || i?.backgroundColor).slice(0, MAX_ITEMS)
   const cell = useCell('L')
   const { columns: gridColumns } = useGridBreakpoint()
 
@@ -46,7 +47,7 @@ export function CardGrid({
         <div style={{ ...cell, display: 'flex', flexDirection: 'column', gap: 'var(--ds-spacing-3xl)' }}>
           {title && (
             <WidthCap contentWidth="L">
-              <Headline size="S" weight="high" as={level} align="center" style={{ margin: 0, fontSize: TYPOGRAPHY.h2, whiteSpace: 'pre-line' }}>
+              <Headline size="S" weight="high" as={level} align={headingAlignment} style={{ margin: 0, fontSize: TYPOGRAPHY.h2, whiteSpace: 'pre-line' }}>
                 {title}
               </Headline>
             </WidthCap>

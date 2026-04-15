@@ -30,6 +30,7 @@ export type CardGridBlockProps = {
   cardSurface?: CardSurface
   title?: string | null
   description?: string | null
+  headingAlignment?: 'left' | 'center'
   callToActions?: { label: string; link?: string | null; style?: 'filled' | 'outlined' | null }[] | null
   emphasis?: 'ghost' | 'minimal' | 'subtle' | 'bold'
   minimalBackgroundStyle?: 'block' | 'gradient' | null
@@ -46,6 +47,7 @@ export function CardGridBlock({
   cardSurface,
   title,
   description,
+  headingAlignment = 'center',
   callToActions,
   emphasis,
   items,
@@ -53,7 +55,7 @@ export function CardGridBlock({
 }: CardGridBlockProps) {
   const router = useRouter()
   const level = normalizeHeadingLevel('h2')
-  const items_ = (items ?? []).filter((i) => i?.title || (i as { image?: string })?.image || (i as { video?: string })?.video).slice(0, MAX_ITEMS)
+  const items_ = (items ?? []).filter((i) => i?.title || (i as { image?: string })?.image || (i as { video?: string })?.video || i?.backgroundColor).slice(0, MAX_ITEMS)
   const { columns: gridColumns, isMobile } = useGridBreakpoint()
 
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
@@ -85,12 +87,12 @@ export function CardGridBlock({
         >
           {hasLabBlockFraming(title, description, callToActions) && (
             <WidthCap contentWidth="L">
-              <div style={labBlockFramingIntroStackStyle}>
+              <div style={{ ...labBlockFramingIntroStackStyle, alignItems: headingAlignment === 'left' ? 'flex-start' : 'center' }}>
                 {title && (
                   <Headline
                     size="S"
                     as={level}
-                    align="center"
+                    align={headingAlignment}
                     {...labHeadlinePresets.block}
                     style={labBlockFramingTitleStyle(isMobile)}
                   >
@@ -98,12 +100,12 @@ export function CardGridBlock({
                   </Headline>
                 )}
                 {description && (
-                  <Text as="p" align="center" {...labTextPresets.framingIntro} style={labBlockFramingDescriptionStyle}>
+                  <Text as="p" align={headingAlignment} {...labTextPresets.framingIntro} style={labBlockFramingDescriptionStyle}>
                     {description}
                   </Text>
                 )}
                 {callToActions?.filter((a) => a?.label?.trim()).length ? (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 'var(--ds-spacing-m)' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: headingAlignment === 'left' ? 'flex-start' : 'center', gap: 'var(--ds-spacing-m)' }}>
                     {callToActions.filter((a) => a.label.trim()).map((a) => (
                       <Button
                         key={a.label}

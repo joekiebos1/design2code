@@ -38,6 +38,7 @@ export type CardGridBlockProps = {
   columns?: CardGridColumns
   interaction?: BlockInteraction
   title?: string | null
+  headingAlignment?: 'left' | 'center'
   emphasis?: CardGridEmphasis
   minimalBackgroundStyle?: 'block' | 'gradient' | null
   appearance?: CardGridAppearance

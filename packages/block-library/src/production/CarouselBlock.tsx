@@ -49,6 +49,7 @@ type CarouselAppearance = 'primary' | 'secondary' | 'sparkle' | 'neutral'
 type CarouselBlockProps = {
   title?: string | null
   description?: string | null
+  headingAlignment?: 'left' | 'center'
   callToActions?: { label: string; link?: string | null; style?: 'filled' | 'outlined' | null }[] | null
   interaction?: BlockInteraction
   cardSize?: CarouselCardSize
@@ -210,6 +211,7 @@ function buildLargeDisplayItems(items: CarouselItem[]): CarouselItem[] {
 export function CarouselBlock({
   title,
   description,
+  headingAlignment = 'center',
   callToActions,
   interaction = 'information',
   cardSize = 'medium',
@@ -235,7 +237,7 @@ export function CarouselBlock({
   const [centerOffsetPx, setCenterOffsetPx] = useState(0)
   const [cumulativeScrollPx, setCumulativeScrollPx] = useState<number[]>([])
 
-  const items_ = items?.filter((i) => i?.title || i?.image || i?.video) ?? []
+  const items_ = items?.filter((i) => i?.title || i?.image || i?.video || i?.backgroundColor) ?? []
   const isNav = interaction === 'navigation'
   const isLargeLayout = cardSize === 'large'
   const capScrollAtGrid = cardSize === 'compact' || cardSize === 'medium'
@@ -470,6 +472,7 @@ export function CarouselBlock({
             <div
               style={{
                 ...labBlockFramingIntroStackStyle,
+                alignItems: headingAlignment === 'left' ? 'flex-start' : 'center',
                 opacity: containerVisible ? 1 : 0,
                 transform: 'translateY(0)',
                 transition: titleTransition,
@@ -479,7 +482,7 @@ export function CarouselBlock({
                 <Headline
                   size={getHeadlineSize(level)}
                   as={level}
-                  align="center"
+                  align={headingAlignment}
                   {...labBlockFramingHeadlineProps}
                   style={labBlockFramingTitleStyle(isMobile)}
                 >
@@ -489,7 +492,7 @@ export function CarouselBlock({
               {description && (
                 <Text
                   as="p"
-                  align="center"
+                  align={headingAlignment}
                   {...labBlockFramingDescriptionTextProps}
                   style={labBlockFramingDescriptionStyle}
                 >
@@ -497,7 +500,7 @@ export function CarouselBlock({
                 </Text>
               )}
               {callToActions?.filter((a) => a?.label?.trim()).length ? (
-                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 'var(--ds-spacing-m)' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: headingAlignment === 'left' ? 'flex-start' : 'center', gap: 'var(--ds-spacing-m)' }}>
                   {callToActions.filter((a) => a.label.trim()).map((a) => (
                     <Button
                       key={a.label}

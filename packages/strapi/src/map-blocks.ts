@@ -108,6 +108,7 @@ function mapOneBlock(baseUrl: string, raw: unknown, index: number): BlockRendere
       columns: o.columns,
       cardSurface: o.cardSurface,
       title: o.title,
+      headingAlignment: o.headingAlignment,
       description: o.description,
       callToActions: mapCallToActions(o.callToActions),
       emphasis: o.emphasis,
@@ -164,6 +165,7 @@ function mapOneBlock(baseUrl: string, raw: unknown, index: number): BlockRendere
       cardSurface: o.cardSurface,
       eyebrow: o.eyebrow,
       title: o.title,
+      headingAlignment: o.headingAlignment,
       description: o.description,
       callToActions: mapCallToActions(o.callToActions),
       cardSize: o.cardSize,
@@ -268,7 +270,7 @@ function mapOneBlock(baseUrl: string, raw: unknown, index: number): BlockRendere
 function mapCardItem(baseUrl: string, item: Record<string, unknown>, key?: string) {
   return {
     _key: key ?? String(item.id ?? item.documentId ?? Math.random()),
-    cardType: item.cardType,
+    cardType: item.cardType ?? 'mediaTextBelow',
     title: item.title,
     description: item.description,
     backgroundColor: item.backgroundColor,

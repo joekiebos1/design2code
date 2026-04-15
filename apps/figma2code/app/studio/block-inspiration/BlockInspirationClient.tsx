@@ -60,17 +60,17 @@ function BlockListItem({
       }`}
     >
       {entry.thumbnail ? (
-        <div className="w-full h-[108px] rounded-lg overflow-hidden bg-gray-100 mb-2 shadow-sm ring-1 ring-gray-200/80">
+        <div className="w-full aspect-[3/2] rounded-lg overflow-hidden bg-gray-100 mb-2 shadow-sm ring-1 ring-gray-200/80">
           <Image
             src={entry.thumbnail}
             alt={entry.name}
             width={252}
-            height={108}
+            height={168}
             className="w-full h-full object-cover"
           />
         </div>
       ) : (
-        <div className="w-full h-[108px] rounded-lg bg-gray-100 mb-2 flex items-center justify-center ring-1 ring-gray-200/60">
+        <div className="w-full aspect-[3/2] rounded-lg bg-gray-100 mb-2 flex items-center justify-center ring-1 ring-gray-200/60">
           <span className="text-xs text-gray-400">Preview</span>
         </div>
       )}
